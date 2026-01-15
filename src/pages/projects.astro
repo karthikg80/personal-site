@@ -1,0 +1,79 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getCollection } from 'astro:content';
+
+// Fetch all projects from the content collection
+const allProjects = await getCollection('projects');
+
+// Sort projects by date (newest first)
+const projects = allProjects.sort((a, b) =>
+  b.data.date.getTime() - a.data.date.getTime()
+);
+---
+
+<Layout
+  title="Projects - John Doe"
+  description="Explore my portfolio of software projects including payment systems, architecture work, and AI applications."
+>
+  <div class="section">
+    <div class="container">
+      <div class="projects-header">
+        <h1>Projects</h1>
+        <p class="subtitle">
+          A selection of projects I've worked on, spanning fintech, distributed systems, and machine learning.
+        </p>
+      </div>
+
+      <div class="projects-grid">
+        {projects.map((project) => (
+          <ProjectCard
+            title={project.data.title}
+            description={project.data.description}
+            date={project.data.date}
+            tags={project.data.tags}
+            link={project.data.link}
+            github={project.data.github}
+            featured={project.data.featured}
+          />
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .projects-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+  }
+
+  .projects-header h1 {
+    margin-bottom: var(--space-sm);
+  }
+
+  .subtitle {
+    font-size: var(--text-lg);
+    color: var(--color-text-light);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .projects-grid {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  @media (min-width: 768px) {
+    .projects-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .projects-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,236 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Button from '../components/Button.astro';
+---
+
+<Layout
+  title="Resume - John Doe"
+  description="View my professional experience, education, and technical skills."
+>
+  <div class="section">
+    <div class="container content">
+      <div class="resume-header">
+        <h1>Resume</h1>
+        <Button href="/resume.pdf" variant="primary" target="_blank">Download PDF</Button>
+      </div>
+
+      <!-- TODO: Replace with your actual experience -->
+      <section class="resume-section">
+        <h2>Experience</h2>
+
+        <div class="experience-item">
+          <div class="item-header">
+            <div>
+              <h3>Senior Software Engineer</h3>
+              <p class="company">Tech Company Inc.</p>
+            </div>
+            <p class="date">2022 - Present</p>
+          </div>
+          <ul class="responsibilities">
+            <li>Led development of payment processing platform handling $10M+ daily transactions</li>
+            <li>Architected microservices infrastructure reducing deployment time by 70%</li>
+            <li>Mentored team of 5 junior engineers in best practices and code quality</li>
+          </ul>
+        </div>
+
+        <div class="experience-item">
+          <div class="item-header">
+            <div>
+              <h3>Software Engineer</h3>
+              <p class="company">StartupCo</p>
+            </div>
+            <p class="date">2020 - 2022</p>
+          </div>
+          <ul class="responsibilities">
+            <li>Built ML-powered recommendation engine increasing user engagement by 40%</li>
+            <li>Designed and implemented RESTful APIs serving 1M+ requests daily</li>
+            <li>Collaborated with product team to deliver features ahead of schedule</li>
+          </ul>
+        </div>
+
+        <div class="experience-item">
+          <div class="item-header">
+            <div>
+              <h3>Junior Developer</h3>
+              <p class="company">Digital Agency</p>
+            </div>
+            <p class="date">2018 - 2020</p>
+          </div>
+          <ul class="responsibilities">
+            <li>Developed responsive web applications for Fortune 500 clients</li>
+            <li>Implemented automated testing reducing bugs by 50%</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- TODO: Replace with your actual education -->
+      <section class="resume-section">
+        <h2>Education</h2>
+
+        <div class="education-item">
+          <div class="item-header">
+            <div>
+              <h3>Bachelor of Science in Computer Science</h3>
+              <p class="company">University Name</p>
+            </div>
+            <p class="date">2014 - 2018</p>
+          </div>
+          <p>Graduated with Honors • GPA: 3.8/4.0</p>
+        </div>
+      </section>
+
+      <!-- TODO: Replace with your actual skills -->
+      <section class="resume-section">
+        <h2>Skills</h2>
+
+        <div class="skills-grid">
+          <div class="skill-category">
+            <h4>Languages</h4>
+            <p>JavaScript, TypeScript, Python, Go, Java</p>
+          </div>
+
+          <div class="skill-category">
+            <h4>Frameworks & Libraries</h4>
+            <p>React, Node.js, Express, FastAPI, TensorFlow</p>
+          </div>
+
+          <div class="skill-category">
+            <h4>Databases</h4>
+            <p>PostgreSQL, MongoDB, Redis, Elasticsearch</p>
+          </div>
+
+          <div class="skill-category">
+            <h4>Cloud & DevOps</h4>
+            <p>AWS, Docker, Kubernetes, GitHub Actions, Terraform</p>
+          </div>
+
+          <div class="skill-category">
+            <h4>Tools & Practices</h4>
+            <p>Git, Agile/Scrum, CI/CD, Microservices, REST APIs</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .resume-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2xl);
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .resume-header h1 {
+    margin: 0;
+  }
+
+  .resume-section {
+    margin-bottom: var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .resume-section:last-child {
+    border-bottom: none;
+  }
+
+  .resume-section h2 {
+    margin-bottom: var(--space-lg);
+    color: var(--color-primary);
+  }
+
+  .experience-item,
+  .education-item {
+    margin-bottom: var(--space-xl);
+  }
+
+  .experience-item:last-child,
+  .education-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-md);
+    margin-bottom: var(--space-sm);
+  }
+
+  .item-header h3 {
+    margin: 0;
+    font-size: var(--text-xl);
+  }
+
+  .company {
+    color: var(--color-text-light);
+    font-weight: 500;
+    margin: 0.25rem 0 0 0;
+  }
+
+  .date {
+    color: var(--color-text-light);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    margin: 0;
+  }
+
+  .responsibilities {
+    margin: var(--space-sm) 0 0 var(--space-md);
+    color: var(--color-text);
+  }
+
+  .responsibilities li {
+    margin-bottom: var(--space-xs);
+    line-height: 1.6;
+  }
+
+  .skills-grid {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .skill-category {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+  }
+
+  .skill-category h4 {
+    margin: 0 0 var(--space-xs) 0;
+    color: var(--color-text);
+    font-size: var(--text-lg);
+  }
+
+  .skill-category p {
+    margin: 0;
+    color: var(--color-text-light);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .skills-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .item-header {
+      flex-direction: column;
+    }
+
+    .date {
+      align-self: flex-start;
+    }
+  }
+</style>

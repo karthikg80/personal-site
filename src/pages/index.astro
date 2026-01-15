@@ -1,16 +1,108 @@
 ---
-
+import Layout from '../layouts/Layout.astro';
+import Button from '../components/Button.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout
+  title="John Doe - Software Engineer"
+  description="Software engineer specializing in payments, architecture, and AI. Building scalable systems and elegant solutions."
+>
+  <div class="hero section">
+    <div class="container">
+      <!-- TODO: Replace with your actual name -->
+      <h1 class="hero-title">Hi, I'm John Doe</h1>
+      <!-- TODO: Replace with your actual headline -->
+      <p class="hero-subtitle">Software Engineer & Problem Solver</p>
+
+      <div class="highlights">
+        <!-- TODO: Replace with your actual highlights -->
+        <div class="highlight-item">
+          <h3>💳 Fintech Expert</h3>
+          <p>Building payment systems that process millions of transactions</p>
+        </div>
+        <div class="highlight-item">
+          <h3>🏗️ Architecture</h3>
+          <p>Designing scalable systems that grow with your business</p>
+        </div>
+        <div class="highlight-item">
+          <h3>🤖 AI & ML</h3>
+          <p>Leveraging machine learning to solve real-world problems</p>
+        </div>
+      </div>
+
+      <div class="cta-buttons">
+        <Button href="/projects" variant="primary">View Projects</Button>
+        <Button href="/resume.pdf" variant="secondary" target="_blank">Download Resume</Button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .hero {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: var(--text-5xl);
+    margin-bottom: var(--space-sm);
+    background: linear-gradient(135deg, var(--color-text), var(--color-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-subtitle {
+    font-size: var(--text-xl);
+    color: var(--color-text-light);
+    margin-bottom: var(--space-xl);
+  }
+
+  .highlights {
+    display: grid;
+    gap: var(--space-lg);
+    margin: var(--space-2xl) 0;
+    text-align: left;
+  }
+
+  .highlight-item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    transition: all var(--transition);
+  }
+
+  .highlight-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary);
+  }
+
+  .highlight-item h3 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-xs);
+  }
+
+  .highlight-item p {
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  @media (min-width: 768px) {
+    .highlights {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

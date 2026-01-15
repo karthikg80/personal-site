@@ -1,0 +1,114 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="About - John Doe"
+  description="Learn more about my background, experience, and focus areas in software engineering."
+>
+  <div class="section">
+    <div class="container content">
+      <h1>About Me</h1>
+
+      <!-- TODO: Replace with your actual bio -->
+      <div class="bio">
+        <p>
+          I'm a software engineer with a passion for building scalable, reliable systems that solve real-world problems.
+          With years of experience across fintech, distributed systems, and machine learning, I focus on creating elegant
+          solutions that balance technical excellence with business value.
+        </p>
+        <p>
+          I believe in writing clean, maintainable code and fostering collaborative engineering cultures. When I'm not
+          coding, you can find me exploring new technologies, contributing to open source, or sharing knowledge with the
+          developer community.
+        </p>
+      </div>
+
+      <div class="focus-areas">
+        <h2>Focus Areas</h2>
+        <ul class="focus-list">
+          <li>
+            <strong>Payment Systems & Fintech</strong>
+            <p>
+              Designing and building secure, high-throughput payment processing systems. Experience with PCI compliance,
+              fraud detection, and multi-currency transactions.
+            </p>
+          </li>
+          <li>
+            <strong>Software Architecture & Design</strong>
+            <p>
+              Creating scalable architectures using microservices, event-driven patterns, and cloud-native technologies.
+              Expertise in system design, API design, and distributed systems.
+            </p>
+          </li>
+          <li>
+            <strong>AI & Machine Learning</strong>
+            <p>
+              Applying machine learning to solve business problems, from recommendation systems to predictive analytics.
+              Experience with both classical ML and modern deep learning approaches.
+            </p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    margin-bottom: var(--space-lg);
+  }
+
+  .bio {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .bio p {
+    font-size: var(--text-lg);
+    line-height: 1.7;
+    color: var(--color-text);
+  }
+
+  .focus-areas h2 {
+    margin-bottom: var(--space-lg);
+  }
+
+  .focus-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .focus-list li {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    transition: all var(--transition);
+  }
+
+  .focus-list li:hover {
+    transform: translateX(4px);
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .focus-list strong {
+    display: block;
+    font-size: var(--text-xl);
+    color: var(--color-text);
+    margin-bottom: var(--space-xs);
+  }
+
+  .focus-list p {
+    color: var(--color-text-light);
+    margin: 0;
+    line-height: 1.6;
+  }
+</style>

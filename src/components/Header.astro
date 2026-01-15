@@ -1,0 +1,161 @@
+---
+const navLinks = [
+  { name: 'Home', href: '/' },
+  { name: 'About', href: '/about' },
+  { name: 'Projects', href: '/projects' },
+  { name: 'Resume', href: '/resume' },
+  { name: 'Contact', href: '/contact' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header>
+  <nav class="container nav-container">
+    <!-- TODO: Replace "JD" with your actual initials or name -->
+    <a href="/" class="logo">JD</a>
+
+    <input type="checkbox" id="menu-toggle" class="menu-toggle" />
+    <label for="menu-toggle" class="menu-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+
+    <ul class="nav-links">
+      {navLinks.map((link) => (
+        <li>
+          <a
+            href={link.href}
+            class:list={['nav-link', { active: currentPath === link.href }]}
+          >
+            {link.name}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</header>
+
+<style>
+  header {
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-sm) 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--color-text);
+    text-decoration: none;
+    transition: color var(--transition);
+  }
+
+  .logo:hover {
+    color: var(--color-primary);
+  }
+
+  /* Hide checkbox */
+  .menu-toggle {
+    display: none;
+  }
+
+  /* Mobile hamburger icon */
+  .menu-icon {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 4px;
+  }
+
+  .menu-icon span {
+    width: 25px;
+    height: 3px;
+    background-color: var(--color-text);
+    transition: all 0.3s ease;
+    border-radius: 2px;
+  }
+
+  /* Navigation links */
+  .nav-links {
+    display: flex;
+    list-style: none;
+    gap: var(--space-md);
+    margin: 0;
+  }
+
+  .nav-link {
+    color: var(--color-text);
+    font-weight: 500;
+    transition: color var(--transition);
+    padding: 0.5rem 0;
+  }
+
+  .nav-link:hover {
+    color: var(--color-primary);
+  }
+
+  .nav-link.active {
+    color: var(--color-primary);
+    border-bottom: 2px solid var(--color-primary);
+  }
+
+  /* Mobile styles */
+  @media (max-width: 767px) {
+    .menu-icon {
+      display: flex;
+    }
+
+    .nav-links {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: var(--color-surface);
+      flex-direction: column;
+      gap: 0;
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid var(--color-border);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .nav-links li {
+      padding: 0 var(--space-md);
+    }
+
+    .nav-link {
+      display: block;
+      padding: var(--space-sm) 0;
+    }
+
+    /* Show menu when checkbox is checked */
+    .menu-toggle:checked ~ .nav-links {
+      max-height: 500px;
+    }
+
+    /* Animate hamburger to X */
+    .menu-toggle:checked ~ .menu-icon span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .menu-toggle:checked ~ .menu-icon span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .menu-toggle:checked ~ .menu-icon span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -7px);
+    }
+  }
+</style>
