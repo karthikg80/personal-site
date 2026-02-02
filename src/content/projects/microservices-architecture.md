@@ -3,7 +3,6 @@ title: "Microservices Architecture Migration"
 description: "Led the migration of a monolithic application to a modern microservices architecture, improving scalability and deployment velocity."
 date: 2024-09-20
 tags: ["Architecture", "Microservices", "Docker", "Kubernetes", "AWS"]
-github: "https://github.com/yourusername/microservices-migration"
 featured: true
 ---
 

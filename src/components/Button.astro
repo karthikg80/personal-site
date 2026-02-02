@@ -3,12 +3,16 @@ interface Props {
   href: string;
   variant?: 'primary' | 'secondary';
   target?: string;
+  rel?: string;
 }
 
-const { href, variant = 'primary', target } = Astro.props;
+const { href, variant = 'primary', target, rel } = Astro.props;
+const computedRel = target === '_blank'
+  ? Array.from(new Set(`${rel ?? ''} noopener noreferrer`.trim().split(/\s+/))).join(' ')
+  : rel;
 ---
 
-<a href={href} class={`button button-${variant}`} target={target}>
+<a href={href} class={`button button-${variant}`} target={target} rel={computedRel}>
   <slot />
 </a>
 

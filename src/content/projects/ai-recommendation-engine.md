@@ -3,7 +3,6 @@ title: "AI-Powered Recommendation Engine"
 description: "Developed an intelligent recommendation system using machine learning to personalize user experiences and increase engagement by 40%."
 date: 2025-01-10
 tags: ["AI", "Machine Learning", "Python", "TensorFlow", "Spark"]
-link: "https://example.com/ai-recommendations"
 featured: false
 ---
 

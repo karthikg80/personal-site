@@ -3,8 +3,6 @@ title: "Payment Processing Platform"
 description: "A scalable payment processing system handling millions of transactions with real-time fraud detection and multi-currency support."
 date: 2024-11-15
 tags: ["Payments", "Fintech", "Node.js", "PostgreSQL", "Redis"]
-link: "https://example.com/payment-platform"
-github: "https://github.com/yourusername/payment-platform"
 featured: true
 ---
 

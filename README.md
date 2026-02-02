@@ -1,43 +1,80 @@
-# Astro Starter Kit: Minimal
+# Personal Site
+
+A portfolio website built with [Astro](https://astro.build) for showcasing projects, experience, and contact information.
+
+## Tech Stack
+
+- Astro 5
+- TypeScript (strict Astro config)
+- Markdown content collections for projects
+
+## Local Development
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+The dev server runs at `http://localhost:4321` by default.
 
-## 🚀 Project Structure
+## Build and Preview
 
-Inside of your Astro project, you'll see the following folders and files:
+```sh
+npm run build
+npm run preview
+```
+
+Production files are generated in `dist/`.
+
+## Project Structure
 
 ```text
-/
-├── public/
+.
+├── public/                  # Static assets (resume PDF, favicon, etc.)
 ├── src/
-│   └── pages/
-│       └── index.astro
+│   ├── components/          # Reusable Astro components
+│   ├── content/
+│   │   ├── config.ts        # Content collection schema
+│   │   └── projects/        # Project markdown entries
+│   ├── layouts/             # Page layouts and global metadata
+│   ├── pages/               # Route-based pages
+│   └── styles/              # Global CSS
+├── astro.config.mjs
 └── package.json
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Content Updates
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+### Add or edit a project
 
-Any static assets, like images, can be placed in the `public/` directory.
+1. Create or update a markdown file in `src/content/projects/`.
+2. Include frontmatter matching `src/content/config.ts`:
+   - `title` (string)
+   - `description` (string)
+   - `date` (date)
+   - `tags` (string[])
+   - `link` (optional URL)
+   - `github` (optional URL)
+   - `featured` (optional boolean)
 
-## 🧞 Commands
+### Update profile content
 
-All commands are run from the root of the project, from a terminal:
+- Homepage hero: `src/pages/index.astro`
+- About page: `src/pages/about.astro`
+- Resume page: `src/pages/resume.astro`
+- Contact links: `src/pages/contact.astro` and `src/components/Footer.astro`
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## SEO and Canonical URL
 
-## 👀 Want to learn more?
+- Canonical and social URLs are generated from Astro's `site` config.
+- Current value is in `astro.config.mjs`.
+- Update `site` when switching domains.
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Deployment Notes
+
+This is a static Astro site and can be deployed to any static host (GitHub Pages, Netlify, Vercel, Cloudflare Pages, etc.).
+
+A typical workflow is:
+
+1. `npm run build`
+2. Upload/deploy `dist/`
