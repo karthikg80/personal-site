@@ -78,9 +78,4 @@ Production files are generated in `dist/`.
 
 ## Deployment Notes
 
-This is a static Astro site and can be deployed to any static host (GitHub Pages, Netlify, Vercel, Cloudflare Pages, etc.).
-
-A typical workflow is:
-
-1. `npm run build`
-2. Upload/deploy `dist/`
+Production is the Vercel project `karthikg80s-projects/personal-site`, deploying from `main`. The `karthikg.in` zone stays on DigitalOcean DNS; only the apex `A` record points at Vercel (`76.76.21.21`). Do not move nameservers.
