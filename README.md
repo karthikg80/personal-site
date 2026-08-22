@@ -64,6 +64,12 @@ Production files are generated in `dist/`.
 - Resume page: `src/pages/resume.astro`
 - Contact links: `src/pages/contact.astro` and `src/components/Footer.astro`
 
+### Identity and AT Protocol
+
+- Homepage uses an `h-card`. Footer and `<head>` use `rel="me"` for GitHub, Bluesky, LinkedIn, and Thea Foundry.
+- Project RSS is at `/rss.xml`.
+- `public/.well-known/atproto-did` publishes `did:plc:k25m3ebqwdr32ojecqpjfzbh` (from `karthikg80.bsky.social`). To use `@karthikg.in` as the handle, change the handle in Bluesky after this file is live.
+
 ## SEO and Canonical URL
 
 - Canonical and social URLs are generated from Astro's `site` config.

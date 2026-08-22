@@ -17,15 +17,15 @@ const formattedDate = date.toLocaleDateString('en-US', {
 });
 ---
 
-<article class="project-card">
+<article class="project-card h-entry">
   {featured && <span class="featured-badge">Featured</span>}
 
   <div class="card-header">
-    <h3>{title}</h3>
-    <time class="date">{formattedDate}</time>
+    <h3 class="p-name">{title}</h3>
+    <time class="date dt-published" datetime={date.toISOString()}>{formattedDate}</time>
   </div>
 
-  <p class="description">{description}</p>
+  <p class="description p-summary">{description}</p>
 
   <div class="tags">
     {tags.map((tag) => (
@@ -36,7 +36,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
   {(link || github) && (
     <div class="links">
       {link && (
-        <a href={link} target="_blank" rel="noopener noreferrer" class="project-link">
+        <a href={link} target="_blank" rel="noopener noreferrer" class="project-link u-url">
           View Project →
         </a>
       )}

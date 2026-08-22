@@ -3,10 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import { getCollection } from 'astro:content';
 
-// Fetch all projects from the content collection
 const allProjects = await getCollection('projects');
 
-// Sort projects by date (newest first)
 const projects = allProjects.sort((a, b) =>
   b.data.date.getTime() - a.data.date.getTime()
 );
@@ -14,14 +12,15 @@ const projects = allProjects.sort((a, b) =>
 
 <Layout
   title="Projects - Karthik Gurumoorthy"
-  description="Explore my portfolio of software projects including payment systems, architecture work, and AI applications."
+  description="Selected work from Thea Foundry: Neighborbook, Homebase, Thea Kitchen, Pantry Mojo, and Sai Parayan Tracker."
 >
   <div class="section">
     <div class="container">
       <div class="projects-header">
         <h1>Projects</h1>
         <p class="subtitle">
-          A selection of projects I've worked on, spanning fintech, distributed systems, and machine learning.
+          A few things I have shipped since 2026. The rest of the studio catalog
+          lives at <a href="https://theafoundry.com">theafoundry.com</a>.
         </p>
       </div>
 
@@ -58,6 +57,11 @@ const projects = allProjects.sort((a, b) =>
     max-width: 600px;
     margin: 0 auto;
     line-height: 1.6;
+  }
+
+  .subtitle a {
+    color: var(--color-primary);
+    font-weight: 500;
   }
 
   .projects-grid {

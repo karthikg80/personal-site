@@ -1,35 +1,46 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Button from '../components/Button.astro';
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://karthikg.in';
 ---
 
 <Layout
-  title="Karthik Gurumoorthy - Enterprise Architect"
-  description="Enterprise architect focused on high-scale transaction systems, data platforms, and modernization for financial services."
+  title="Karthik Gurumoorthy"
+  description="I build useful software for families and everyday life. Founder of Thea Foundry, after 18 years on high-scale payments systems."
 >
-  <div class="hero section">
+  <div class="hero section h-card">
     <div class="container">
-      <h1 class="hero-title">Hi, I'm Karthik Gurumoorthy</h1>
-      <p class="hero-subtitle">Enterprise Architect for High-Scale Financial Platforms</p>
+      <h1 class="hero-title">
+        Hi, I'm <span class="p-name">Karthik Gurumoorthy</span>
+      </h1>
+      <p class="hero-subtitle p-note">
+        I build useful software for families and everyday life, after 18 years on high-scale payments systems.
+      </p>
+      <p class="identity-links">
+        <a class="u-url u-uid" href={siteUrl}>karthikg.in</a>
+        <a class="p-org" href="https://theafoundry.com" rel="me">Thea Foundry</a>
+        <a class="u-email" href="mailto:karthi@hey.com">karthi@hey.com</a>
+      </p>
 
       <div class="highlights">
         <div class="highlight-item">
-          <h3>🏦 18+ Years in Financial Systems</h3>
-          <p>Architecting mission-critical platforms across payments, fraud/risk, and compliance</p>
+          <h3>Thea Foundry</h3>
+          <p>A small studio making calm, privacy-conscious apps for households, families, and everyday routines.</p>
         </div>
         <div class="highlight-item">
-          <h3>⚡ 1B+ Transactions/Month</h3>
-          <p>Designing resilient, observable systems with strict latency and availability requirements</p>
+          <h3>Homebase</h3>
+          <p>The private front door and shared layer for the smaller apps in the collection — circle-aware, approval first.</p>
         </div>
         <div class="highlight-item">
-          <h3>🔄 Modernization + AI</h3>
-          <p>Leading legacy-to-modern migrations and integrating ML/LLM capabilities into enterprise workflows</p>
+          <h3>Payments craft</h3>
+          <p>Background in mission-critical transaction platforms, fraud and risk, and operationally resilient systems.</p>
         </div>
       </div>
 
       <div class="cta-buttons">
         <Button href="/projects" variant="primary">View Projects</Button>
-        <Button href="/resume.pdf" variant="secondary" target="_blank">Download Resume</Button>
+        <Button href="https://theafoundry.com" variant="secondary">Visit Thea Foundry</Button>
       </div>
     </div>
   </div>
@@ -56,7 +67,25 @@ import Button from '../components/Button.astro';
   .hero-subtitle {
     font-size: var(--text-xl);
     color: var(--color-text-light);
+    margin-bottom: var(--space-sm);
+  }
+
+  .identity-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-sm) var(--space-md);
     margin-bottom: var(--space-xl);
+    font-size: var(--text-sm);
+  }
+
+  .identity-links a {
+    color: var(--color-text-light);
+    font-weight: 500;
+  }
+
+  .identity-links a:hover {
+    color: var(--color-primary);
   }
 
   .highlights {

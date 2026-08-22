@@ -4,14 +4,21 @@ const currentYear = new Date().getFullYear();
 
 <footer>
   <div class="container footer-content">
-    <p class="copyright">&copy; {currentYear} Karthik Gurumoorthy. All rights reserved.</p>
+    <p class="copyright">&copy; {currentYear} Karthik Gurumoorthy</p>
     <div class="social-links">
-      <a href="https://github.com/karthikgurumoorthy" target="_blank" rel="noopener noreferrer">
+      <a href="https://github.com/karthikg80" rel="me noopener noreferrer" target="_blank">
         GitHub
       </a>
-      <a href="https://www.linkedin.com/in/karthikg80/" target="_blank" rel="noopener noreferrer">
+      <a href="https://bsky.app/profile/karthikg80.bsky.social" rel="me noopener noreferrer" target="_blank">
+        Bluesky
+      </a>
+      <a href="https://www.linkedin.com/in/karthikg80/" rel="me noopener noreferrer" target="_blank">
         LinkedIn
       </a>
+      <a href="https://theafoundry.com" rel="me noopener noreferrer" target="_blank">
+        Thea Foundry
+      </a>
+      <a href="/rss.xml">RSS</a>
     </div>
   </div>
 </footer>
@@ -40,6 +47,8 @@ const currentYear = new Date().getFullYear();
 
   .social-links {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: var(--space-md);
   }
 
