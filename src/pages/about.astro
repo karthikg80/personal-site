@@ -96,7 +96,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .focus-list li {
-    background: var(--color-surface);
+    background: transparent;
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     padding: var(--space-lg);
@@ -105,8 +105,8 @@ import Layout from '../layouts/Layout.astro';
 
   .focus-list li:hover {
     transform: translateX(4px);
-    border-color: var(--color-primary);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-text);
+    box-shadow: 4px 4px 0 var(--color-highlight);
   }
 
   .focus-list strong {

@@ -1,6 +1,10 @@
 # Personal Site
 
-A portfolio website built with [Astro](https://astro.build) for showcasing projects, experience, and contact information.
+A personal IndieWeb-style website built with [Astro](https://astro.build) for projects, notes, identity, and links around the web.
+
+## Design
+
+The site uses a warm, text-first visual language inspired by personal notebooks: a paper palette, system serif type, hand-drawn details, simple lists, and no external font or image dependencies. Shared design tokens and page typography live in `src/styles/global.css`; the header, footer, and homepage contain the more expressive site-specific details.
 
 ## Tech Stack
 

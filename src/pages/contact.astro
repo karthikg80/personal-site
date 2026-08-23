@@ -54,7 +54,6 @@ import Layout from '../layouts/Layout.astro';
   .content {
     max-width: 800px;
     margin: 0 auto;
-    text-align: center;
   }
 
   h1 {
@@ -75,26 +74,26 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .contact-card {
-    background: var(--color-surface);
-    border: 2px solid var(--color-border);
+    background: transparent;
+    border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     padding: var(--space-xl);
     transition: all var(--transition);
     text-decoration: none;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-sm);
   }
 
   .contact-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--color-primary);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transform: rotate(-0.5deg) translateY(-2px);
+    border-color: var(--color-text);
+    box-shadow: 4px 4px 0 var(--color-highlight);
   }
 
   .icon {
-    font-size: 3rem;
+    font-size: 2rem;
     margin-bottom: var(--space-sm);
   }
 

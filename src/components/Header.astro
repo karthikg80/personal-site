@@ -1,161 +1,143 @@
 ---
 const navLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'About', href: '/about' },
-  { name: 'Now', href: '/now' },
-  { name: 'Projects', href: '/projects' },
-  { name: 'Resume', href: '/resume' },
-  { name: 'Contact', href: '/contact' },
+  { name: 'home', href: '/' },
+  { name: 'about', href: '/about' },
+  { name: 'now', href: '/now' },
+  { name: 'projects', href: '/projects' },
+  { name: 'wander', href: '/wander' },
+  { name: 'say hello', href: '/contact' },
 ];
 
 const currentPath = Astro.url.pathname;
 ---
 
-<header>
-  <nav class="container nav-container">
-    <a href="/" class="logo">KG</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="site-title" aria-label="Karthik Gurumoorthy, home">
+      <span class="site-mark" aria-hidden="true">kg</span>
+      <span>
+        <strong>Karthik’s little corner</strong>
+        <small>projects, notes &amp; useful things</small>
+      </span>
+    </a>
 
-    <input type="checkbox" id="menu-toggle" class="menu-toggle" />
-    <label for="menu-toggle" class="menu-icon">
-      <span></span>
-      <span></span>
-      <span></span>
-    </label>
-
-    <ul class="nav-links">
-      {navLinks.map((link) => (
-        <li>
-          <a
-            href={link.href}
-            class:list={['nav-link', { active: link.href === '/' ? currentPath === '/' : currentPath.startsWith(link.href) }]}
-          >
-            {link.name}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </nav>
+    <nav aria-label="Primary navigation">
+      <ul class="nav-links">
+        {navLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              aria-current={(link.href === '/' ? currentPath === '/' : currentPath.startsWith(link.href)) ? 'page' : undefined}
+            >
+              {link.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
 </header>
 
 <style>
-  header {
-    background-color: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
-    padding: var(--space-sm) 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+  .site-header { padding: 1.45rem 0 0; }
 
-  .nav-container {
+  .header-inner {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 1.2rem;
   }
 
-  .logo {
-    font-size: var(--text-xl);
-    font-weight: 700;
+  .site-title {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 0.8rem;
     color: var(--color-text);
     text-decoration: none;
-    transition: color var(--transition);
   }
 
-  .logo:hover {
-    color: var(--color-primary);
+  .site-title:hover { color: var(--color-primary); }
+
+  .site-title strong {
+    display: block;
+    font-size: 1.12rem;
+    font-weight: 500;
+    line-height: 1.1;
   }
 
-  /* Hide checkbox */
-  .menu-toggle {
-    display: none;
+  .site-title small {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--color-text-light);
+    font-family: var(--font-sans);
+    font-size: 0.69rem;
+    letter-spacing: 0.02em;
   }
 
-  /* Mobile hamburger icon */
-  .menu-icon {
-    display: none;
-    flex-direction: column;
-    cursor: pointer;
-    gap: 4px;
+  .site-mark {
+    display: grid;
+    place-items: center;
+    width: 2.7rem;
+    height: 2.7rem;
+    border: 1.5px solid var(--color-text);
+    border-radius: 47% 53% 49% 51%;
+    background: var(--color-highlight);
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-style: italic;
+    transform: rotate(-4deg);
+    box-shadow: 2px 2px 0 var(--color-bg), 3px 3px 0 var(--color-text);
   }
 
-  .menu-icon span {
-    width: 25px;
-    height: 3px;
-    background-color: var(--color-text);
-    transition: all 0.3s ease;
-    border-radius: 2px;
-  }
-
-  /* Navigation links */
   .nav-links {
     display: flex;
+    flex-wrap: wrap;
     list-style: none;
-    gap: var(--space-md);
+    gap: 0.45rem 1.2rem;
     margin: 0;
+    padding: 0.75rem 0;
+    border-block: 1px solid var(--color-border);
   }
 
-  .nav-link {
-    color: var(--color-text);
-    font-weight: 500;
-    transition: color var(--transition);
-    padding: 0.5rem 0;
+  .nav-links a {
+    color: var(--color-text-light);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-decoration: none;
   }
 
-  .nav-link:hover {
-    color: var(--color-primary);
+  .nav-links a::before {
+    content: '↗';
+    display: inline-block;
+    margin-right: 0.28rem;
+    color: var(--color-border);
+    font-size: 0.78em;
+    transform: rotate(45deg);
   }
 
-  .nav-link.active {
-    color: var(--color-primary);
-    border-bottom: 2px solid var(--color-primary);
+  .nav-links a:hover,
+  .nav-links a[aria-current='page'] { color: var(--color-primary); }
+
+  .nav-links a[aria-current='page'] {
+    text-decoration: underline wavy var(--color-highlight) 2px;
+    text-underline-offset: 0.3rem;
   }
 
-  /* Mobile styles */
-  @media (max-width: 767px) {
-    .menu-icon {
-      display: flex;
+  @media (min-width: 760px) {
+    .site-header { padding-top: 2rem; }
+
+    .header-inner {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .nav-links {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background-color: var(--color-surface);
-      flex-direction: column;
-      gap: 0;
-      padding: var(--space-sm) 0;
-      border-bottom: 1px solid var(--color-border);
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-
-    .nav-links li {
-      padding: 0 var(--space-md);
-    }
-
-    .nav-link {
-      display: block;
-      padding: var(--space-sm) 0;
-    }
-
-    /* Show menu when checkbox is checked */
-    .menu-toggle:checked ~ .nav-links {
-      max-height: 28rem;
-    }
-
-    /* Animate hamburger to X */
-    .menu-toggle:checked ~ .menu-icon span:nth-child(1) {
-      transform: rotate(45deg) translate(5px, 5px);
-    }
-
-    .menu-toggle:checked ~ .menu-icon span:nth-child(2) {
-      opacity: 0;
-    }
-
-    .menu-toggle:checked ~ .menu-icon span:nth-child(3) {
-      transform: rotate(-45deg) translate(7px, -7px);
+      justify-content: flex-end;
+      border-block: 0;
+      padding: 0;
+      max-width: 31rem;
     }
   }
 </style>
