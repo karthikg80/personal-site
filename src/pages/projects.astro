@@ -43,7 +43,7 @@ const projects = allProjects.sort((a, b) =>
 
 <style>
   .projects-header {
-    text-align: center;
+    max-width: var(--reading-width);
     margin-bottom: var(--space-2xl);
   }
 
@@ -55,7 +55,7 @@ const projects = allProjects.sort((a, b) =>
     font-size: var(--text-lg);
     color: var(--color-text-light);
     max-width: 600px;
-    margin: 0 auto;
+    margin: 0;
     line-height: 1.6;
   }
 
@@ -66,7 +66,7 @@ const projects = allProjects.sort((a, b) =>
 
   .projects-grid {
     display: grid;
-    gap: var(--space-lg);
+    gap: 0 var(--space-xl);
   }
 
   @media (min-width: 768px) {
@@ -75,9 +75,4 @@ const projects = allProjects.sort((a, b) =>
     }
   }
 
-  @media (min-width: 1024px) {
-    .projects-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
 </style>

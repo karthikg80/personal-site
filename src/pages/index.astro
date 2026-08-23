@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Button from '../components/Button.astro';
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://karthikg.in';
 ---
@@ -9,126 +8,299 @@ const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://karthikg.i
   title="Karthik Gurumoorthy"
   description="I build useful software for families and everyday life. Founder of Thea Foundry, after 18 years on high-scale payments systems."
 >
-  <div class="hero section h-card">
-    <div class="container">
-      <h1 class="hero-title">
-        Hi, I'm <span class="p-name">Karthik Gurumoorthy</span>
-      </h1>
-      <p class="hero-subtitle p-note">
-        I build useful software for families and everyday life, after 18 years on high-scale payments systems.
-      </p>
-      <p class="identity-links">
-        <a class="u-url u-uid" href={siteUrl}>karthikg.in</a>
-        <a class="p-org" href="https://theafoundry.com" rel="me">Thea Foundry</a>
-        <a class="u-email" href="mailto:karthi@hey.com">karthi@hey.com</a>
-      </p>
-
-      <div class="highlights">
-        <div class="highlight-item">
-          <h3>Thea Foundry</h3>
-          <p>A small studio making calm, privacy-conscious apps for households, families, and everyday routines.</p>
-        </div>
-        <div class="highlight-item">
-          <h3>Homebase</h3>
-          <p>The private front door and shared layer for the smaller apps in the collection — circle-aware, approval first.</p>
-        </div>
-        <div class="highlight-item">
-          <h3>Payments craft</h3>
-          <p>Background in mission-critical transaction platforms, fraud and risk, and operationally resilient systems.</p>
-        </div>
+  <div class="home h-card">
+    <section class="intro container">
+      <div class="intro-copy">
+        <p class="kicker">Oh, hello there.</p>
+        <h1>
+          I’m <span class="p-name">Karthik</span>. I make small, useful software.
+        </h1>
+        <p class="lede p-note">
+          Mostly for families and everyday life. Before this, I spent 18 years
+          working on high-scale payment systems. Now I run
+          <a class="p-org" href="https://theafoundry.com" rel="me">Thea Foundry</a>,
+          a tiny software studio with a fondness for calm tools and clear boundaries.
+        </p>
+        <p class="identity-links">
+          <a class="u-url u-uid" href={siteUrl}>karthikg.in</a>
+          <span aria-hidden="true">·</span>
+          <a class="u-email" href="mailto:karthi@hey.com">email me</a>
+          <span aria-hidden="true">·</span>
+          <a href="/now">what I’m doing now</a>
+        </p>
       </div>
 
-      <div class="cta-buttons">
-        <Button href="/projects" variant="primary">View Projects</Button>
-        <Button href="https://theafoundry.com" variant="secondary">Visit Thea Foundry</Button>
+      <div class="doodle-wrap" aria-hidden="true">
+        <svg class="doodle" viewBox="0 0 240 210">
+          <path class="sun" d="M173 31c0 13-10 23-23 23s-23-10-23-23 10-22 23-22 23 9 23 22Z" />
+          <path d="M149 1v-9M149 69v10M116 31h-10M192 31h-10M126 8l-7-7M180 62l-7-7M172 8l7-7M126 55l-7 7" />
+          <path class="hill" d="M8 165c36-39 80-48 116-25 31 20 62 21 108-1" />
+          <path d="m69 133 35-34 37 34v45H69v-45Z" />
+          <path d="M62 138 104 96l43 42M87 178v-34h21v34M120 128h12v15h-12z" />
+          <path class="green" d="M178 164v-42M178 128c-16-3-19-16-16-26 13 1 21 12 16 26ZM180 143c13-13 25-9 31-3-7 12-20 15-31 3Z" />
+          <path class="path" d="M97 179c10 8 13 16 6 30" />
+          <path class="red" d="M35 177c9-4 18-4 27 0M44 184c6-3 12-3 18 0" />
+        </svg>
+        <p>keep making little things</p>
       </div>
-    </div>
+    </section>
+
+    <section class="workbench container" aria-labelledby="workbench-title">
+      <div class="section-heading">
+        <p class="margin-note">on the workbench</p>
+        <h2 id="workbench-title">A few things I care about</h2>
+      </div>
+
+      <ol class="note-list">
+        <li>
+          <span class="note-number">01</span>
+          <div>
+            <h3><a href="https://theafoundry.com">Thea Foundry</a></h3>
+            <p>A small studio making private, thoughtful apps for households, families, and ordinary routines.</p>
+          </div>
+        </li>
+        <li>
+          <span class="note-number">02</span>
+          <div>
+            <h3><a href="/projects">Things I’ve made</a></h3>
+            <p>From a neighborhood memory book to reading-group coordination and a calmer place for family apps.</p>
+          </div>
+        </li>
+        <li>
+          <span class="note-number">03</span>
+          <div>
+            <h3><a href="/wander">Wandering the web</a></h3>
+            <p>A big, slightly unruly list of personal sites and feeds that I follow in my reader.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="paths container" aria-labelledby="paths-title">
+      <div>
+        <p class="margin-note">pick a path</p>
+        <h2 id="paths-title">You might want to…</h2>
+      </div>
+      <ul>
+        <li><a href="/about">read the longer introduction <span>→</span></a></li>
+        <li><a href="/now">see what is happening lately <span>→</span></a></li>
+        <li><a href="/projects">browse the project shelf <span>→</span></a></li>
+        <li><a href="/contact">send a kind hello <span>→</span></a></li>
+      </ul>
+    </section>
   </div>
 </Layout>
 
 <style>
-  .hero {
-    min-height: 60vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+  .home { overflow: hidden; }
+
+  .intro {
+    display: grid;
+    gap: var(--space-lg);
+    padding-top: clamp(3.5rem, 9vw, 6.5rem);
+    padding-bottom: var(--space-2xl);
   }
 
-  .hero-title {
-    font-size: var(--text-5xl);
-    margin-bottom: var(--space-sm);
-    background: linear-gradient(135deg, var(--color-text), var(--color-primary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .kicker,
+  .margin-note {
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
   }
 
-  .hero-subtitle {
-    font-size: var(--text-xl);
-    color: var(--color-text-light);
-    margin-bottom: var(--space-sm);
+  .kicker {
+    display: inline-block;
+    margin-bottom: 0.6rem;
+    transform: rotate(-2deg);
+  }
+
+  h1 {
+    max-width: 12ch;
+    margin-bottom: 1.5rem;
+    font-size: var(--text-4xl);
+    font-weight: 400;
+    line-height: 0.98;
+  }
+
+  h1 span {
+    position: relative;
+    font-style: italic;
+  }
+
+  h1 span::after {
+    content: '';
+    position: absolute;
+    left: -0.08em;
+    right: -0.12em;
+    bottom: 0.06em;
+    height: 0.16em;
+    background: var(--color-highlight);
+    opacity: 0.75;
+    transform: rotate(-1deg);
+    z-index: -1;
+  }
+
+  .lede {
+    max-width: 39rem;
+    font-size: clamp(1.16rem, 2.4vw, 1.38rem);
+    line-height: 1.58;
   }
 
   .identity-links {
     display: flex;
-    justify-content: center;
     flex-wrap: wrap;
-    gap: var(--space-sm) var(--space-md);
-    margin-bottom: var(--space-xl);
+    gap: 0.2rem 0.65rem;
+    margin-top: 1.4rem;
+    font-family: var(--font-sans);
     font-size: var(--text-sm);
   }
 
-  .identity-links a {
-    color: var(--color-text-light);
-    font-weight: 500;
-  }
+  .identity-links span { color: var(--color-border); }
 
-  .identity-links a:hover {
-    color: var(--color-primary);
-  }
-
-  .highlights {
-    display: grid;
-    gap: var(--space-lg);
-    margin: var(--space-2xl) 0;
-    text-align: left;
-  }
-
-  .highlight-item {
+  .doodle-wrap {
+    justify-self: center;
+    align-self: center;
+    width: min(100%, 18rem);
+    padding: 0.8rem 1rem 1rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    padding: var(--space-lg);
-    transition: all var(--transition);
+    box-shadow: 5px 6px 0 rgb(41 40 32 / 8%);
+    transform: rotate(2.4deg);
   }
 
-  .highlight-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: var(--color-primary);
+  .doodle-wrap p {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-light);
+    font-size: 0.92rem;
+    font-style: italic;
+    text-align: center;
   }
 
-  .highlight-item h3 {
-    font-size: var(--text-xl);
-    margin-bottom: var(--space-xs);
+  .doodle {
+    display: block;
+    width: 100%;
+    fill: none;
+    stroke: var(--color-text);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.2;
   }
 
-  .highlight-item p {
+  .doodle .sun { fill: var(--color-highlight); }
+  .doodle .hill { stroke: var(--color-green); }
+
+  .doodle .green {
+    fill: #b7c7a4;
+    stroke: var(--color-green);
+  }
+
+  .doodle .path {
+    stroke: var(--color-border);
+    stroke-width: 4;
+  }
+
+  .doodle .red { stroke: var(--color-primary); }
+
+  .workbench {
+    display: grid;
+    gap: var(--space-lg);
+    padding-block: var(--space-xl);
+    border-block: 1px solid var(--color-border);
+  }
+
+  .section-heading h2,
+  .paths h2 {
+    max-width: 12ch;
+    font-size: clamp(2rem, 5vw, 3.1rem);
+  }
+
+  .margin-note { margin-bottom: 0.4rem; }
+
+  .note-list {
+    list-style: none;
+    margin: 0;
+  }
+
+  .note-list li {
+    display: grid;
+    grid-template-columns: 2.3rem 1fr;
+    gap: 0.75rem;
+    padding: 1.2rem 0;
+    border-bottom: 1px dashed var(--color-border);
+  }
+
+  .note-list li:first-child { padding-top: 0; }
+
+  .note-list li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .note-number {
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding-top: 0.35rem;
+  }
+
+  .note-list h3 {
+    margin: 0 0 0.35rem;
+    font-size: 1.45rem;
+  }
+
+  .note-list p {
     color: var(--color-text-light);
     margin: 0;
   }
 
-  .cta-buttons {
-    display: flex;
-    gap: var(--space-md);
-    justify-content: center;
-    flex-wrap: wrap;
+  .paths {
+    display: grid;
+    gap: var(--space-lg);
+    padding-block: var(--space-2xl);
   }
 
-  @media (min-width: 768px) {
-    .highlights {
-      grid-template-columns: repeat(3, 1fr);
+  .paths ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .paths li { border-bottom: 1px solid var(--color-border-soft); }
+
+  .paths a {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .paths a:hover { color: var(--color-primary); }
+  .paths a span { transition: transform var(--transition); }
+  .paths a:hover span { transform: translateX(0.25rem); }
+
+  @media (min-width: 760px) {
+    .intro {
+      grid-template-columns: minmax(0, 1.7fr) minmax(14rem, 0.8fr);
+      align-items: center;
+    }
+
+    .workbench,
+    .paths {
+      grid-template-columns: minmax(13rem, 0.75fr) minmax(0, 1.25fr);
+      gap: clamp(3rem, 8vw, 7rem);
+    }
+  }
+
+  @media (max-width: 759px) {
+    .doodle-wrap {
+      justify-self: start;
+      width: 14rem;
+      margin-left: 1.5rem;
     }
   }
 </style>

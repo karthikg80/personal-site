@@ -3,72 +3,64 @@ const currentYear = new Date().getFullYear();
 ---
 
 <footer>
-  <div class="container footer-content">
-    <p class="copyright">&copy; {currentYear} Karthik Gurumoorthy</p>
-    <div class="social-links">
-      <a href="/now">Now</a>
-      <a href="/wander">Wander</a>
-      <a href="/colophon">Colophon</a>
-      <a href="https://github.com/karthikg80" rel="me noopener noreferrer" target="_blank">
-        GitHub
-      </a>
-      <a href="https://bsky.app/profile/karthikg.in" rel="me noopener noreferrer" target="_blank">
-        Bluesky
-      </a>
-      <a href="https://www.linkedin.com/in/karthikg80/" rel="me noopener noreferrer" target="_blank">
-        LinkedIn
-      </a>
-      <a href="https://theafoundry.com" rel="me noopener noreferrer" target="_blank">
-        Thea Foundry
-      </a>
-      <a href="/rss.xml">RSS</a>
-    </div>
+  <div class="container footer-inner">
+    <p class="signoff">
+      <span aria-hidden="true">☕</span>
+      Made with care, curiosity, and <a href="https://astro.build">Astro</a>.
+    </p>
+    <nav aria-label="Elsewhere">
+      <a href="/colophon">colophon</a>
+      <a href="/resume">résumé</a>
+      <a href="https://github.com/karthikg80" rel="me noopener noreferrer" target="_blank">github</a>
+      <a href="https://bsky.app/profile/karthikg.in" rel="me noopener noreferrer" target="_blank">bluesky</a>
+      <a href="/rss.xml">rss</a>
+    </nav>
+    <p class="copyright">© {currentYear} Karthik Gurumoorthy · <a href="#main-content">back to top ↑</a></p>
   </div>
 </footer>
 
 <style>
   footer {
-    background-color: var(--color-surface);
-    border-top: 1px solid var(--color-border);
-    padding: var(--space-lg) 0;
-    margin-top: var(--space-2xl);
+    padding: 0 0 var(--space-lg);
+    margin-top: var(--space-lg);
   }
 
-  .footer-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-sm);
+  .footer-inner {
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .footer-inner::before {
+    content: '⁂';
+    display: block;
+    margin: -2.9rem auto 1.2rem;
+    width: 3.5rem;
+    background: var(--color-bg);
+    color: var(--color-primary);
     text-align: center;
+    font-size: 1.25rem;
+  }
+
+  .signoff {
+    margin-bottom: 0.7rem;
+    font-style: italic;
+  }
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  nav a,
+  .copyright {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
   }
 
   .copyright {
     color: var(--color-text-light);
-    font-size: var(--text-sm);
     margin: 0;
-  }
-
-  .social-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-md);
-  }
-
-  .social-links a {
-    color: var(--color-text);
-    font-weight: 500;
-    transition: color var(--transition);
-  }
-
-  .social-links a:hover {
-    color: var(--color-primary);
-  }
-
-  @media (min-width: 768px) {
-    .footer-content {
-      flex-direction: row;
-      justify-content: space-between;
-    }
   }
 </style>

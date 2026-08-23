@@ -52,10 +52,11 @@ const formattedDate = date.toLocaleDateString('en-US', {
 <style>
   .project-card {
     position: relative;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    padding: var(--space-lg);
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--color-border);
+    border-radius: 0;
+    padding: var(--space-lg) 0;
     transition: all var(--transition);
     display: flex;
     flex-direction: column;
@@ -63,21 +64,24 @@ const formattedDate = date.toLocaleDateString('en-US', {
   }
 
   .project-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    border-color: var(--color-primary);
+    transform: translateX(3px);
+    box-shadow: none;
+    border-color: var(--color-text);
   }
 
   .featured-badge {
     position: absolute;
-    top: var(--space-sm);
-    right: var(--space-sm);
-    background-color: var(--color-primary);
-    color: white;
-    font-size: var(--text-sm);
-    font-weight: 600;
-    padding: 0.25rem 0.75rem;
-    border-radius: calc(var(--border-radius) / 2);
+    top: -0.72rem;
+    right: 0;
+    background-color: var(--color-highlight);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.16rem 0.55rem;
+    border: 1px solid var(--color-text);
+    border-radius: 50%;
+    transform: rotate(3deg);
   }
 
   .card-header {
@@ -89,14 +93,15 @@ const formattedDate = date.toLocaleDateString('en-US', {
 
   .card-header h3 {
     margin: 0;
-    font-size: var(--text-xl);
+    font-size: var(--text-2xl);
     color: var(--color-text);
     flex: 1;
   }
 
   .date {
     color: var(--color-text-light);
-    font-size: var(--text-sm);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
     white-space: nowrap;
   }
 
@@ -113,12 +118,14 @@ const formattedDate = date.toLocaleDateString('en-US', {
   }
 
   .tag {
-    background-color: var(--color-bg);
+    background-color: transparent;
     color: var(--color-text-light);
-    font-size: var(--text-sm);
-    padding: 0.25rem 0.75rem;
-    border-radius: calc(var(--border-radius) / 2);
-    border: 1px solid var(--color-border);
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 0;
+    border: 0;
+    border-bottom: 1px dotted var(--color-border);
   }
 
   .links {
@@ -130,7 +137,8 @@ const formattedDate = date.toLocaleDateString('en-US', {
 
   .project-link {
     color: var(--color-primary);
-    font-weight: 600;
+    font-family: var(--font-sans);
+    font-weight: 700;
     font-size: var(--text-sm);
     transition: color var(--transition);
   }
