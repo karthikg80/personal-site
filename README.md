@@ -10,7 +10,7 @@ The site uses a warm, text-first visual language inspired by personal notebooks:
 
 - Astro 5
 - TypeScript (strict Astro config)
-- Markdown content collections for projects
+- Markdown content collections for projects and Workbench Notes
 
 ## Local Development
 
@@ -34,11 +34,13 @@ Production files are generated in `dist/`.
 
 ```text
 .
+├── docs/                    # Editorial contract and note template
 ├── public/                  # Static assets (resume PDF, favicon, etc.)
 ├── src/
 │   ├── components/          # Reusable Astro components
 │   ├── content/
 │   │   ├── config.ts        # Content collection schema
+│   │   ├── notes/           # Draft and published Workbench Notes
 │   │   └── projects/        # Project markdown entries
 │   ├── layouts/             # Page layouts and global metadata
 │   ├── pages/               # Route-based pages
@@ -61,6 +63,22 @@ Production files are generated in `dist/`.
    - `github` (optional URL)
    - `featured` (optional boolean)
 
+### Draft or publish a Workbench Note
+
+1. Keep raw observations and sensitive source material outside this repository.
+2. Draft from `docs/workbench-note-template.md` in private storage. This checkout provides a Git-ignored `private-notes/` folder for non-sensitive local review.
+3. After editorial approval, copy the publishable draft into `src/content/notes/<slug>.md` with both publication controls still at their safe defaults:
+
+   ```yaml
+   draft: true
+   privacyReviewed: false
+   ```
+
+4. Follow `docs/editorial-and-privacy.md` for the factual, editorial, and privacy review.
+5. Publish only after explicit approval by setting both `draft: false` and `privacyReviewed: true`.
+
+The archive is at `/notes`, individual notes use `/notes/<slug>`, and the full-text feed is `/rss.xml`. Draft or unreviewed notes are excluded from routes, the homepage, RSS, and the sitemap.
+
 ### Update profile content
 
 - Homepage hero: `src/pages/index.astro`
@@ -74,7 +92,7 @@ Production files are generated in `dist/`.
 ### Identity and AT Protocol
 
 - Homepage uses an `h-card`. Footer and `<head>` use `rel="me"` for GitHub, Bluesky, LinkedIn, and Thea Foundry.
-- Project RSS is at `/rss.xml`.
+- Full-text Workbench Notes RSS is at `/rss.xml`.
 - `public/.well-known/atproto-did` publishes `did:plc:k25m3ebqwdr32ojecqpjfzbh`. The public handle is `@karthikg.in`.
 - Sitemap is `/sitemap.xml`. `public/robots.txt` points crawlers at it.
 

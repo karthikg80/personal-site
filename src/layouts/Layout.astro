@@ -6,9 +6,18 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  type?: 'website' | 'article';
+  publishedTime?: Date;
+  updatedTime?: Date;
 }
 
-const { title, description = 'Personal website of Karthik Gurumoorthy, founder of Thea Foundry.' } = Astro.props;
+const {
+  title,
+  description = 'Personal website of Karthik Gurumoorthy, founder of Thea Foundry.',
+  type = 'website',
+  publishedTime,
+  updatedTime,
+} = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
 const rssUrl = new URL('/rss.xml', Astro.site ?? Astro.url).toString();
 const sitemapUrl = new URL('/sitemap.xml', Astro.site ?? Astro.url).toString();
@@ -27,7 +36,7 @@ const sitemapUrl = new URL('/sitemap.xml', Astro.site ?? Astro.url).toString();
     <meta name="title" content={title} />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
-    <link rel="alternate" type="application/rss+xml" title="Karthik Gurumoorthy" href={rssUrl} />
+    <link rel="alternate" type="application/rss+xml" title="Workbench Notes by Karthik Gurumoorthy" href={rssUrl} />
     <link rel="sitemap" href={sitemapUrl} />
     <link rel="me" href="https://github.com/karthikg80" />
     <link rel="me" href="https://bsky.app/profile/karthikg.in" />
@@ -36,10 +45,12 @@ const sitemapUrl = new URL('/sitemap.xml', Astro.site ?? Astro.url).toString();
     <link rel="me" href="mailto:karthi@hey.com" />
 
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
+    {updatedTime && <meta property="article:modified_time" content={updatedTime.toISOString()} />}
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary" />
