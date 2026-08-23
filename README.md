@@ -37,7 +37,7 @@ The Vercel adapter assembles the deployable build in `.vercel/output/` while pre
 
 Drafts are encrypted in browser storage with AES-GCM and a key derived from the notebook phrase. The key stays in memory only while the tab is unlocked. Drafts are device-local: there is no server-side draft database or cross-device sync.
 
-Agent moves are opt-in. The current note is sent only when the writer clicks an agent action. Vercel deployments authenticate to AI Gateway with project OIDC; local development may set `AI_GATEWAY_API_KEY`. Every request requires a provider route with zero data retention and prompt-training disabled, and also passes the OpenAI `store: false` option. The default model is `openai/gpt-5.6-luna`, overridable with `DRAFTING_MODEL`.
+Agent moves are opt-in. The current note is sent to OpenAI only when the writer clicks an agent action. The server reads `OPENAI_API_KEY`; the key is never exposed to the browser. Requests use the Responses API with `store: false`, which prevents the generated response from being stored for later API retrieval. The default model is `gpt-5.6-luna`, overridable with `DRAFTING_MODEL`.
 
 The handoff always exports:
 

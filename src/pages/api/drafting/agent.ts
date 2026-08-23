@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { generateText } from 'ai';
-import type { GatewayProviderOptions } from '@ai-sdk/gateway';
+import { openai } from '@ai-sdk/openai';
 import {
   draftingSession,
   isAllowedDraftingOrigin,
@@ -75,7 +75,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return json({ error: 'Add an observation or a question before asking the agent.' }, 400);
   }
 
-  if (!process.env.AI_GATEWAY_API_KEY && !process.env.VERCEL_OIDC_TOKEN) {
+  if (!process.env.OPENAI_API_KEY) {
     return json({ error: 'The agent connection has not been configured yet.' }, 503);
   }
 
@@ -90,7 +90,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   try {
     const result = await generateText({
-      model: process.env.DRAFTING_MODEL ?? 'openai/gpt-5.6-luna',
+      model: openai.responses(process.env.DRAFTING_MODEL ?? 'gpt-5.6-luna'),
       instructions: [
         'You are Karthik’s editorial collaborator inside a private drafting room.',
         'Use only firsthand material supplied in this request. Never invent experiences, opinions, facts, certainty, or a neat conclusion.',
@@ -103,10 +103,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       maxOutputTokens: 1_500,
       timeout: 45_000,
       providerOptions: {
-        gateway: {
-          disallowPromptTraining: true,
-          zeroDataRetention: true,
-        } satisfies GatewayProviderOptions,
         openai: { store: false },
       },
     });

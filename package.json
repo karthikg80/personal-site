@@ -10,7 +10,7 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "^4.0.62",
+    "@ai-sdk/openai": "^4.0.46",
     "@astrojs/vercel": "^11.0.7",
     "ai": "^7.0.77",
     "astro": "^7.2.4"
