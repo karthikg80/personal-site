@@ -109,7 +109,8 @@ The archive is at `/notes`, individual notes use `/notes/<slug>`, and the full-t
 
 ### Identity and AT Protocol
 
-- Homepage uses an `h-card`. Footer and `<head>` use `rel="me"` for GitHub, Bluesky, LinkedIn, and Thea Foundry.
+- Homepage uses an `h-card`. Footer and `<head>` use `rel="me"` for GitHub, Bluesky, LinkedIn, and Thea Foundry; Bluesky also uses `rel="atproto"` for IndieLogin.
+- The shared footer contains the required previous, home, and next links for the IndieWeb Webring.
 - Full-text Workbench Notes RSS is at `/rss.xml`.
 - `public/.well-known/atproto-did` publishes `did:plc:k25m3ebqwdr32ojecqpjfzbh`. The public handle is `@karthikg.in`.
 - Sitemap is `/sitemap.xml`. `public/robots.txt` points crawlers at it.
