@@ -12,8 +12,13 @@ const currentYear = new Date().getFullYear();
       <a href="/colophon">colophon</a>
       <a href="/resume">résumé</a>
       <a href="https://github.com/karthikg80" rel="me noopener noreferrer" target="_blank">github</a>
-      <a href="https://bsky.app/profile/karthikg.in" rel="me noopener noreferrer" target="_blank">bluesky</a>
+      <a href="https://bsky.app/profile/karthikg.in" rel="me atproto noopener noreferrer" target="_blank">bluesky</a>
       <a href="/rss.xml">rss</a>
+    </nav>
+    <nav class="webring" aria-label="IndieWeb Webring">
+      <a href="https://xn--sr8hvo.ws/previous" aria-label="Previous site in the IndieWeb Webring">← previous</a>
+      <a href="https://xn--sr8hvo.ws">an indieweb webring <span aria-hidden="true">🕸💍</span></a>
+      <a href="https://xn--sr8hvo.ws/next" aria-label="Next site in the IndieWeb Webring">next →</a>
     </nav>
     <p class="copyright">© {currentYear} Karthik Gurumoorthy · <a href="#main-content">back to top ↑</a></p>
   </div>
@@ -51,6 +56,16 @@ const currentYear = new Date().getFullYear();
     flex-wrap: wrap;
     gap: 0.35rem 1rem;
     margin-bottom: 1rem;
+  }
+
+  .webring {
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    margin-top: -0.25rem;
+  }
+
+  .webring a:nth-child(2) {
+    color: var(--color-text-light);
   }
 
   nav a,
