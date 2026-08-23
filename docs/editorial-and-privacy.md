@@ -24,6 +24,8 @@ Never publish children's identities, faces, schools, or schedules; live location
 
 Raw observations and sensitive sources stay in encrypted private storage outside this repository. Only reviewed, publishable Markdown belongs in Git. Removing a page does not remove it from Git history.
 
+The private drafting room is suitable for ordinary working notes, not the most sensitive source material. Its notebook is encrypted on the current device and has no server-side draft database. When Karthik explicitly asks an embedded agent for help, the current note is transmitted to the configured model provider for that request. Credentials, private documents, children's information, and other prohibited material must not be entered or sent there.
+
 ## Publication gate
 
 A note is public only when both frontmatter conditions are satisfied:
@@ -35,14 +37,15 @@ privacyReviewed: true
 
 The publishing sequence is:
 
-1. Capture observations privately.
-2. Ask the agent to interview and offer possible shapes.
+1. Capture observations privately, either in encrypted private storage or the device-local drafting room when the material is suitable for an agent request.
+2. Ask the agent to interview and offer possible shapes. Only the current draft is sent, and only after an explicit action.
 3. Select and edit a draft.
 4. Ask what feels natural, what feels performed, and what this note teaches us about the evolving voice.
 5. Verify claims, links, names, timing, images, and metadata.
 6. Perform the privacy review.
 7. Approve the exact text.
-8. Change both publication flags and deploy through the normal reviewed Git workflow.
+8. Export a handoff that still has `draft: true` and `privacyReviewed: false`.
+9. Change both publication flags only after approval, then deploy through the normal reviewed Git workflow.
 
 ## Transparency
 

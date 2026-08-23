@@ -8,9 +8,10 @@ The site uses a warm, text-first visual language inspired by personal notebooks:
 
 ## Tech Stack
 
-- Astro 5
+- Astro 7 with the Vercel adapter for one private on-demand route
 - TypeScript (strict Astro config)
 - Markdown content collections for projects and Workbench Notes
+- Vercel AI SDK for explicit, server-side editorial-agent requests
 
 ## Local Development
 
@@ -28,7 +29,24 @@ npm run build
 npm run preview
 ```
 
-Production files are generated in `dist/`.
+The Vercel adapter assembles the deployable build in `.vercel/output/` while preserving static output for all public pages.
+
+## Private Drafting Room
+
+`/drafting` is a deliberately unlinked, `noindex` writing room. In production it returns `404` until both `DRAFTING_ACCESS_KEY` and `DRAFTING_SESSION_SECRET` are configured. The access phrase must be at least 16 characters and the session secret at least 32.
+
+Drafts are encrypted in browser storage with AES-GCM and a key derived from the notebook phrase. The key stays in memory only while the tab is unlocked. Drafts are device-local: there is no server-side draft database or cross-device sync.
+
+Agent moves are opt-in. The current note is sent to OpenAI only when the writer clicks an agent action. The server reads `OPENAI_API_KEY`; the key is never exposed to the browser. Requests use the Responses API with `store: false`, which prevents the generated response from being stored for later API retrieval. The default model is `gpt-5.6-luna`, overridable with `DRAFTING_MODEL`.
+
+The handoff always exports:
+
+```yaml
+draft: true
+privacyReviewed: false
+```
+
+It cannot publish or modify the public content collection. Exact-text approval and the reviewed Git release remain separate.
 
 ## Project Structure
 
@@ -38,8 +56,8 @@ Production files are generated in `dist/`.
 ├── public/                  # Static assets (resume PDF, favicon, etc.)
 ├── src/
 │   ├── components/          # Reusable Astro components
+│   ├── content.config.ts    # Content collection schema and loaders
 │   ├── content/
-│   │   ├── config.ts        # Content collection schema
 │   │   ├── notes/           # Draft and published Workbench Notes
 │   │   └── projects/        # Project markdown entries
 │   ├── layouts/             # Page layouts and global metadata
@@ -54,7 +72,7 @@ Production files are generated in `dist/`.
 ### Add or edit a project
 
 1. Create or update a markdown file in `src/content/projects/`.
-2. Include frontmatter matching `src/content/config.ts`:
+2. Include frontmatter matching `src/content.config.ts`:
    - `title` (string)
    - `description` (string)
    - `date` (date)
