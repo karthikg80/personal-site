@@ -46,6 +46,9 @@ The publishing sequence is:
 7. Approve the exact text.
 8. Export a handoff that still has `draft: true` and `privacyReviewed: false`.
 9. Change both publication flags only after approval, then deploy through the normal reviewed Git workflow.
+10. After the public URL is live, send webmentions for outbound links, replies, and bookmarks. If the note should also appear on Bluesky, POSSE it and store the public URL in `syndication` so the original keeps `u-syndication`.
+
+Replies (`inReplyTo`) and bookmarks (`bookmarkOf`) are still notes. They use the same dual publication gate. Do not POSSE a note until it is public on this domain.
 
 ## Transparency
 

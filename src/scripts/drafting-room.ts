@@ -457,6 +457,7 @@ if (accessForm) {
       `date: ${new Date().toISOString().slice(0, 10)}`,
       'tags: []',
       'presentation: note',
+      'syndication: []',
       'draft: true',
       'privacyReviewed: false',
       '---',

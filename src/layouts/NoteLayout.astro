@@ -1,6 +1,8 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import Layout from './Layout.astro';
+import Webmentions from '../components/Webmentions.astro';
+import { classifyNote, hostLabel } from '../lib/indieweb';
 import { formatNoteDate } from '../lib/notes';
 
 interface Props {
@@ -9,7 +11,8 @@ interface Props {
 
 const { note } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
-const isScrap = note.data.presentation === 'scrap';
+const kind = classifyNote(note.data);
+const isScrap = kind === 'scrap';
 ---
 
 <Layout
@@ -21,10 +24,26 @@ const isScrap = note.data.presentation === 'scrap';
 >
   <article class:list={['note h-entry', { scrap: isScrap }]}>
     <header class="note-header container">
-      {isScrap ? (
+      {kind === 'reply' ? (
+        <p class="note-kind">reply</p>
+      ) : kind === 'bookmark' ? (
+        <p class="note-kind">bookmark</p>
+      ) : isScrap ? (
         <p class="scrap-label"><span>rough note</span><span>first go</span></p>
       ) : (
         <p class="note-kind">workbench note</p>
+      )}
+      {note.data.inReplyTo && (
+        <p class="context">
+          In reply to
+          <a class="u-in-reply-to" href={note.data.inReplyTo}>{hostLabel(note.data.inReplyTo)}</a>
+        </p>
+      )}
+      {note.data.bookmarkOf && (
+        <p class="context">
+          Bookmarked
+          <a class="u-bookmark-of" href={note.data.bookmarkOf}>{hostLabel(note.data.bookmarkOf)}</a>
+        </p>
       )}
       <h1 class="p-name">{note.data.title}</h1>
       <p class="note-meta">
@@ -40,6 +59,7 @@ const isScrap = note.data.presentation === 'scrap';
       {note.data.summary && <p class="note-summary p-summary">{note.data.summary}</p>}
       <a class="u-url permalink" href={canonicalUrl}>permalink</a>
       <span class="p-author h-card author">
+        <img class="u-photo" src="/avatar.svg" alt="" width="64" height="64" />
         <a class="p-name u-url" href="/">Karthik Gurumoorthy</a>
       </span>
     </header>
@@ -54,11 +74,20 @@ const isScrap = note.data.presentation === 'scrap';
           {note.data.tags.map((tag) => <li class="p-category">{tag}</li>)}
         </ul>
       )}
+      {note.data.syndication.length > 0 && (
+        <p class="syndication">
+          Also on
+          {note.data.syndication.map((url) => (
+            <a class="u-syndication" href={url}>{hostLabel(url)}</a>
+          ))}
+        </p>
+      )}
       <p>
         <a href="/notes">← all workbench notes</a>
         <span aria-hidden="true"> · </span>
         <a href="/rss.xml">follow by RSS</a>
       </p>
+      <Webmentions target={canonicalUrl} />
     </footer>
   </article>
 </Layout>
@@ -81,6 +110,21 @@ const isScrap = note.data.presentation === 'scrap';
     font-size: var(--text-sm);
     font-weight: 700;
     letter-spacing: 0.06em;
+  }
+
+  .context {
+    margin: 0 0 1rem;
+    color: var(--color-text-light);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .syndication {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.7rem;
+    margin-bottom: 0.8rem;
+    color: var(--color-text-light);
   }
 
   .scrap-label {
