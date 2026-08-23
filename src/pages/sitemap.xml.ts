@@ -8,6 +8,7 @@ const paths = [
   '/resume',
   '/contact',
   '/colophon',
+  '/wander',
 ];
 
 export const GET: APIRoute = async ({ site }) => {

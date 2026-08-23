@@ -1,0 +1,85 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { parseOpml, feedCount } from '../lib/opml';
+import opmlSource from '../data/feeds.opml?raw';
+
+const groups = parseOpml(opmlSource);
+const total = feedCount(groups);
+---
+
+<Layout
+  title="Wander - Karthik Gurumoorthy"
+  description="Sites and feeds I follow, grouped as they are in my reader."
+>
+  <div class="section">
+    <div class="container content">
+      <h1>Wander</h1>
+      <p class="lede">
+        These are the sites and feeds I follow, grouped as they sit in my
+        reader. Not a greatest-hits list — the export, minus duplicates.
+        {total} entries. Import the
+        <a href="/feeds.opml">OPML</a> if you want the same set.
+      </p>
+
+      {groups.map((group) => (
+        <section>
+          <h2>{group.title}</h2>
+          <ul class="feed-list">
+            {group.feeds.map((feed) => (
+              <li>
+                <a href={feed.url} class="u-url" target="_blank" rel="noopener noreferrer">
+                  {feed.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    margin-bottom: var(--space-sm);
+  }
+
+  .lede {
+    font-size: var(--text-lg);
+    line-height: 1.7;
+    margin-bottom: var(--space-xl);
+  }
+
+  section {
+    margin-bottom: var(--space-xl);
+  }
+
+  section h2 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-sm);
+  }
+
+  .feed-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .feed-list li {
+    margin-bottom: 0.4rem;
+    line-height: 1.5;
+    break-inside: avoid;
+  }
+
+  @media (min-width: 768px) {
+    .feed-list {
+      columns: 2;
+      column-gap: var(--space-xl);
+    }
+  }
+</style>

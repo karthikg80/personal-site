@@ -62,6 +62,7 @@ Production files are generated in `dist/`.
 - Homepage hero: `src/pages/index.astro`
 - About page: `src/pages/about.astro`
 - Now page: `src/pages/now.astro` (update the dated `updated` value when the facts change)
+- Wander page: replace `src/data/feeds.opml` (a Reeder/OPML export) and rebuild
 - Colophon: `src/pages/colophon.astro`
 - Resume page: `src/pages/resume.astro`
 - Contact links: `src/pages/contact.astro` and `src/components/Footer.astro`
