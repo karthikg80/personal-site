@@ -1,0 +1,336 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Layout from './Layout.astro';
+import { formatNoteDate } from '../lib/notes';
+
+interface Props {
+  note: CollectionEntry<'notes'>;
+}
+
+const { note } = Astro.props;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
+const isScrap = note.data.presentation === 'scrap';
+---
+
+<Layout
+  title={`${note.data.title} - Karthik Gurumoorthy`}
+  description={note.data.summary ?? `A workbench note from ${formatNoteDate(note.data.date)}.`}
+  type="article"
+  publishedTime={note.data.date}
+  updatedTime={note.data.updated}
+>
+  <article class:list={['note h-entry', { scrap: isScrap }]}>
+    <header class="note-header container">
+      {isScrap ? (
+        <p class="scrap-label"><span>rough note</span><span>first go</span></p>
+      ) : (
+        <p class="note-kind">workbench note</p>
+      )}
+      <h1 class="p-name">{note.data.title}</h1>
+      <p class="note-meta">
+        <time class="dt-published" datetime={note.data.date.toISOString()}>
+          {formatNoteDate(note.data.date)}
+        </time>
+        {note.data.updated && (
+          <span>
+            · updated <time class="dt-updated" datetime={note.data.updated.toISOString()}>{formatNoteDate(note.data.updated)}</time>
+          </span>
+        )}
+      </p>
+      {note.data.summary && <p class="note-summary p-summary">{note.data.summary}</p>}
+      <a class="u-url permalink" href={canonicalUrl}>permalink</a>
+      <span class="p-author h-card author">
+        <a class="p-name u-url" href="/">Karthik Gurumoorthy</a>
+      </span>
+    </header>
+
+    <div class="note-body container e-content">
+      <slot />
+    </div>
+
+    <footer class="note-footer container">
+      {note.data.tags.length > 0 && (
+        <ul aria-label="Topics">
+          {note.data.tags.map((tag) => <li class="p-category">{tag}</li>)}
+        </ul>
+      )}
+      <p>
+        <a href="/notes">← all workbench notes</a>
+        <span aria-hidden="true"> · </span>
+        <a href="/rss.xml">follow by RSS</a>
+      </p>
+    </footer>
+  </article>
+</Layout>
+
+<style>
+  .note {
+    padding: clamp(3.5rem, 9vw, 6rem) 0 var(--space-2xl);
+  }
+
+  .note-header,
+  .note-body,
+  .note-footer {
+    max-width: var(--reading-width);
+  }
+
+  .note-kind {
+    margin-bottom: 0.7rem;
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  .scrap-label {
+    display: flex;
+    justify-content: space-between;
+    max-width: 33rem;
+    margin-bottom: 1rem;
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .scrap-label span:last-child {
+    padding: 0.08rem 0.35rem;
+    border: 1px solid var(--color-primary);
+    transform: rotate(3deg);
+  }
+
+  h1 {
+    max-width: 14ch;
+    margin-bottom: 1.2rem;
+    font-size: clamp(2.8rem, 8vw, 5.2rem);
+    font-weight: 400;
+  }
+
+  .note-meta,
+  .permalink {
+    color: var(--color-text-light);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .permalink,
+  .author {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .note-summary {
+    max-width: 36rem;
+    margin: var(--space-lg) 0 0;
+    color: var(--color-text-light);
+    font-size: var(--text-lg);
+    font-style: italic;
+    line-height: 1.55;
+  }
+
+  .note-body {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-xl);
+    border-top: 1px solid var(--color-border);
+    font-size: 1.12rem;
+    line-height: 1.75;
+  }
+
+  .note-body :global(h2) {
+    margin: 2.6rem 0 1rem;
+    font-size: var(--text-2xl);
+  }
+
+  .note-body :global(h2::before) {
+    content: '✦';
+    margin-right: 0.55rem;
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: 0.5em;
+    vertical-align: 0.2em;
+  }
+
+  .note-body :global(h3) {
+    margin: 2rem 0 0.8rem;
+  }
+
+  .note-body :global(p),
+  .note-body :global(ul),
+  .note-body :global(ol),
+  .note-body :global(blockquote) {
+    margin-bottom: 1.35rem;
+  }
+
+  .note-body :global(ul),
+  .note-body :global(ol) {
+    padding-left: 1.3rem;
+  }
+
+  .note-body :global(li) {
+    margin-bottom: 0.6rem;
+    padding-left: 0.25rem;
+  }
+
+  .note-body :global(blockquote) {
+    margin-inline: 0;
+    padding: 0.35rem 0 0.35rem 1.2rem;
+    border-left: 3px solid var(--color-highlight);
+    color: var(--color-text-light);
+    font-style: italic;
+  }
+
+  .note-body :global(code) {
+    padding: 0.12em 0.3em;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-soft);
+    border-radius: 0.2rem;
+    font-size: 0.88em;
+  }
+
+  .note-body :global(pre) {
+    overflow-x: auto;
+    margin-bottom: 1.35rem;
+    padding: 1rem;
+    background: var(--color-text);
+    color: var(--color-surface);
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+  }
+
+  .note-body :global(pre code) {
+    padding: 0;
+    background: transparent;
+    border: 0;
+  }
+
+  .note-body :global(img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: var(--space-lg) auto;
+    border: 1px solid var(--color-border);
+    box-shadow: 5px 6px 0 rgb(41 40 32 / 8%);
+  }
+
+  .note-footer {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px dashed var(--color-border);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .note-footer ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    list-style: none;
+  }
+
+  .note-footer li {
+    padding: 0.12rem 0.45rem;
+    border-bottom: 1px dotted var(--color-border);
+    color: var(--color-text-light);
+  }
+
+  .scrap .note-header {
+    position: relative;
+    max-width: 760px;
+  }
+
+  .scrap h1 {
+    max-width: 11ch;
+    font-size: clamp(2.7rem, 8vw, 4.7rem);
+    transform: rotate(-0.45deg);
+  }
+
+  .scrap .note-summary {
+    max-width: 31rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--color-highlight);
+    font-size: 1.1rem;
+  }
+
+  .scrap .note-body {
+    position: relative;
+    max-width: 660px;
+    margin-top: var(--space-xl);
+    padding: 2.3rem clamp(1.25rem, 5vw, 2.5rem) 1.2rem;
+    background-color: var(--color-surface);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 1.72rem,
+      rgb(185 170 141 / 24%) 1.72rem,
+      rgb(185 170 141 / 24%) calc(1.72rem + 1px)
+    );
+    border: 1px solid var(--color-border);
+    box-shadow: 5px 7px 0 rgb(41 40 32 / 7%);
+    font-size: 1.06rem;
+    line-height: 1.72rem;
+    transform: rotate(-0.25deg);
+  }
+
+  .scrap .note-body::before {
+    content: '';
+    position: absolute;
+    top: -0.7rem;
+    right: 2.2rem;
+    width: 5.4rem;
+    height: 1.35rem;
+    background: rgb(240 201 107 / 48%);
+    transform: rotate(2deg);
+  }
+
+  .scrap .note-body :global(h2) {
+    margin: 2.25rem 0 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-transform: lowercase;
+  }
+
+  .scrap .note-body :global(h2::before) {
+    content: '//';
+    margin-right: 0.55rem;
+    color: var(--color-primary);
+    font-size: 0.9em;
+    vertical-align: 0;
+  }
+
+  .scrap .note-body :global(ul) {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .scrap .note-body :global(li) {
+    position: relative;
+    padding-left: 1.4rem;
+  }
+
+  .scrap .note-body :global(li::before) {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+  }
+
+  .scrap .note-footer {
+    max-width: 660px;
+  }
+
+  @media (max-width: 560px) {
+    .scrap .note-body {
+      width: calc(100% - 1.2rem);
+      padding-inline: 1.1rem;
+    }
+  }
+</style>

@@ -23,3 +23,6 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 .vercel
+
+# local writing workspace; copy only approved notes into src/content/notes/
+private-notes/

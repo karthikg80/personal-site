@@ -1,0 +1,198 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { formatNoteDate, getPublishedNotes, notePath } from '../../lib/notes';
+
+const notes = await getPublishedNotes();
+---
+
+<Layout
+  title="Workbench Notes - Karthik Gurumoorthy"
+  description="Short notes from Karthik Gurumoorthy about making software, noticing things, and wandering the web."
+>
+  <div class="section">
+    <div class="container notes h-feed">
+      <header class="notes-header">
+        <p class="eyebrow">short observations, irregularly</p>
+        <h1 class="p-name">Workbench Notes</h1>
+        <p class="lede p-summary">
+          Small records of what I am making, noticing, learning, and carrying
+          forward. Some weeks may be a handful of bullets. That still counts.
+        </p>
+        <p class="feed-link"><a href="/rss.xml">Follow the notes by RSS</a></p>
+      </header>
+
+      {notes.length > 0 ? (
+        <ol class="note-list">
+          {notes.map((note) => (
+            <li>
+              <article class:list={['h-entry', { scrap: note.data.presentation === 'scrap' }]}>
+                <time class="dt-published" datetime={note.data.date.toISOString()}>
+                  {formatNoteDate(note.data.date)}
+                </time>
+                <div>
+                  {note.data.presentation === 'scrap' && <span class="rough-marker">rough note</span>}
+                  <h2 class="p-name"><a class="u-url" href={notePath(note)}>{note.data.title}</a></h2>
+                  {note.data.summary && <p class="p-summary">{note.data.summary}</p>}
+                  {note.data.tags.length > 0 && (
+                    <ul class="tags" aria-label="Topics">
+                      {note.data.tags.map((tag) => <li class="p-category">{tag}</li>)}
+                    </ul>
+                  )}
+                </div>
+              </article>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <aside class="empty-state">
+          <span aria-hidden="true">✎</span>
+          <div>
+            <h2>The notebook is open.</h2>
+            <p>The first public note will appear here after it has been written, reviewed, and deliberately published.</p>
+          </div>
+        </aside>
+      )}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .notes { max-width: var(--reading-width); }
+
+  .notes-header { margin-bottom: var(--space-2xl); }
+
+  .eyebrow {
+    margin-bottom: 0.5rem;
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  h1 {
+    display: inline-block;
+    position: relative;
+    margin-bottom: 1.25rem;
+    font-size: clamp(2.8rem, 8vw, 5rem);
+    font-weight: 400;
+  }
+
+  h1::after {
+    content: '';
+    position: absolute;
+    left: -0.06em;
+    right: -0.1em;
+    bottom: 0;
+    height: 0.15em;
+    background: var(--color-highlight);
+    opacity: 0.75;
+    transform: rotate(-1deg);
+    z-index: -1;
+  }
+
+  .lede {
+    max-width: 35rem;
+    color: var(--color-text-light);
+    font-size: var(--text-lg);
+  }
+
+  .feed-link {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .note-list {
+    list-style: none;
+    margin: 0;
+  }
+
+  .note-list > li { border-top: 1px solid var(--color-border); }
+  .note-list > li:last-child { border-bottom: 1px solid var(--color-border); }
+
+  article {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: var(--space-lg);
+    padding: var(--space-lg) 0;
+  }
+
+  article > time {
+    padding-top: 0.32rem;
+    color: var(--color-text-light);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  article h2 {
+    margin-bottom: 0.55rem;
+    font-size: var(--text-2xl);
+  }
+
+  .rough-marker {
+    display: inline-block;
+    margin-bottom: 0.35rem;
+    padding: 0.06rem 0.3rem;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    transform: rotate(-2deg);
+  }
+
+  article h2 a { color: var(--color-text); }
+  article h2 a:hover { color: var(--color-primary); }
+
+  article p {
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.8rem 0 0;
+    list-style: none;
+  }
+
+  .tags li {
+    padding-bottom: 0.1rem;
+    border-bottom: 1px dotted var(--color-border);
+    color: var(--color-text-light);
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+  }
+
+  .empty-state {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    padding: var(--space-lg);
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    transform: rotate(-0.3deg);
+  }
+
+  .empty-state > span {
+    color: var(--color-primary);
+    font-size: 2rem;
+  }
+
+  .empty-state h2 {
+    margin-bottom: 0.4rem;
+    font-size: var(--text-xl);
+  }
+
+  .empty-state p {
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  @media (max-width: 560px) {
+    article {
+      grid-template-columns: 1fr;
+      gap: 0.45rem;
+    }
+  }
+</style>

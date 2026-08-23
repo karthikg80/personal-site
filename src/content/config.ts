@@ -13,6 +13,21 @@ const projectsCollection = defineCollection({
   }),
 });
 
+const notesCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    date: z.date(),
+    updated: z.date().optional(),
+    summary: z.string().optional(),
+    tags: z.array(z.string()).default([]),
+    presentation: z.enum(['note', 'scrap']).default('note'),
+    draft: z.boolean().default(true),
+    privacyReviewed: z.boolean().default(false),
+  }),
+});
+
 export const collections = {
   projects: projectsCollection,
+  notes: notesCollection,
 };

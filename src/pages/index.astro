@@ -1,7 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { formatNoteDate, getPublishedNotes, notePath } from '../lib/notes';
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://karthikg.in';
+const [latestNote] = await getPublishedNotes();
 ---
 
 <Layout
@@ -76,6 +78,24 @@ const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://karthikg.i
       </ol>
     </section>
 
+    {latestNote && (
+      <section class="latest-note container" aria-labelledby="latest-note-title">
+        <div>
+          <p class="margin-note">from the notebook</p>
+          <h2 id="latest-note-title">Latest workbench note</h2>
+        </div>
+        <article class:list={['h-entry', { scrap: latestNote.data.presentation === 'scrap' }]}>
+          <time class="dt-published" datetime={latestNote.data.date.toISOString()}>
+            {formatNoteDate(latestNote.data.date)}
+          </time>
+          {latestNote.data.presentation === 'scrap' && <span class="rough-marker">rough note</span>}
+          <h3 class="p-name"><a class="u-url" href={notePath(latestNote)}>{latestNote.data.title}</a></h3>
+          {latestNote.data.summary && <p class="p-summary">{latestNote.data.summary}</p>}
+          <a class="read-note" href={notePath(latestNote)}>read the note →</a>
+        </article>
+      </section>
+    )}
+
     <section class="paths container" aria-labelledby="paths-title">
       <div>
         <p class="margin-note">pick a path</p>
@@ -84,6 +104,7 @@ const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://karthikg.i
       <ul>
         <li><a href="/about">read the longer introduction <span>→</span></a></li>
         <li><a href="/now">see what is happening lately <span>→</span></a></li>
+        <li><a href="/notes">open the workbench notes <span>→</span></a></li>
         <li><a href="/projects">browse the project shelf <span>→</span></a></li>
         <li><a href="/contact">send a kind hello <span>→</span></a></li>
       </ul>
@@ -262,6 +283,54 @@ const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://karthikg.i
     padding-block: var(--space-2xl);
   }
 
+  .latest-note {
+    display: grid;
+    gap: var(--space-lg);
+    padding-block: var(--space-xl);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .latest-note h2 {
+    max-width: 12ch;
+    font-size: clamp(2rem, 5vw, 3.1rem);
+  }
+
+  .latest-note article {
+    padding: 1.4rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: 4px 5px 0 rgb(41 40 32 / 7%);
+    transform: rotate(0.4deg);
+  }
+
+  .latest-note time,
+  .read-note {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .latest-note time { color: var(--color-text-light); }
+
+  .rough-marker {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.3rem;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    transform: rotate(-2deg);
+  }
+
+  .latest-note h3 {
+    margin: 0.5rem 0;
+    font-size: var(--text-2xl);
+  }
+
+  .latest-note p { color: var(--color-text-light); }
+
+  .read-note { font-weight: 700; }
+
   .paths ul {
     list-style: none;
     margin: 0;
@@ -290,6 +359,7 @@ const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://karthikg.i
     }
 
     .workbench,
+    .latest-note,
     .paths {
       grid-template-columns: minmax(13rem, 0.75fr) minmax(0, 1.25fr);
       gap: clamp(3rem, 8vw, 7rem);
