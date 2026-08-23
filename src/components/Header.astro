@@ -2,6 +2,7 @@
 const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'About', href: '/about' },
+  { name: 'Now', href: '/now' },
   { name: 'Projects', href: '/projects' },
   { name: 'Resume', href: '/resume' },
   { name: 'Contact', href: '/contact' },
@@ -26,7 +27,7 @@ const currentPath = Astro.url.pathname;
         <li>
           <a
             href={link.href}
-            class:list={['nav-link', { active: currentPath === link.href }]}
+            class:list={['nav-link', { active: link.href === '/' ? currentPath === '/' : currentPath.startsWith(link.href) }]}
           >
             {link.name}
           </a>
@@ -141,7 +142,7 @@ const currentPath = Astro.url.pathname;
 
     /* Show menu when checkbox is checked */
     .menu-toggle:checked ~ .nav-links {
-      max-height: 500px;
+      max-height: 28rem;
     }
 
     /* Animate hamburger to X */

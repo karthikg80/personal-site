@@ -61,6 +61,8 @@ Production files are generated in `dist/`.
 
 - Homepage hero: `src/pages/index.astro`
 - About page: `src/pages/about.astro`
+- Now page: `src/pages/now.astro` (update the dated `updated` value when the facts change)
+- Colophon: `src/pages/colophon.astro`
 - Resume page: `src/pages/resume.astro`
 - Contact links: `src/pages/contact.astro` and `src/components/Footer.astro`
 
@@ -68,7 +70,8 @@ Production files are generated in `dist/`.
 
 - Homepage uses an `h-card`. Footer and `<head>` use `rel="me"` for GitHub, Bluesky, LinkedIn, and Thea Foundry.
 - Project RSS is at `/rss.xml`.
-- `public/.well-known/atproto-did` publishes `did:plc:k25m3ebqwdr32ojecqpjfzbh` (from `karthikg80.bsky.social`). To use `@karthikg.in` as the handle, change the handle in Bluesky after this file is live.
+- `public/.well-known/atproto-did` publishes `did:plc:k25m3ebqwdr32ojecqpjfzbh`. The public handle is `@karthikg.in`.
+- Sitemap is `/sitemap.xml`. `public/robots.txt` points crawlers at it.
 
 ## SEO and Canonical URL
 

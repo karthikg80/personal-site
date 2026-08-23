@@ -1,0 +1,116 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Colophon - Karthik Gurumoorthy"
+  description="How karthikg.in is made: Astro, Vercel, DigitalOcean DNS, and the identity files that make the site portable."
+>
+  <div class="section">
+    <div class="container content">
+      <h1>Colophon</h1>
+      <p class="lede">
+        How this site is put together. I write the words. Agents help with the
+        making; I review what they produce.
+      </p>
+
+      <section>
+        <h2>Site</h2>
+        <p>
+          A static site built with <a href="https://astro.build">Astro 5</a> and
+          TypeScript. Project entries are markdown in a content collection.
+          There is no database, account system, or analytics.
+        </p>
+      </section>
+
+      <section>
+        <h2>Hosting and DNS</h2>
+        <p>
+          Production is the Vercel project
+          <code>karthikg80s-projects/personal-site</code>, deploying from
+          <code>main</code>. The <code>karthikg.in</code> zone stays on
+          DigitalOcean. Only the apex <code>A</code> record points at Vercel
+          (<code>76.76.21.21</code>). Nameservers were not moved, so mail,
+          <code>supabase.karthikg.in</code>, and the studio subdomains stay put.
+        </p>
+      </section>
+
+      <section>
+        <h2>Identity</h2>
+        <ul>
+          <li>Homepage <code>h-card</code> with name, URL, email, and org.</li>
+          <li>
+            <code>rel="me"</code> to
+            <a href="https://github.com/karthikg80">GitHub</a>,
+            <a href="https://bsky.app/profile/karthikg.in">Bluesky</a>,
+            <a href="https://www.linkedin.com/in/karthikg80/">LinkedIn</a>, and
+            <a href="https://theafoundry.com">Thea Foundry</a>.
+          </li>
+          <li>Project RSS at <a href="/rss.xml">/rss.xml</a>.</li>
+          <li>
+            AT Protocol handle <code>@karthikg.in</code>, proven by
+            <a href="/.well-known/atproto-did"><code>/.well-known/atproto-did</code></a>
+            and a <code>_atproto</code> DNS TXT record.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Source</h2>
+        <p>
+          The code is at
+          <a href="https://github.com/karthikg80/personal-site">github.com/karthikg80/personal-site</a>.
+        </p>
+      </section>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    margin-bottom: var(--space-sm);
+  }
+
+  .lede {
+    font-size: var(--text-lg);
+    line-height: 1.7;
+    margin-bottom: var(--space-xl);
+  }
+
+  section {
+    margin-bottom: var(--space-xl);
+  }
+
+  section h2 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-sm);
+  }
+
+  section p,
+  section li {
+    line-height: 1.7;
+    color: var(--color-text);
+  }
+
+  section ul {
+    padding-left: 1.25rem;
+  }
+
+  section li {
+    margin-bottom: var(--space-sm);
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    padding: 0.1em 0.35em;
+  }
+</style>

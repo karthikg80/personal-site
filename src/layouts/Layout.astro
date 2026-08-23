@@ -11,6 +11,7 @@ interface Props {
 const { title, description = 'Personal website of Karthik Gurumoorthy, founder of Thea Foundry.' } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
 const rssUrl = new URL('/rss.xml', Astro.site ?? Astro.url).toString();
+const sitemapUrl = new URL('/sitemap.xml', Astro.site ?? Astro.url).toString();
 ---
 
 <!doctype html>
@@ -27,8 +28,9 @@ const rssUrl = new URL('/rss.xml', Astro.site ?? Astro.url).toString();
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="alternate" type="application/rss+xml" title="Karthik Gurumoorthy" href={rssUrl} />
+    <link rel="sitemap" href={sitemapUrl} />
     <link rel="me" href="https://github.com/karthikg80" />
-    <link rel="me" href="https://bsky.app/profile/karthikg80.bsky.social" />
+    <link rel="me" href="https://bsky.app/profile/karthikg.in" />
     <link rel="me" href="https://www.linkedin.com/in/karthikg80/" />
     <link rel="me" href="https://theafoundry.com" />
     <link rel="me" href="mailto:karthi@hey.com" />
@@ -46,8 +48,9 @@ const rssUrl = new URL('/rss.xml', Astro.site ?? Astro.url).toString();
     <meta property="twitter:description" content={description} />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <Header />
-    <main>
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
     <Footer />

@@ -1,0 +1,111 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const updated = new Date(2026, 7, 22);
+const updatedLabel = updated.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Layout
+  title="Now - Karthik Gurumoorthy"
+  description="What I am doing now: Thea Foundry, a few live products, and this site as a personal identity node."
+>
+  <div class="section">
+    <div class="container content h-entry">
+      <h1 class="p-name">Now</h1>
+      <p class="updated">
+        Updated
+        <time class="dt-published" datetime={updated.toISOString()}>{updatedLabel}</time>.
+        This is a <a href="https://nownownow.com/about">now page</a>.
+      </p>
+
+      <div class="p-summary">
+        <p>
+          I am building Thea Foundry: a small studio of privacy-conscious apps
+          for families and everyday routines. The public catalog lives at
+          <a href="https://theafoundry.com">theafoundry.com</a>. This site is
+          the person node — identity, a short record of what I am doing, and
+          links out.
+        </p>
+      </div>
+
+      <section>
+        <h2>Building</h2>
+        <ul>
+          <li>
+            <a href="https://neighborbook.theafoundry.com">Neighborbook</a> —
+            invite-only community memory. No public feed or marketplace.
+          </li>
+          <li>
+            <a href="https://sai-parayan.theafoundry.com">Sai Parayan Tracker</a> —
+            weekly chapter coordination for parayan reading groups.
+          </li>
+          <li>
+            <a href="https://homebase.theafoundry.com">Homebase</a> and the
+            self-hosted platform underneath the smaller apps.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>This site</h2>
+        <ul>
+          <li>
+            Refreshed karthikg.in around the studio work instead of placeholder
+            enterprise case studies.
+          </li>
+          <li>
+            Claimed <a href="https://bsky.app/profile/karthikg.in">@karthikg.in</a>
+            on AT Protocol and moved the site from DigitalOcean App Platform to
+            Vercel. The DNS zone stayed on DigitalOcean.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Not this week</h2>
+        <ul>
+          <li>A public notes feed. I will start one when I have something I would say anyway.</li>
+          <li>Listing every private beta. That list belongs on the studio site.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    margin-bottom: var(--space-xs);
+  }
+
+  .updated {
+    color: var(--color-text-light);
+    margin-bottom: var(--space-xl);
+  }
+
+  section {
+    margin-bottom: var(--space-xl);
+  }
+
+  section h2 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-sm);
+  }
+
+  section ul {
+    padding-left: 1.25rem;
+  }
+
+  section li {
+    margin-bottom: var(--space-sm);
+    line-height: 1.6;
+  }
+</style>
