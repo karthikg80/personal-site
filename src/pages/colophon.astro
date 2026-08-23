@@ -18,10 +18,11 @@ import Layout from '../layouts/Layout.astro';
       <section>
         <h2>Site</h2>
         <p>
-          A static site built with <a href="https://astro.build">Astro 5</a> and
+          A static site built with <a href="https://astro.build">Astro 7</a> and
           TypeScript. Project entries and workbench notes are Markdown content
           collections.
-          There is no database, account system, or analytics.
+          There is no database, account system, or analytics. Incoming
+          webmentions are collected by <a href="https://webmention.io">webmention.io</a>.
         </p>
       </section>
 
@@ -40,7 +41,7 @@ import Layout from '../layouts/Layout.astro';
       <section>
         <h2>Identity</h2>
         <ul>
-          <li>Homepage <code>h-card</code> with name, URL, email, and org.</li>
+          <li>Homepage <code>h-card</code> with name, photo, URL, email, and org. The card wraps the introduction only.</li>
           <li>
             <code>rel="me"</code> to
             <a href="https://github.com/karthikg80">GitHub</a>,
@@ -54,6 +55,11 @@ import Layout from '../layouts/Layout.astro';
             <a href="https://xn--sr8hvo.ws">IndieWeb Webring</a>.
           </li>
           <li>Full-text Workbench Notes RSS at <a href="/rss.xml">/rss.xml</a>.</li>
+          <li>
+            Notes accept <a href="https://indieweb.org/Webmention">Webmentions</a>
+            and can POSSE to Bluesky with a <code>u-syndication</code> link back
+            to the original. Replies and bookmarks are first-class note types.
+          </li>
           <li>
             Notes appear publicly only after both the editorial draft flag is
             removed and the privacy-review flag is set. Raw observations stay

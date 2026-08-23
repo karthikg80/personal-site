@@ -1,11 +1,15 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { classifyNote, isPublishedNote, type NoteKind } from './indieweb';
 
 export type Note = CollectionEntry<'notes'>;
+export type { NoteKind };
+
+export { classifyNote };
 
 export async function getPublishedNotes(): Promise<Note[]> {
   const notes = await getCollection(
     'notes',
-    ({ data }) => !data.draft && data.privacyReviewed
+    ({ data }) => isPublishedNote(data)
   );
 
   return notes.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());

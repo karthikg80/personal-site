@@ -1,0 +1,291 @@
+---
+import { webmentionFeedUrl, webmentionReceiverUrl } from '../lib/indieweb';
+
+interface Props {
+  target: string;
+}
+
+const { target } = Astro.props;
+---
+
+<section class="correspondence" aria-labelledby="correspondence-title" data-webmentions={webmentionFeedUrl(target)}>
+  <p class="kicker">from other sites</p>
+  <h2 id="correspondence-title">Correspondence</h2>
+  <p class="lede">
+    Replies live on their authors’ sites. If this note is mentioned there,
+    the mention can appear here.
+  </p>
+
+  <div class="mention-groups" hidden>
+    <div data-group="facepile" class="facepile" hidden>
+      <h3>Likes and reposts</h3>
+      <ul></ul>
+    </div>
+    <div data-group="replies" hidden>
+      <h3>Replies</h3>
+      <ol></ol>
+    </div>
+    <div data-group="mentions" hidden>
+      <h3>Mentions</h3>
+      <ol></ol>
+    </div>
+  </div>
+
+  <p class="empty" data-empty>No webmentions yet.</p>
+
+  <form class="mention-form" action={webmentionReceiverUrl()} method="post">
+    <input type="hidden" name="target" value={target} />
+    <label for="webmention-source">Or send a webmention yourself</label>
+    <div>
+      <input
+        id="webmention-source"
+        name="source"
+        type="url"
+        required
+        placeholder="https://your-site.example/reply"
+        autocomplete="url"
+      />
+      <button type="submit">send</button>
+    </div>
+  </form>
+</section>
+
+<script>
+  type MentionAuthor = {
+    name?: string;
+    url?: string;
+    photo?: string;
+  };
+
+  type Mention = {
+    url?: string;
+    published?: string;
+    author?: MentionAuthor;
+    content?: { text?: string; html?: string };
+    'wm-property'?: string;
+  };
+
+  const root = document.querySelector<HTMLElement>('[data-webmentions]');
+  const feed = root?.dataset.webmentions;
+  if (!root || !feed) {
+    /* The correspondence tray is missing on this page. */
+  } else {
+    const tray = root;
+    const empty = tray.querySelector<HTMLElement>('[data-empty]');
+    const groups = tray.querySelector<HTMLElement>('.mention-groups');
+
+    function authorName(mention: Mention): string {
+      return mention.author?.name?.trim() || 'Someone';
+    }
+
+    function mentionUrl(mention: Mention): string {
+      return mention.url || mention.author?.url || '#';
+    }
+
+    void fetch(feed)
+      .then((response) => (response.ok ? response.json() : { children: [] }))
+      .then((payload: { children?: Mention[] }) => {
+        const mentions = payload.children ?? [];
+        if (mentions.length === 0) return;
+
+        empty?.setAttribute('hidden', '');
+        groups?.removeAttribute('hidden');
+
+        const facepile = mentions.filter((mention) => ['like-of', 'repost-of'].includes(mention['wm-property'] ?? ''));
+        const replies = mentions.filter((mention) => mention['wm-property'] === 'in-reply-to');
+        const others = mentions.filter((mention) => !['like-of', 'repost-of', 'in-reply-to'].includes(mention['wm-property'] ?? ''));
+
+        if (facepile.length > 0) {
+          const group = tray.querySelector('[data-group="facepile"]');
+          const list = group?.querySelector('ul');
+          group?.removeAttribute('hidden');
+          for (const mention of facepile) {
+            const item = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = mentionUrl(mention);
+            link.rel = 'nofollow noopener noreferrer';
+            link.title = `${authorName(mention)} ${mention['wm-property'] === 'repost-of' ? 'reposted' : 'liked'} this`;
+            if (mention.author?.photo) {
+              const photo = document.createElement('img');
+              photo.src = mention.author.photo;
+              photo.alt = authorName(mention);
+              photo.width = 36;
+              photo.height = 36;
+              link.append(photo);
+            } else {
+              link.textContent = authorName(mention).slice(0, 1);
+            }
+            item.append(link);
+            list?.append(item);
+          }
+        }
+
+        function renderEntries(selector: string, items: Mention[]): void {
+          if (items.length === 0) return;
+          const group = tray.querySelector(selector);
+          const list = group?.querySelector('ol');
+          group?.removeAttribute('hidden');
+          for (const mention of items) {
+            const item = document.createElement('li');
+            const article = document.createElement('article');
+            const header = document.createElement('header');
+            const author = document.createElement('a');
+            const time = document.createElement('time');
+            const body = document.createElement('p');
+            author.href = mention.author?.url || mentionUrl(mention);
+            author.rel = 'nofollow noopener noreferrer';
+            author.textContent = authorName(mention);
+            if (mention.published) {
+              time.dateTime = mention.published;
+              time.textContent = new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              }).format(new Date(mention.published));
+            }
+            header.append(author, time);
+            body.textContent = mention.content?.text?.trim() || 'mentioned this note';
+            article.append(header, body);
+            item.append(article);
+            list?.append(item);
+          }
+        }
+
+        renderEntries('[data-group="replies"]', replies);
+        renderEntries('[data-group="mentions"]', others);
+      })
+      .catch(() => {
+        /* Keep the empty state if webmention.io is unreachable or not registered yet. */
+      });
+  }
+</script>
+
+<style>
+  .correspondence {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px dashed var(--color-border);
+  }
+
+  .kicker {
+    margin-bottom: 0.4rem;
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  h2 {
+    margin-bottom: 0.6rem;
+    font-size: var(--text-2xl);
+    font-weight: 400;
+  }
+
+  .lede,
+  .empty {
+    color: var(--color-text-light);
+    font-size: var(--text-sm);
+  }
+
+  .empty { margin: 1rem 0; }
+
+  .mention-groups { display: grid; gap: 1.4rem; margin: 1.2rem 0; }
+
+  h3 {
+    margin-bottom: 0.6rem;
+    color: var(--color-text-light);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .facepile ul,
+  .mention-groups ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    list-style: none;
+  }
+
+  .facepile img,
+  .facepile a {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font-family: var(--font-serif);
+    font-style: italic;
+  }
+
+  .facepile img { width: 100%; height: 100%; object-fit: cover; }
+
+  .mention-groups ol { display: grid; }
+
+  .mention-groups article {
+    padding: 0.85rem 0;
+    border-bottom: 1px dotted var(--color-border);
+  }
+
+  .mention-groups header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.8rem;
+    margin-bottom: 0.35rem;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+  }
+
+  .mention-groups time { color: var(--color-text-light); }
+  .mention-groups p { margin: 0; font-size: var(--text-sm); }
+
+  .mention-form {
+    margin-top: 1.4rem;
+    padding: 1rem;
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+  }
+
+  .mention-form label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+
+  .mention-form > div { display: flex; gap: 0.55rem; }
+
+  .mention-form input,
+  .mention-form button { font: inherit; }
+
+  .mention-form input {
+    min-width: 0;
+    flex: 1;
+    padding: 0.55rem;
+    color: var(--color-text);
+    background: rgb(255 253 246 / 78%);
+    border: 1px solid var(--color-border);
+  }
+
+  .mention-form button {
+    padding: 0.55rem 0.75rem;
+    color: #fffdf6;
+    background: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  @media (max-width: 560px) {
+    .mention-form > div { display: grid; }
+  }
+</style>

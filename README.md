@@ -94,6 +94,21 @@ It cannot publish or modify the public content collection. Exact-text approval a
 
 4. Follow `docs/editorial-and-privacy.md` for the factual, editorial, and privacy review.
 5. Publish only after explicit approval by setting both `draft: false` and `privacyReviewed: true`.
+6. After the public deploy is live, send webmentions for outbound links:
+
+   ```sh
+   npm run webmentions:send
+   ```
+
+7. To syndicate a published note to Bluesky, set `BLUESKY_APP_PASSWORD` and run:
+
+   ```sh
+   npm run posse:bluesky -- <slug>
+   ```
+
+   Then add the printed URL to the note's `syndication` list and redeploy.
+
+A reply uses `inReplyTo`; a bookmark uses `bookmarkOf`. Both stay behind the same publication gate.
 
 The archive is at `/notes`, individual notes use `/notes/<slug>`, and the full-text feed is `/rss.xml`. Draft or unreviewed notes are excluded from routes, the homepage, RSS, and the sitemap.
 
@@ -109,9 +124,10 @@ The archive is at `/notes`, individual notes use `/notes/<slug>`, and the full-t
 
 ### Identity and AT Protocol
 
-- Homepage uses an `h-card`. Footer and `<head>` use `rel="me"` for GitHub, Bluesky, LinkedIn, and Thea Foundry; Bluesky also uses `rel="atproto"` for IndieLogin.
+- Homepage uses a scoped `h-card` with name, URL, email, org, and `u-photo` / `u-logo`. Footer and `<head>` use `rel="me"` for GitHub, Bluesky, LinkedIn, and Thea Foundry; Bluesky also uses `rel="atproto"` for IndieLogin.
 - The shared footer contains the required previous, home, and next links for the IndieWeb Webring.
-- Full-text Workbench Notes RSS is at `/rss.xml`.
+- Notes advertise a Webmention endpoint via [webmention.io](https://webmention.io). Sign in there once with `https://karthikg.in` so incoming mentions are stored. Display and the manual send form are already on each note.
+- Full-text Workbench Notes RSS is at `/rss.xml`, also marked `rel="feed"`.
 - `public/.well-known/atproto-did` publishes `did:plc:k25m3ebqwdr32ojecqpjfzbh`. The public handle is `@karthikg.in`.
 - Sitemap is `/sitemap.xml`. `public/robots.txt` points crawlers at it.
 
