@@ -1,0 +1,456 @@
+---
+import Layout from '../layouts/Layout.astro';
+import {
+  draftingSession,
+  isDraftingConfigured,
+  isLocalDraftingBypass,
+  verifyDraftingSession,
+} from '../lib/drafting-auth';
+
+export const prerender = false;
+
+const configured = isDraftingConfigured();
+const localBypass = isLocalDraftingBypass();
+
+if (!configured && !localBypass) {
+  return new Response('Not found', {
+    status: 404,
+    headers: {
+      'Cache-Control': 'no-store',
+      'Content-Type': 'text/plain; charset=utf-8',
+      'X-Robots-Tag': 'noindex, nofollow, noarchive',
+    },
+  });
+}
+
+const authenticated = localBypass
+  || await verifyDraftingSession(Astro.cookies.get(draftingSession.cookieName)?.value);
+
+Astro.response.headers.set('Cache-Control', 'no-store, private');
+Astro.response.headers.set('Referrer-Policy', 'no-referrer');
+Astro.response.headers.set('X-Frame-Options', 'DENY');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+Astro.response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+if (import.meta.env.PROD) {
+  Astro.response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; base-uri 'none'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+  );
+}
+---
+
+<Layout
+  title="Private drafting room"
+  description="A private, device-local writing room."
+  noindex
+>
+  <div class="drafting-shell" data-authenticated={authenticated} data-local-bypass={localBypass}>
+    {!authenticated ? (
+      <section class="door container" aria-labelledby="door-title">
+        <p class="kicker">private writing room</p>
+        <h1 id="door-title">Bring the access phrase.</h1>
+        <p>
+          This room is separate from the public notebook. Drafts stay encrypted
+          in this browser and nothing here can publish itself.
+        </p>
+        <form id="access-form" class="access-form">
+          <label for="access-key">Access phrase</label>
+          <div>
+            <input class="visually-hidden" name="username" type="text" autocomplete="username" value="Karthik" tabindex="-1" aria-hidden="true" />
+            <input id="access-key" name="accessKey" type="password" autocomplete="current-password" required />
+            <button type="submit">open the room</button>
+          </div>
+          <p id="access-status" class="form-status" role="status" aria-live="polite"></p>
+        </form>
+        <a href="/">← return to the public site</a>
+      </section>
+    ) : (
+      <>
+        <section id="vault-gate" class="door container" aria-labelledby="vault-title">
+          <p class="kicker">encrypted on this device</p>
+          <h1 id="vault-title">Unlock your notebook.</h1>
+          <p>
+            Your phrase derives the encryption key. It is kept only in memory
+            while this tab is open, so a refresh asks for it again.
+          </p>
+          <form id="vault-form" class="access-form">
+            <label for="vault-key">Notebook phrase</label>
+            <div>
+              <input id="vault-key" name="vaultKey" type="password" autocomplete="current-password" minlength="16" required />
+              <button type="submit">unlock notes</button>
+            </div>
+            <p id="vault-status" class="form-status" role="status" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <section id="drafting-room" class="room" hidden>
+          <header class="room-header container">
+            <div>
+              <p class="kicker">private drafting room</p>
+              <h1>Shape a note slowly.</h1>
+              <p class="room-intro">Collect what happened. Ask better questions. Keep the final decision human.</p>
+            </div>
+            <div class="room-actions">
+              <span id="save-state" role="status" aria-live="polite">saved on this device</span>
+              <button id="lock-room" class="quiet-button" type="button">lock</button>
+              {!localBypass && <button id="leave-room" class="quiet-button" type="button">sign out</button>}
+            </div>
+          </header>
+
+          <div class="workspace container">
+            <aside class="draft-shelf" aria-label="Draft notes">
+              <div class="shelf-heading">
+                <h2>Loose pages</h2>
+                <button id="new-draft" class="icon-button" type="button" aria-label="Create a new draft">+</button>
+              </div>
+              <ol id="draft-list"></ol>
+              <p class="device-note">Encrypted here. Not synced. Not in Git.</p>
+            </aside>
+
+            <article class="writing-pad">
+              <label class="title-label" for="draft-title">working title</label>
+              <input id="draft-title" class="title-input" type="text" maxlength="160" placeholder="Untitled note" />
+
+              <nav class="stage-nav" aria-label="Draft stages">
+                <button class="stage-button active" data-stage="gather" type="button">1 · gather</button>
+                <button class="stage-button" data-stage="shape" type="button">2 · shape</button>
+                <button class="stage-button" data-stage="review" type="button">3 · review</button>
+              </nav>
+
+              <section class="stage-panel" data-panel="gather">
+                <label for="draft-sparks">What actually happened?</label>
+                <p class="field-help">Fragments, links, decisions, questions. Avoid sensitive source material.</p>
+                <textarea id="draft-sparks" rows="16" placeholder="A few rough observations…"></textarea>
+              </section>
+
+              <section class="stage-panel" data-panel="shape" hidden>
+                <label for="draft-body">Current shape</label>
+                <p class="field-help">Markdown is welcome. Awkwardness is allowed.</p>
+                <textarea id="draft-body" rows="24" placeholder="Begin wherever the note has some energy…"></textarea>
+              </section>
+
+              <section class="stage-panel review-panel" data-panel="review" hidden>
+                <h2>Human review</h2>
+                <p>These checks do not publish the note. They prepare a safe Markdown handoff for the reviewed Git workflow.</p>
+                <div class="checklist">
+                  <label><input type="checkbox" data-check="firsthand" /> Every experience and opinion is mine.</label>
+                  <label><input type="checkbox" data-check="facts" /> Names, links, claims, and timing are verified.</label>
+                  <label><input type="checkbox" data-check="people" /> Other people’s privacy and consent are protected.</label>
+                  <label><input type="checkbox" data-check="location" /> No live location, schedule, travel, or identifying routine leaks.</label>
+                  <label><input type="checkbox" data-check="voice" /> The words still sound like something I might say.</label>
+                </div>
+                <label for="voice-note">What did this draft teach me about my voice?</label>
+                <textarea id="voice-note" rows="5" placeholder="What felt natural? What felt performed? What should move next time?"></textarea>
+                <div class="handoff-actions">
+                  <button id="copy-handoff" type="button">copy safe Markdown handoff</button>
+                  <button id="download-handoff" class="quiet-button" type="button">download .md</button>
+                  <button id="delete-draft" class="danger-button" type="button">discard this draft</button>
+                </div>
+                <p id="handoff-status" class="form-status" role="status" aria-live="polite"></p>
+              </section>
+            </article>
+
+            <aside class="agent-desk" aria-labelledby="agent-title">
+              <p class="kicker">editorial collaborator</p>
+              <h2 id="agent-title">Ask for a move.</h2>
+              <p class="agent-boundary">Only the current note is sent, and only when you click. Agent output is a suggestion—not source material or approval.</p>
+              <div class="agent-moves">
+                <button type="button" data-agent-mode="interview">interview me</button>
+                <button type="button" data-agent-mode="shapes">offer 3 shapes</button>
+                <button type="button" data-agent-mode="draft">shape a draft</button>
+                <button type="button" data-agent-mode="privacy">privacy pass</button>
+                <button type="button" data-agent-mode="voice">reflect on voice</button>
+              </div>
+              <form id="agent-form">
+                <label for="agent-message">Or ask directly</label>
+                <textarea id="agent-message" rows="3" maxlength="2000" placeholder="What am I avoiding here?"></textarea>
+                <button type="submit">ask the agent</button>
+              </form>
+              <p id="agent-status" class="form-status" role="status" aria-live="polite"></p>
+              <div id="agent-log" class="agent-log" role="log" aria-live="polite"></div>
+            </aside>
+          </div>
+        </section>
+      </>
+    )}
+  </div>
+</Layout>
+
+<script src="../scripts/drafting-room.ts"></script>
+
+<style>
+  :global(body) { background: #eee8d8; }
+  :global(.site-header), :global(footer) { display: none; }
+
+  .drafting-shell { min-height: 100vh; }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .door {
+    max-width: 42rem;
+    padding-block: clamp(5rem, 15vh, 9rem);
+  }
+
+  .kicker {
+    margin-bottom: 0.5rem;
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .door h1, .room-header h1 {
+    margin-bottom: 1rem;
+    font-size: clamp(2.7rem, 8vw, 5rem);
+    font-weight: 400;
+  }
+
+  .door > p:not(.kicker) {
+    max-width: 35rem;
+    color: var(--color-text-light);
+    font-size: var(--text-lg);
+  }
+
+  .access-form {
+    margin: 2rem 0 1.5rem;
+    padding: 1.4rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: 5px 6px 0 rgb(41 40 32 / 7%);
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+
+  .access-form > div { display: flex; gap: 0.65rem; }
+
+  input, textarea, button { font: inherit; }
+
+  input, textarea {
+    width: 100%;
+    color: var(--color-text);
+    background: rgb(255 253 246 / 78%);
+    border: 1px solid var(--color-border);
+    border-radius: 0;
+  }
+
+  input:focus, textarea:focus, button:focus-visible {
+    outline: 3px solid rgb(230 183 45 / 48%);
+    outline-offset: 2px;
+  }
+
+  .access-form input { min-width: 0; padding: 0.72rem; }
+
+  button {
+    padding: 0.62rem 0.82rem;
+    color: #fffdf6;
+    background: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+
+  button:hover { filter: brightness(0.94); }
+  button:disabled { cursor: wait; opacity: 0.58; }
+
+  .form-status {
+    min-height: 1.2em;
+    margin: 0.7rem 0 0;
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+  }
+
+  .room { padding-bottom: 4rem; }
+
+  .room-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    padding-block: 2.5rem 2rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .room-header h1 { margin: 0; font-size: clamp(2.4rem, 6vw, 4rem); }
+  .room-intro { max-width: 38rem; margin: 0.4rem 0 0; color: var(--color-text-light); }
+
+  .room-actions {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  #save-state {
+    width: 100%;
+    color: var(--color-text-light);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-align: right;
+  }
+
+  .quiet-button {
+    color: var(--color-text);
+    background: transparent;
+    border-color: var(--color-border);
+  }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(10rem, 0.55fr) minmax(24rem, 1.45fr) minmax(17rem, 0.8fr);
+    gap: clamp(1.2rem, 3vw, 2.5rem);
+    padding-top: 2rem;
+  }
+
+  .draft-shelf, .agent-desk { min-width: 0; }
+
+  .shelf-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .shelf-heading h2, .agent-desk h2 { font-size: var(--text-xl); }
+
+  .icon-button {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 1.2rem;
+  }
+
+  #draft-list { margin-top: 1rem; list-style: none; border-top: 1px solid var(--color-border); }
+  #draft-list li { border-bottom: 1px solid var(--color-border); }
+  #draft-list button {
+    width: 100%;
+    padding: 0.75rem 0.2rem;
+    color: var(--color-text-light);
+    background: transparent;
+    border: 0;
+    text-align: left;
+  }
+  #draft-list button[aria-current="true"] { color: var(--color-primary); }
+  #draft-list strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #draft-list time { font-family: var(--font-mono); font-size: 0.64rem; }
+
+  .device-note {
+    margin-top: 1rem;
+    color: var(--color-text-light);
+    font-family: var(--font-mono);
+    font-size: 0.67rem;
+    line-height: 1.5;
+  }
+
+  .writing-pad {
+    position: relative;
+    min-height: 46rem;
+    padding: clamp(1.3rem, 3vw, 2.2rem);
+    background-color: var(--color-surface);
+    background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 1.85rem, rgb(185 170 141 / 20%) 1.85rem, rgb(185 170 141 / 20%) calc(1.85rem + 1px));
+    border: 1px solid var(--color-border);
+    box-shadow: 6px 8px 0 rgb(41 40 32 / 7%);
+  }
+
+  .writing-pad::before {
+    content: '';
+    position: absolute;
+    top: -0.7rem;
+    right: 3rem;
+    width: 6rem;
+    height: 1.3rem;
+    background: rgb(230 183 45 / 38%);
+    transform: rotate(2deg);
+  }
+
+  .title-label { color: var(--color-primary); font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; }
+  .title-input {
+    padding: 0.25rem 0 0.8rem;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+  }
+
+  .stage-nav { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 1.3rem 0 1.6rem; }
+  .stage-button {
+    padding: 0.32rem 0.55rem;
+    color: var(--color-text-light);
+    background: transparent;
+    border-color: transparent;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+  }
+  .stage-button.active { color: var(--color-primary); border-color: var(--color-primary); transform: rotate(-1deg); }
+
+  .field-help, .review-panel > p {
+    margin: -0.2rem 0 0.8rem;
+    color: var(--color-text-light);
+    font-size: var(--text-sm);
+  }
+
+  .stage-panel textarea {
+    resize: vertical;
+    padding: 0.85rem;
+    background: rgb(255 253 246 / 58%);
+    line-height: 1.65;
+  }
+
+  .review-panel h2 { font-size: var(--text-2xl); }
+  .checklist { margin: 1.3rem 0 1.8rem; }
+  .checklist label { display: grid; grid-template-columns: auto 1fr; gap: 0.65rem; align-items: start; font-family: var(--font-serif); font-weight: 400; }
+  .checklist input { width: auto; margin-top: 0.32rem; accent-color: var(--color-primary); }
+  .handoff-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1rem; }
+  .danger-button { color: var(--color-primary); background: transparent; border-color: var(--color-primary); }
+
+  .agent-desk {
+    align-self: start;
+    padding: 1.2rem;
+    background: rgb(255 253 246 / 48%);
+    border: 1px dashed var(--color-border);
+  }
+
+  .agent-boundary { color: var(--color-text-light); font-size: var(--text-sm); }
+  .agent-moves { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 1.4rem; }
+  .agent-moves button { padding: 0.38rem 0.52rem; color: var(--color-primary); background: transparent; font-size: 0.72rem; }
+  #agent-form textarea { padding: 0.65rem; resize: vertical; }
+  #agent-form button { margin-top: 0.5rem; }
+
+  .agent-log { display: grid; gap: 0.8rem; max-height: 34rem; overflow-y: auto; margin-top: 1rem; }
+  :global(.agent-card) { padding: 0.9rem; background: var(--color-surface); border: 1px solid var(--color-border); }
+  :global(.agent-card header) { display: flex; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem; color: var(--color-primary); font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; }
+  :global(.agent-card p) { margin: 0; white-space: pre-wrap; font-size: var(--text-sm); }
+  :global(.agent-card button) { margin-top: 0.7rem; padding: 0.3rem 0.45rem; font-size: 0.68rem; }
+
+  @media (max-width: 980px) {
+    .workspace { grid-template-columns: minmax(9rem, 0.45fr) minmax(0, 1.55fr); }
+    .agent-desk { grid-column: 2; }
+  }
+
+  @media (max-width: 680px) {
+    .room-header { display: block; }
+    .room-actions { justify-content: flex-start; margin-top: 1rem; }
+    #save-state { width: auto; margin-right: auto; text-align: left; }
+    .workspace { grid-template-columns: 1fr; }
+    .draft-shelf, .agent-desk { grid-column: 1; }
+    .draft-shelf { order: 1; }
+    .writing-pad { order: 2; min-height: 38rem; }
+    .agent-desk { order: 3; }
+    #draft-list { display: flex; overflow-x: auto; }
+    #draft-list li { min-width: 11rem; border-right: 1px solid var(--color-border); }
+    .access-form > div { display: grid; }
+  }
+</style>

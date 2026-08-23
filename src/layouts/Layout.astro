@@ -9,6 +9,7 @@ interface Props {
   type?: 'website' | 'article';
   publishedTime?: Date;
   updatedTime?: Date;
+  noindex?: boolean;
 }
 
 const {
@@ -17,6 +18,7 @@ const {
   type = 'website',
   publishedTime,
   updatedTime,
+  noindex = false,
 } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
 const rssUrl = new URL('/rss.xml', Astro.site ?? Astro.url).toString();
@@ -35,6 +37,7 @@ const sitemapUrl = new URL('/sitemap.xml', Astro.site ?? Astro.url).toString();
     <title>{title}</title>
     <meta name="title" content={title} />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow, noarchive" />}
     <link rel="canonical" href={canonicalUrl} />
     <link rel="alternate" type="application/rss+xml" title="Workbench Notes by Karthik Gurumoorthy" href={rssUrl} />
     <link rel="sitemap" href={sitemapUrl} />

@@ -12,7 +12,7 @@ export async function getPublishedNotes(): Promise<Note[]> {
 }
 
 export function notePath(note: Note): string {
-  return `/notes/${note.slug}/`;
+  return `/notes/${note.id}/`;
 }
 
 export function formatNoteDate(date: Date): string {

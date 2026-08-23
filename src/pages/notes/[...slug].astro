@@ -7,7 +7,7 @@ export async function getStaticPaths() {
   const notes = await getPublishedNotes();
 
   return notes.map((note) => ({
-    params: { slug: note.slug },
+    params: { slug: note.id },
     props: { note },
   }));
 }
