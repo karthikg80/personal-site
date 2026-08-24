@@ -170,7 +170,7 @@ ATProto (Bluesky) is one `externalIdentities` entry with `kind: 'atproto'` and `
 | `topics` | yes | string[] |
 | `syndication` | yes | `SyndicationCopy[]` |
 | `publication` | yes | Derived `PublicationState` (§6.7) |
-| `rssItemGuid` | no | Frozen at creation/migration (§8.5) |
+| `legacyRssGuid` | no | Optional; migration-only RSS compatibility URL (§8.5) |
 | `createdAt`, `updatedAt` | yes | From `date` / `updated` |
 
 **Derived at map time (not stored):** `noteKind: 'note' \| 'scrap' \| 'reply' \| 'bookmark'` via `deriveNoteKind()` — same precedence as today’s `classifyNote`.
@@ -319,9 +319,7 @@ Exported Markdown includes a new `id:` field (UUIDv7 generated in browser at han
 | Current slug | `note.slug` / `project.slug` |
 | Historical slugs | `note.previousSlugs` / `project.previousSlugs` |
 | Canonical path | `canonicalNotePath(note)` → `/notes/{slug}/` |
-| Location history paths | `locationPaths(note)` → `[...previousSlugs, currentSlug]` mapped to `/notes/{s}/` |
-
-The domain exposes **location and history** only. It does not know about Webmention, RSS, or redirects.
+The domain holds **`slug`** and **`previousSlugs`** only. Constructing `/notes/<slug>/`, historical absolute URLs, redirect paths, and protocol fetch targets belongs in routing/presentation/protocol adapters — not in `src/core/domain`.
 
 ### 8.2 Initial migration
 
@@ -335,7 +333,7 @@ The domain exposes **location and history** only. It does not know about Webment
 2. Append old slug to `previousSlugs` (dedupe; never remove).
 3. **Routing adapter** (not ContentStore) derives 308 redirects: `/notes/old-slug/` → `/notes/new-slug/`.
 4. Canonical URL, sitemap `<loc>`, and new POSSE permalinks use **new** slug.
-5. **RSS `<guid>` unchanged** (frozen `rssItemGuid` — §8.5).
+5. **RSS `<guid>` unchanged** (frozen `legacyRssGuid` if set — §8.5).
 6. **RSS `<link>`** updates to new canonical URL.
 7. Existing Bluesky syndication URLs untouched; old note URL redirects to new — links still resolve.
 8. **Webmention adapter** chooses fetch targets from domain location history + canonical URL (§13) — not a domain API.
@@ -360,17 +358,17 @@ Two deterministic GUID classes:
 
 | Class | Determination | RSS output |
 | --- | --- | --- |
-| **Legacy** | Notes **public before PWC migration** | `<guid isPermaLink="true">{rssItemGuid}</guid>` where `rssItemGuid` = canonical URL **at migration time**, stored in frontmatter |
-| **New** | Notes **created after PWC migration** | `<guid isPermaLink="false">urn:karthikg.in:note:{id}</guid>`; no `rssItemGuid` field |
+| **Legacy** | Notes **public before PWC migration** | `<guid isPermaLink="true">{legacyRssGuid}</guid>` where `legacyRssGuid` = historically emitted URL, stored in frontmatter |
+| **New** | Notes **created after PWC migration** | `<guid isPermaLink="false">urn:karthikg.in:note:{id}</guid>`; no `legacyRssGuid` field |
 
 **Legacy notes at migration:**
 
-- Set frontmatter `rssItemGuid: https://karthikg.in/notes/{slug}/` (frozen forever).
-- Even if slug later renames, `rssItemGuid` stays the migration-time URL; `<link>` updates to current canonical URL.
+- Set frontmatter `legacyRssGuid: https://karthikg.in/notes/{slug}/` (frozen forever).
+- Even if slug later renames, `legacyRssGuid` stays the migration-time URL; `<link>` updates to current canonical URL.
 
 **New notes:**
 
-- Omit `rssItemGuid`; feeds adapter computes URN from `id` (immutable under slug rename).
+- Omit `legacyRssGuid`; feeds adapter computes URN from `id` (immutable under slug rename).
 
 **Slug rename behavior:**
 
@@ -378,12 +376,12 @@ Two deterministic GUID classes:
 | --- | --- |
 | `<link>` | yes → new canonical URL |
 | `<guid>` | **never** |
-| `rssItemGuid` (legacy) | **never** |
+| `legacyRssGuid` (legacy) | **never** |
 | URN guid (new) | **never** (tied to `id`) |
 
 **Feed-reader duplication risk:** Legacy notes keep URL GUIDs to avoid reappearing as new items in readers that already subscribed. New notes use stable URN from creation. No mixed policy per rename event — policy is fixed at note creation/migration.
 
-**Domain:** stores `rssItemGuid?: string` on Note (opaque string, no RSS semantics in domain logic beyond holding the frozen value). **Feeds adapter** decides RSS XML shape.
+**Storage/domain:** stores optional `legacyRssGuid?: string` on Note as opaque migration compatibility metadata. **Feeds adapter** owns RSS GUID emission rules.
 
 ---
 
@@ -493,7 +491,7 @@ relationships present              → use relationships; ignore legacy fields
 
 ---
 
-## 12. Storage and ContentStore
+## 12. Storage and query layer
 
 ### 12.1 Flow
 
@@ -501,22 +499,22 @@ relationships present              → use relationships; ignore legacy fields
 Markdown / YAML → Astro/Zod records → mappers → domain objects → adapters
 ```
 
-### 12.2 ContentStore (retrieval only)
+### 12.2 Query functions (retrieval only)
+
+Module-level functions (a literal `ContentStore` class/interface is optional):
 
 ```typescript
-interface ContentStore {
-  getPerson(): Person;
-  getNotes(): Note[];
-  getPublishedNotes(): Note[];
-  getProjects(): Project[];
-  getNoteById(id: ObjectId): Note | undefined;
-  getProjectById(id: ObjectId): Project | undefined;
-  getNoteBySlug(slug: string): Note | undefined;
-  getProjectBySlug(slug: string): Project | undefined;
-}
+getPerson(): Person;
+getNotes(): Note[];
+getPublishedNotes(): Note[];
+getProjects(): Project[];
+getNoteById(id: ObjectId): Note | undefined;
+getProjectById(id: ObjectId): Project | undefined;
+getNoteBySlug(slug: string): Note | undefined;
+getProjectBySlug(slug: string): Project | undefined;
 ```
 
-No routing, redirect, or protocol methods on ContentStore.
+No routing, redirect, or protocol methods in the storage query layer.
 
 Build-time instantiation wraps `getCollection()` + `person.yaml` parse. Domain objects materialized once per build/CLI invocation.
 
@@ -528,8 +526,7 @@ Build-time instantiation wraps `getCollection()` + `person.yaml` parse. Domain o
 | Map to domain | `src/core/storage/map-{person,note,project}.ts` |
 | Derive `publication` | `map-note.ts` only |
 | Derive `noteKind` | `src/core/domain/note.ts` |
-| Canonical paths | `src/core/domain/urls.ts` |
-| Redirect derivation | `src/adapters/routing/redirects.ts` |
+| Redirect derivation | `src/adapters/routing/redirects.ts` (from slug/previousSlugs) |
 | Publication filter | `getPublishedNotes()` uses `isPublicNote()` |
 
 ---
@@ -549,7 +546,6 @@ src/
       project.ts
       relationship.ts
       syndication.ts
-      urls.ts                 # canonical paths, locationPaths()
     storage/
       content-store.ts
       map-person.ts
@@ -593,12 +589,12 @@ core/domain → standard library only
 ```typescript
 // adapters/webmention/mention-targets.ts — illustrative
 function mentionTargetUrls(note: Note, siteOrigin: string): string[] {
-  const paths = locationPaths(note); // domain: previousSlugs + current slug
-  return paths.map((p) => `${siteOrigin}${p}`);
+  const slugs = [...note.previousSlugs, note.slug];
+  return slugs.map((s) => `${siteOrigin}/notes/${s}/`);
 }
 ```
 
-Domain provides `locationPaths`; adapter decides these are Webmention fetch targets.
+Adapter constructs URLs from domain `slug` / `previousSlugs`; domain has no Webmention concepts.
 
 ### 13.4 `indieweb.ts` decomposition
 
@@ -635,7 +631,7 @@ POSSE CLI unchanged — human pastes URL into frontmatter. No operational automa
 | Requirement | Compliance |
 | --- | --- |
 | Existing note URLs at migration | Unchanged slugs |
-| Legacy RSS GUIDs | Frozen `rssItemGuid` in frontmatter |
+| Legacy RSS GUIDs | Frozen `legacyRssGuid` in frontmatter |
 | New note RSS GUIDs | URN from `id`; immutable |
 | Slug rename | `<link>` updates; GUID frozen |
 | Sitemap | Same note URLs at migration; adds project detail URLs |
@@ -654,13 +650,13 @@ POSSE CLI unchanged — human pastes URL into frontmatter. No operational automa
 ## 16. Migration sequence (design-level)
 
 1. **IDs in frontmatter** — one-time script; validate; archive temp manifest.
-2. **Domain + mappers + ContentStore** — wrappers preserve public output.
+2. **Domain + mappers + query functions** — wrappers preserve public output.
 3. **Adapter extraction** — split `indieweb.ts`.
 4. **Person centralization** — pages read Person.
 5. **Project detail pages** — first-party canonical URLs.
 6. **Relationship migration** — `relationships` + legacy fallback.
 7. **Historical slugs + routing adapter** — redirects; WM adapter targets.
-8. **RSS GUID policy** — set `rssItemGuid` on legacy notes; URN for new.
+3. **RSS identity compatibility** — feeds adapter; `legacyRssGuid` on legacy public notes.
 
 Detailed PR-by-PR tasks: [`personal-web-core-implementation-plan.md`](./personal-web-core-implementation-plan.md).
 
@@ -683,7 +679,7 @@ Detailed PR-by-PR tasks: [`personal-web-core-implementation-plan.md`](./personal
 
 | Risk | Mitigation |
 | --- | --- |
-| Legacy vs new RSS GUID split | Explicit `rssItemGuid` field; tests per class |
+| Legacy vs new RSS GUID split | Explicit `legacyRssGuid` field; tests per class |
 | Astro filename coupling | Filename = slug through milestone |
 | WM on renamed slugs | Adapter queries all location paths |
 | Over-abstraction | Single ContentStore; no DI/graph/plugins |
@@ -704,7 +700,7 @@ Project draft gates; filename decoupled from slug; structured syndication (`at:/
 | UUIDv7 in frontmatter | Stable identity across slug/storage changes |
 | `PublicationState` | Single domain truth from existing gates |
 | `person.yaml` | One identity source for projections |
-| ContentStore | Testable retrieval without protocol coupling |
+| Storage query module | Testable retrieval without protocol coupling |
 | `reply-to` / `bookmark-of` only | Real relationships today without speculative vocabulary |
 | Routing adapter | Redirects without bloating store |
 | Frozen RSS GUID policy | Slug renames without feed item duplication |
@@ -722,7 +718,7 @@ Project draft gates; filename decoupled from slug; structured syndication (`at:/
 - [x] RSS GUID policy deterministic and immutable per note
 - [x] No Webmention concepts in domain
 - [x] Relationship vocabulary: `reply-to`, `bookmark-of` only
-- [x] ContentStore retrieval-only; redirects in routing adapter
+- [x] Storage query layer retrieval-only; redirects in routing adapter
 - [x] Single `PublicationState` in domain
 - [x] ATProto via `externalIdentities`
 - [x] Project first-party URL canonical

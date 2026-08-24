@@ -1,0 +1,18 @@
+{
+  "capturedAfterM1Migration": true,
+  "noteFileCount": 2,
+  "projectFileCount": 5,
+  "noteSlugs": ["README", "first-note-probably"],
+  "projectSlugs": ["homebase", "neighborbook", "pantry-mojo", "sai-parayan-tracker", "thea-kitchen"],
+  "publishedNoteSlugs": ["first-note-probably"],
+  "syndicationUrls": ["https://bsky.app/profile/karthikg.in/post/3mtrz4v5yut2a"],
+  "legacyRssGuids": [
+    {
+      "slug": "first-note-probably",
+      "legacyRssGuid": "https://karthikg.in/notes/first-note-probably/"
+    }
+  ],
+  "rssEmittedGuid": "https://karthikg.in/notes/first-note-probably/",
+  "canonicalNoteUrls": ["https://karthikg.in/notes/first-note-probably/"],
+  "personId": "01a03192-07db-70a9-a4da-03a139669a11"
+}

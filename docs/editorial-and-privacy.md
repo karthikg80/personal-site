@@ -44,7 +44,7 @@ The publishing sequence is:
 5. Verify claims, links, names, timing, images, and metadata.
 6. Perform the privacy review.
 7. Approve the exact text.
-8. Export a handoff that still has `draft: true` and `privacyReviewed: false`.
+8. Export a handoff that still has `draft: true` and `privacyReviewed: false`, and includes a new immutable `id` (UUIDv7) plus `slug` and `previousSlugs: []`. Do not add `legacyRssGuid` to new notes.
 9. Change both publication flags only after approval, then deploy through the normal reviewed Git workflow.
 10. After the public URL is live, send webmentions for outbound links, replies, and bookmarks. If the note should also appear on Bluesky, POSSE it and store the public URL in `syndication` so the original keeps `u-syndication`.
 
