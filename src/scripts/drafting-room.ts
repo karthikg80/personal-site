@@ -1,4 +1,5 @@
-import { generateObjectId } from '../core/authoring/generate-object-id';
+import { ensureCanonicalId } from '../lib/publishing/canonical-id';
+import { buildHandoffMarkdown } from '../lib/publishing/handoff';
 
 type ReviewKey = 'firsthand' | 'facts' | 'people' | 'location' | 'voice';
 type AgentMode = 'interview' | 'shapes' | 'draft' | 'privacy' | 'voice' | 'custom';
@@ -12,6 +13,7 @@ type AgentNote = {
 
 type Draft = {
   id: string;
+  canonicalId?: string;
   title: string;
   sparks: string;
   body: string;
@@ -440,10 +442,6 @@ if (accessForm) {
     void askAgent('custom', agentMessage.value);
   });
 
-  function yamlString(value: string): string {
-    return JSON.stringify(value.trim() || 'Untitled note');
-  }
-
   function slugify(value: string): string {
     return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'untitled-note';
   }
@@ -451,28 +449,19 @@ if (accessForm) {
   function markdownHandoff(): { filename: string; content: string; complete: boolean } {
     syncInputsToDraft();
     const draft = currentDraft();
+    draft.canonicalId = ensureCanonicalId(draft.canonicalId);
+    scheduleSave();
     const body = draft.body.trim() || draft.sparks.trim();
     const complete = reviewKeys.every((key) => draft.review[key]);
     const slug = slugify(draft.title);
-    const content = [
-      '---',
-      `id: ${generateObjectId()}`,
-      `title: ${yamlString(draft.title)}`,
-      `slug: ${yamlString(slug)}`,
-      `date: ${new Date().toISOString().slice(0, 10)}`,
-      'previousSlugs: []',
-      'tags: []',
-      'presentation: note',
-      'relationships: []',
-      'syndication: []',
-      'draft: true',
-      'privacyReviewed: false',
-      '---',
-      '',
+    const { filename, content } = buildHandoffMarkdown({
+      canonicalId: draft.canonicalId,
+      title: draft.title,
+      slug,
+      date: new Date().toISOString().slice(0, 10),
       body,
-      '',
-    ].join('\n');
-    return { filename: `${slug}.md`, content, complete };
+    });
+    return { filename, content, complete };
   }
 
   element<HTMLButtonElement>('copy-handoff').addEventListener('click', async () => {
