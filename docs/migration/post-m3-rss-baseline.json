@@ -1,0 +1,23 @@
+{
+  "items": [
+    {
+      "title": "First note, probably",
+      "link": "https://karthikg.in/notes/first-note-probably/",
+      "guid": "https://karthikg.in/notes/first-note-probably/",
+      "isPermaLink": "true",
+      "pubDate": "Sat, 22 Aug 2026 00:00:00 GMT",
+      "description": "I have never published a personal blog before. This is a deliberately rough first attempt.",
+      "content": "<p>I have built plenty of websites. Writing something personal on one feels different.</p>\n<p>This is my first attempt. I do not have a voice for it yet—or maybe I do, and I have not heard it often enough to recognize it.</p>\n<h2 id=\"what-happened\">what happened</h2>\n<ul>\n<li>I redrew this site.</li>\n<li>The old version was tidy and professional.</li>\n<li>It also felt a little too much like a résumé.</li>\n<li>The new one has paper colours, red links, and a crooked drawing of a house.</li>\n</ul>\n<p>The projects are still here. So are the identity pieces: my domain, RSS, and links to other places I appear online. The change is mostly that the site now has room for things that are not finished.</p>\n<h2 id=\"an-open-question\">an open question</h2>\n<p>I am not sure what belongs here yet.</p>\n<p>Maybe notes about making small software. Things I noticed. Links worth keeping. A sentence that did not need to become an article.</p>\n<p>I do not want a publishing schedule before I have a reason to publish.</p>\n<h2 id=\"for-now\">for now</h2>\n<p>One rough note.</p>\n<p>Then I can see what the next one wants to be.</p>\n"
+    }
+  ],
+  "comparison": [
+    {
+      "slug": "first-note-probably",
+      "sameTitle": true,
+      "sameLink": true,
+      "sameGuid": true,
+      "sameIsPermaLink": true
+    }
+  ],
+  "exactXmlEqual": true
+}
