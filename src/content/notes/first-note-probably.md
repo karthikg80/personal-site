@@ -6,6 +6,8 @@ tags:
   - making
   - personal web
 presentation: scrap
+syndication:
+  - https://bsky.app/profile/karthikg.in/post/3mtrz4v5yut2a
 draft: false
 privacyReviewed: true
 ---
