@@ -3,6 +3,26 @@ import { buildBlueskyPostText } from './indieweb';
 
 const SITE = 'https://karthikg.in';
 
+async function loadLocalEnv(): Promise<void> {
+  const envPath = new URL('../../.env', import.meta.url);
+  let raw: string;
+  try {
+    raw = await readFile(envPath, 'utf8');
+  } catch {
+    return;
+  }
+
+  for (const line of raw.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const separator = trimmed.indexOf('=');
+    if (separator < 1) continue;
+    const key = trimmed.slice(0, separator).trim();
+    const value = trimmed.slice(separator + 1).trim().replace(/^['"]|['"]$/g, '');
+    if (process.env[key] === undefined) process.env[key] = value;
+  }
+}
+
 type Session = {
   did: string;
   accessJwt: string;
@@ -33,6 +53,7 @@ function utf8Index(text: string, index: number): number {
 }
 
 async function main(): Promise<void> {
+  await loadLocalEnv();
   const slug = process.argv[2]?.replace(/\.md$/, '');
   if (!slug) {
     console.error('Usage: npm run posse:bluesky -- <note-slug>');

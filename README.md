@@ -100,7 +100,8 @@ It cannot publish or modify the public content collection. Exact-text approval a
    npm run webmentions:send
    ```
 
-7. To syndicate a published note to Bluesky, set `BLUESKY_APP_PASSWORD` and run:
+7. To syndicate a published note to Bluesky, put an app password in the
+   gitignored `.env` (copy from `.env.example`) and run:
 
    ```sh
    npm run posse:bluesky -- <slug>
