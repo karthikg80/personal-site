@@ -1,7 +1,7 @@
 export function extractOutboundLinks(
   html: string,
   siteOrigin: string,
-  extra: { inReplyTo?: string; bookmarkOf?: string } = {}
+  relationshipUrls: string[] = []
 ): string[] {
   const origin = siteOrigin.replace(/\/$/, '');
   const found = new Set<string>();
@@ -10,8 +10,9 @@ export function extractOutboundLinks(
     addHttpUrl(found, match[1], origin);
   }
 
-  addHttpUrl(found, extra.inReplyTo, origin);
-  addHttpUrl(found, extra.bookmarkOf, origin);
+  for (const url of relationshipUrls) {
+    addHttpUrl(found, url, origin);
+  }
 
   return [...found];
 }

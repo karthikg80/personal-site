@@ -463,6 +463,7 @@ if (accessForm) {
       'previousSlugs: []',
       'tags: []',
       'presentation: note',
+      'relationships: []',
       'syndication: []',
       'draft: true',
       'privacyReviewed: false',

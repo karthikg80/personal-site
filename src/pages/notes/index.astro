@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { classifyStoredNote } from '../../core/storage/map-note.js';
+import { deriveNoteKind } from '../../core/domain/note.js';
+import { mapNote } from '../../core/storage/map-note.js';
 import { formatNoteDate, getPublishedNotes, notePath } from '../../lib/notes';
 
 const notes = await getPublishedNotes();
@@ -24,16 +25,18 @@ const notes = await getPublishedNotes();
 
       {notes.length > 0 ? (
         <ol class="note-list">
-          {notes.map((note) => (
+          {notes.map((note) => {
+              const kind = deriveNoteKind(mapNote(note.data));
+              return (
             <li>
               <article class:list={['h-entry', { scrap: note.data.presentation === 'scrap' }]}>
                 <time class="dt-published" datetime={note.data.date.toISOString()}>
                   {formatNoteDate(note.data.date)}
                 </time>
                 <div>
-                  {classifyStoredNote(note.data) === 'reply' && <span class="rough-marker">reply</span>}
-                  {classifyStoredNote(note.data) === 'bookmark' && <span class="rough-marker">bookmark</span>}
-                  {classifyStoredNote(note.data) === 'scrap' && <span class="rough-marker">rough note</span>}
+                  {kind === 'reply' && <span class="rough-marker">reply</span>}
+                  {kind === 'bookmark' && <span class="rough-marker">bookmark</span>}
+                  {kind === 'scrap' && <span class="rough-marker">rough note</span>}
                   <h2 class="p-name"><a class="u-url" href={notePath(note)}>{note.data.title}</a></h2>
                   {note.data.summary && <p class="p-summary">{note.data.summary}</p>}
                   {note.data.tags.length > 0 && (
@@ -44,7 +47,8 @@ const notes = await getPublishedNotes();
                 </div>
               </article>
             </li>
-          ))}
+              );
+            })}
         </ol>
       ) : (
         <aside class="empty-state">

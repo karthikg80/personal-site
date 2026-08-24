@@ -16,24 +16,34 @@ describe('extractOutboundLinks', () => {
     ]);
   });
 
-  it('includes reply and bookmark targets even when they are not in the body', () => {
+  it('includes relationship target URLs even when they are not in the body', () => {
     expect(
-      extractOutboundLinks('<p>no links</p>', 'https://karthikg.in', {
-        inReplyTo: 'https://other.example/reply-target',
-        bookmarkOf: 'https://other.example/saved',
-      })
+      extractOutboundLinks('<p>no links</p>', 'https://karthikg.in', [
+        'https://other.example/reply-target',
+        'https://other.example/saved',
+      ])
     ).toEqual([
       'https://other.example/reply-target',
       'https://other.example/saved',
     ]);
   });
 
-  it('drops same-origin reply and bookmark targets', () => {
+  it('deduplicates a relationship URL that also appears in the body', () => {
     expect(
-      extractOutboundLinks('<p>no links</p>', 'https://karthikg.in', {
-        inReplyTo: 'https://karthikg.in/notes/other/',
-        bookmarkOf: '/notes/local/',
-      })
+      extractOutboundLinks(
+        '<p><a href="https://other.example/reply-target">reply</a></p>',
+        'https://karthikg.in',
+        ['https://other.example/reply-target']
+      )
+    ).toEqual(['https://other.example/reply-target']);
+  });
+
+  it('drops same-origin relationship targets', () => {
+    expect(
+      extractOutboundLinks('<p>no links</p>', 'https://karthikg.in', [
+        'https://karthikg.in/notes/other/',
+        '/notes/local/',
+      ])
     ).toEqual([]);
   });
 });

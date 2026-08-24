@@ -52,10 +52,10 @@ describe('deriveNoteKind', () => {
     expect(deriveNoteKind({ presentation: 'scrap', relationships })).toBe('reply');
   });
 
-  it('prefers reply over bookmark', () => {
+  it('prefers reply over bookmark regardless of array order', () => {
     const relationships: Relationship[] = [
-      { type: 'reply-to', target: { kind: 'external', url: 'https://example.com/post' } },
       { type: 'bookmark-of', target: { kind: 'external', url: 'https://example.com/page' } },
+      { type: 'reply-to', target: { kind: 'external', url: 'https://example.com/post' } },
     ];
     expect(deriveNoteKind({ presentation: 'note', relationships })).toBe('reply');
   });

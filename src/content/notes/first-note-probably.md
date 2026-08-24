@@ -13,6 +13,7 @@ privacyReviewed: true
 id: 01a03192-07d5-76ce-8aa7-6a9dd5f9a4d5
 slug: first-note-probably
 previousSlugs: []
+relationships: []
 legacyRssGuid: https://karthikg.in/notes/first-note-probably/
 ---
 

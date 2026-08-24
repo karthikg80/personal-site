@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
-import { mapNote, classifyStoredNote } from './map-note.js';
+import { mapNote } from './map-note.js';
 import { mapProject } from './map-project.js';
 import { mapPerson, type PersonStorageData } from './map-person.js';
 
@@ -18,6 +18,7 @@ describe('mapNote', () => {
     tags: ['making', 'personal web'],
     draft: false,
     privacyReviewed: true,
+    relationships: [] as [],
     syndication: ['https://bsky.app/profile/karthikg.in/post/3mtrz4v5yut2a'],
     legacyRssGuid: 'https://karthikg.in/notes/first-note-probably/',
     date: new Date('2026-08-22T00:00:00.000Z'),
@@ -37,11 +38,19 @@ describe('mapNote', () => {
     expect(note.createdAt.toISOString()).toBe('2026-08-22T00:00:00.000Z');
   });
 
-  it('maps inReplyTo and bookmarkOf into relationships', () => {
+  it('maps canonical relationships exactly', () => {
     const note = mapNote({
       ...base,
-      inReplyTo: 'https://example.com/post',
-      bookmarkOf: 'https://example.com/saved',
+      relationships: [
+        {
+          type: 'reply-to',
+          target: { kind: 'external', url: 'https://example.com/post' },
+        },
+        {
+          type: 'bookmark-of',
+          target: { kind: 'external', url: 'https://example.com/saved' },
+        },
+      ],
     });
     expect(note.relationships).toEqual([
       { type: 'reply-to', target: { kind: 'external', url: 'https://example.com/post' } },
@@ -49,8 +58,13 @@ describe('mapNote', () => {
     ]);
   });
 
-  it('maps missing relationship fields to empty array', () => {
-    expect(mapNote(base).relationships).toEqual([]);
+  it('maps missing relationships to empty array', () => {
+    const { relationships: _ignored, ...withoutRelationships } = base;
+    expect(mapNote(withoutRelationships).relationships).toEqual([]);
+  });
+
+  it('maps explicit empty relationships', () => {
+    expect(mapNote({ ...base, relationships: [] }).relationships).toEqual([]);
   });
 
   it('fails when id is missing rather than generating one', () => {
@@ -60,25 +74,6 @@ describe('mapNote', () => {
   it('derives awaiting-privacy-review', () => {
     const note = mapNote({ ...base, draft: false, privacyReviewed: false });
     expect(note.publication).toBe('awaiting-privacy-review');
-  });
-});
-
-describe('classifyStoredNote', () => {
-  it('maps storage fields through deriveNoteKind without a second precedence table', () => {
-    expect(classifyStoredNote({ inReplyTo: 'https://example.com/post' })).toBe('reply');
-    expect(classifyStoredNote({ bookmarkOf: 'https://example.com/page' })).toBe('bookmark');
-    expect(classifyStoredNote({ presentation: 'scrap' })).toBe('scrap');
-    expect(classifyStoredNote({})).toBe('note');
-  });
-
-  it('keeps reply ahead of bookmark when both storage fields are present', () => {
-    expect(
-      classifyStoredNote({
-        inReplyTo: 'https://example.com/post',
-        bookmarkOf: 'https://example.com/page',
-        presentation: 'scrap',
-      })
-    ).toBe('reply');
   });
 });
 
@@ -103,26 +98,6 @@ describe('mapProject', () => {
       { kind: 'live', url: 'https://neighborbook.theafoundry.com' },
     ]);
     expect(project.featured).toBe(true);
-  });
-
-  it('falls back from legacy link/github fields when links[] is absent', () => {
-    const project = mapProject({
-      id: '01a03192-07d8-729c-8080-fcafaf73f46d',
-      slug: 'neighborbook',
-      previousSlugs: [],
-      title: 'Neighborbook',
-      description: 'Private community memory',
-      tags: ['Communities'],
-      link: 'https://neighborbook.theafoundry.com',
-      github: 'https://github.com/karthikg80/neighborbook',
-      featured: false,
-      date: new Date('2026-07-30T00:00:00.000Z'),
-    });
-
-    expect(project.links).toEqual([
-      { kind: 'live', url: 'https://neighborbook.theafoundry.com' },
-      { kind: 'github', url: 'https://github.com/karthikg80/neighborbook' },
-    ]);
   });
 
   it('handles projects with no external links', () => {

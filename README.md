@@ -109,7 +109,7 @@ It cannot publish or modify the public content collection. Exact-text approval a
 
    Then add the printed URL to the note's `syndication` list and redeploy.
 
-A reply uses `inReplyTo`; a bookmark uses `bookmarkOf`. Both stay behind the same publication gate.
+A reply uses a `relationships` entry with `type: reply-to`; a bookmark uses `type: bookmark-of`. Both stay behind the same publication gate.
 
 The archive is at `/notes`, individual notes use `/notes/<slug>`, and the full-text feed is `/rss.xml`. Draft or unreviewed notes are excluded from routes, the homepage, RSS, and the sitemap.
 

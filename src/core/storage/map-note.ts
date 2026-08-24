@@ -1,9 +1,25 @@
 import { parseObjectId, type ObjectId } from '../domain/ids.js';
-import { deriveNoteKind, type Note, type NoteKind } from '../domain/note.js';
+import type { Note } from '../domain/note.js';
 import { derivePublicationState } from '../domain/publication.js';
-import type { Relationship } from '../domain/relationship.js';
+import type { Relationship, RelationshipType } from '../domain/relationship.js';
 import type { SyndicationCopy } from '../domain/syndication.js';
 import { asOptionalUrlString, asUrlString } from './url-value.js';
+
+export type RelationshipStorageTarget =
+  | {
+      kind: 'external';
+      url: string | URL;
+    }
+  | {
+      kind: 'internal';
+      id: string;
+      expectedKind?: 'note' | 'project';
+    };
+
+export type RelationshipStorage = {
+  type: RelationshipType;
+  target: RelationshipStorageTarget;
+};
 
 export type NoteStorageData = {
   id: string;
@@ -15,48 +31,33 @@ export type NoteStorageData = {
   tags: string[];
   draft: boolean;
   privacyReviewed: boolean;
-  inReplyTo?: string | URL;
-  bookmarkOf?: string | URL;
+  relationships?: RelationshipStorage[];
   syndication: Array<string | URL>;
   legacyRssGuid?: string | URL;
   date: Date;
   updated?: Date;
 };
 
-type StoredNoteKindFields = {
-  presentation?: 'note' | 'scrap';
-  inReplyTo?: string | URL;
-  bookmarkOf?: string | URL;
-};
+function relationshipsFromStorage(data: NoteStorageData): Relationship[] {
+  return (data.relationships ?? []).map((relationship) => {
+    if (relationship.target.kind === 'external') {
+      return {
+        type: relationship.type,
+        target: {
+          kind: 'external',
+          url: asUrlString(relationship.target.url),
+        },
+      };
+    }
 
-function relationshipsFromStorage(data: StoredNoteKindFields): Relationship[] {
-  const relationships: Relationship[] = [];
-  const inReplyTo = asOptionalUrlString(data.inReplyTo);
-  const bookmarkOf = asOptionalUrlString(data.bookmarkOf);
-
-  if (inReplyTo) {
-    relationships.push({
-      type: 'reply-to',
-      target: { kind: 'external', url: inReplyTo },
-    });
-  }
-  if (bookmarkOf) {
-    relationships.push({
-      type: 'bookmark-of',
-      target: { kind: 'external', url: bookmarkOf },
-    });
-  }
-  return relationships;
-}
-
-/**
- * Storage-field entry point for note kind.
- * Kind precedence lives only in deriveNoteKind.
- */
-export function classifyStoredNote(data: StoredNoteKindFields): NoteKind {
-  return deriveNoteKind({
-    presentation: data.presentation ?? 'note',
-    relationships: relationshipsFromStorage(data),
+    return {
+      type: relationship.type,
+      target: {
+        kind: 'internal',
+        id: parseObjectId(relationship.target.id),
+        expectedKind: relationship.target.expectedKind,
+      },
+    };
   });
 }
 

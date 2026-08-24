@@ -5,13 +5,15 @@ import {
   primaryEmail,
   siteDisplayHost,
 } from '../adapters/presentation/person.js';
+import { deriveNoteKind } from '../core/domain/note.js';
 import { getPerson } from '../core/storage/content.js';
-import { classifyStoredNote } from '../core/storage/map-note.js';
+import { mapNote } from '../core/storage/map-note.js';
 import { formatNoteDate, getPublishedNotes, notePath } from '../lib/notes';
 
 const person = await getPerson();
 const email = primaryEmail(person);
 const [latestNote] = await getPublishedNotes();
+const latestKind = latestNote ? deriveNoteKind(mapNote(latestNote.data)) : null;
 ---
 
 <Layout
@@ -93,13 +95,13 @@ const [latestNote] = await getPublishedNotes();
           <p class="margin-note">from the notebook</p>
           <h2 id="latest-note-title">Latest workbench note</h2>
         </div>
-        <article class:list={['h-entry', { scrap: classifyStoredNote(latestNote.data) === 'scrap' }]}>
+        <article class:list={['h-entry', { scrap: latestKind === 'scrap' }]}>
           <time class="dt-published" datetime={latestNote.data.date.toISOString()}>
             {formatNoteDate(latestNote.data.date)}
           </time>
-          {classifyStoredNote(latestNote.data) === 'reply' && <span class="rough-marker">reply</span>}
-          {classifyStoredNote(latestNote.data) === 'bookmark' && <span class="rough-marker">bookmark</span>}
-          {classifyStoredNote(latestNote.data) === 'scrap' && <span class="rough-marker">rough note</span>}
+          {latestKind === 'reply' && <span class="rough-marker">reply</span>}
+          {latestKind === 'bookmark' && <span class="rough-marker">bookmark</span>}
+          {latestKind === 'scrap' && <span class="rough-marker">rough note</span>}
           <h3 class="p-name"><a class="u-url" href={notePath(latestNote)}>{latestNote.data.title}</a></h3>
           {latestNote.data.summary && <p class="p-summary">{latestNote.data.summary}</p>}
           <a class="read-note" href={notePath(latestNote)}>read the note →</a>

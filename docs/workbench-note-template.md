@@ -22,8 +22,16 @@ summary: "One sentence that says what is inside."
 tags:
   - making
 presentation: note # use scrap for an intentionally rough, notebook-like page
-# inReplyTo: https://example.com/post   # a reply; markup becomes u-in-reply-to
-# bookmarkOf: https://example.com/page  # a bookmark; markup becomes u-bookmark-of
+relationships: []
+# relationships:
+#   - type: reply-to
+#     target:
+#       kind: external
+#       url: https://example.com/post
+#   - type: bookmark-of
+#     target:
+#       kind: external
+#       url: https://example.com/page
 syndication: []
 draft: true
 privacyReviewed: false

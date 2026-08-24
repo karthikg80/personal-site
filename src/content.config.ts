@@ -41,8 +41,24 @@ const notesCollection = defineCollection({
     summary: z.string().optional(),
     tags: z.array(z.string()).default([]),
     presentation: z.enum(['note', 'scrap']).default('note'),
-    inReplyTo: z.url().optional(),
-    bookmarkOf: z.url().optional(),
+    relationships: z
+      .array(
+        z.object({
+          type: z.enum(['reply-to', 'bookmark-of']),
+          target: z.discriminatedUnion('kind', [
+            z.object({
+              kind: z.literal('external'),
+              url: z.url(),
+            }),
+            z.object({
+              kind: z.literal('internal'),
+              id: objectIdSchema,
+              expectedKind: z.enum(['note', 'project']).optional(),
+            }),
+          ]),
+        })
+      )
+      .default([]),
     syndication: z.array(z.url()).default([]),
     legacyRssGuid: z.string().url().optional(),
     draft: z.boolean().default(true),

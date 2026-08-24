@@ -3,8 +3,13 @@ import type { CollectionEntry } from 'astro:content';
 import Layout from './Layout.astro';
 import Webmentions from '../components/Webmentions.astro';
 import { hostLabel } from '../adapters/presentation/host-label.js';
+import {
+  externalBookmarkUrl,
+  externalReplyUrl,
+} from '../adapters/presentation/note-relationships.js';
+import { deriveNoteKind } from '../core/domain/note.js';
 import { getPerson } from '../core/storage/content.js';
-import { classifyStoredNote } from '../core/storage/map-note.js';
+import { mapNote } from '../core/storage/map-note.js';
 import { formatNoteDate } from '../lib/notes';
 
 interface Props {
@@ -13,9 +18,12 @@ interface Props {
 
 const { note } = Astro.props;
 const person = await getPerson();
-const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
-const kind = classifyStoredNote(note.data);
+const domainNote = mapNote(note.data);
+const kind = deriveNoteKind(domainNote);
 const isScrap = kind === 'scrap';
+const replyUrl = externalReplyUrl(domainNote);
+const bookmarkUrl = externalBookmarkUrl(domainNote);
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
 ---
 
 <Layout
@@ -36,16 +44,16 @@ const isScrap = kind === 'scrap';
       ) : (
         <p class="note-kind">workbench note</p>
       )}
-      {note.data.inReplyTo && (
+      {replyUrl && (
         <p class="context">
           In reply to
-          <a class="u-in-reply-to" href={note.data.inReplyTo}>{hostLabel(note.data.inReplyTo)}</a>
+          <a class="u-in-reply-to" href={replyUrl}>{hostLabel(replyUrl)}</a>
         </p>
       )}
-      {note.data.bookmarkOf && (
+      {bookmarkUrl && (
         <p class="context">
           Bookmarked
-          <a class="u-bookmark-of" href={note.data.bookmarkOf}>{hostLabel(note.data.bookmarkOf)}</a>
+          <a class="u-bookmark-of" href={bookmarkUrl}>{hostLabel(bookmarkUrl)}</a>
         </p>
       )}
       <h1 class="p-name">{note.data.title}</h1>
