@@ -1,0 +1,20 @@
+{
+  "comparedAgainst": "22ee2c9 (post-M4)",
+  "htmlXmlFilesCompared": 12,
+  "byteIdenticalCount": 11,
+  "differingFiles": ["contact/index.html"],
+  "contactDiff": "Attribute order on contact cards (class/rel/target) and stylesheet vs inline style emission order only; hrefs, rel values, labels, icons, and card order unchanged",
+  "relMeHrefsUnchanged": true,
+  "relMeRelValuesUnchanged": true,
+  "homepageHCardSemanticsUnchanged": true,
+  "aboutByteIdentical": true,
+  "nowByteIdentical": true,
+  "rssByteIdentical": true,
+  "sitemapByteIdentical": true,
+  "webmentionDiscoveryUnchanged": true,
+  "atprotoDidUnchanged": "did:plc:k25m3ebqwdr32ojecqpjfzbh",
+  "publishedNoteCount": 1,
+  "projectFileCount": 5,
+  "testsPassed": 68,
+  "build": "success"
+}
