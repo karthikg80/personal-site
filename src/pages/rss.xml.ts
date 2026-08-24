@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { rssGuidForNote } from '../adapters/feeds/rss.js';
-import { getPublishedNoteRecords } from '../core/storage/content.js';
+import { getPerson, getPublishedNoteRecords } from '../core/storage/content.js';
 import { notePath } from '../lib/notes';
 
 function escapeXml(value: string): string {
@@ -18,6 +18,7 @@ function escapeCdata(value: string): string {
 
 export const GET: APIRoute = async ({ site }) => {
   const origin = (site ?? new URL('https://karthikg.in')).toString().replace(/\/$/, '');
+  const person = await getPerson();
   const records = await getPublishedNoteRecords();
 
   const items = records
@@ -44,7 +45,7 @@ export const GET: APIRoute = async ({ site }) => {
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">',
     '<channel>',
-    '<title>Workbench Notes by Karthik Gurumoorthy</title>',
+    `<title>Workbench Notes by ${escapeXml(person.name)}</title>`,
     `<link>${escapeXml(origin)}/notes</link>`,
     `<atom:link href="${escapeXml(origin)}/rss.xml" rel="self" type="application/rss+xml" />`,
     '<description>Short notes about making software, noticing things, and wandering the web.</description>',

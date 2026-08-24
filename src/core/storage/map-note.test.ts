@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parse as parseYaml } from 'yaml';
 
 import { mapNote, classifyStoredNote } from './map-note.js';
 import { mapProject } from './map-project.js';
-import { mapPerson } from './map-person.js';
+import { mapPerson, type PersonStorageData } from './map-person.js';
 
 describe('mapNote', () => {
   const base = {
@@ -134,6 +137,35 @@ describe('mapPerson', () => {
       handle: 'karthikg.in',
       did: 'did:plc:k25m3ebqwdr32ojecqpjfzbh',
     });
+    expect('atproto' in person).toBe(false);
+  });
+
+  it('maps committed person.yaml identity facts without a top-level atproto field', () => {
+    const raw = readFileSync(join(import.meta.dirname, '../../content/person.yaml'), 'utf8');
+    const person = mapPerson(parseYaml(raw) as PersonStorageData);
+
+    expect(person.siteUrl).toBe('https://karthikg.in');
+    expect(person.name).toBe('Karthik Gurumoorthy');
+    expect(person.avatarPath).toBe('/avatar.svg');
+    expect(person.organization).toEqual({
+      name: 'Thea Foundry',
+      url: 'https://theafoundry.com',
+    });
+    expect(person.contactMethods).toEqual([
+      { kind: 'email', value: 'karthi@hey.com', rel: ['me'] },
+    ]);
+    expect(person.externalIdentities.map((identity) => identity.kind)).toEqual([
+      'github',
+      'atproto',
+      'linkedin',
+      'website',
+    ]);
+    expect(person.externalIdentities.find((identity) => identity.kind === 'github')?.rel).toEqual([
+      'me',
+    ]);
+    expect(
+      person.externalIdentities.find((identity) => identity.kind === 'atproto')?.rel
+    ).toEqual(['me', 'atproto']);
     expect('atproto' in person).toBe(false);
   });
 });

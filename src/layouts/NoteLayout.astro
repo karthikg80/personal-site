@@ -3,6 +3,7 @@ import type { CollectionEntry } from 'astro:content';
 import Layout from './Layout.astro';
 import Webmentions from '../components/Webmentions.astro';
 import { hostLabel } from '../adapters/presentation/host-label.js';
+import { getPerson } from '../core/storage/content.js';
 import { classifyStoredNote } from '../core/storage/map-note.js';
 import { formatNoteDate } from '../lib/notes';
 
@@ -11,13 +12,14 @@ interface Props {
 }
 
 const { note } = Astro.props;
+const person = await getPerson();
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
 const kind = classifyStoredNote(note.data);
 const isScrap = kind === 'scrap';
 ---
 
 <Layout
-  title={`${note.data.title} - Karthik Gurumoorthy`}
+  title={`${note.data.title} - ${person.name}`}
   description={note.data.summary ?? `A workbench note from ${formatNoteDate(note.data.date)}.`}
   type="article"
   publishedTime={note.data.date}
@@ -60,8 +62,8 @@ const isScrap = kind === 'scrap';
       {note.data.summary && <p class="note-summary p-summary">{note.data.summary}</p>}
       <a class="u-url permalink" href={canonicalUrl}>permalink</a>
       <span class="p-author h-card author">
-        <img class="u-photo" src="/avatar.svg" alt="" width="64" height="64" />
-        <a class="p-name u-url" href="/">Karthik Gurumoorthy</a>
+        <img class="u-photo" src={person.avatarPath} alt="" width="64" height="64" />
+        <a class="p-name u-url" href="/">{person.name}</a>
       </span>
     </header>
 

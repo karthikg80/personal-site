@@ -27,7 +27,7 @@ export type ProjectRecord = {
   entry: CollectionEntry<'projects'>;
 };
 
-const PERSON_PATH = join(import.meta.dirname, '../../content/person.yaml');
+const PERSON_PATH = join(process.cwd(), 'src/content/person.yaml');
 
 export async function getPerson(): Promise<Person> {
   const raw = readFileSync(PERSON_PATH, 'utf8');

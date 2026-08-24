@@ -1,4 +1,10 @@
 ---
+interface Props {
+  personName: string;
+}
+
+const { personName } = Astro.props;
+
 const navLinks = [
   { name: 'home', href: '/' },
   { name: 'about', href: '/about' },
@@ -14,7 +20,7 @@ const currentPath = Astro.url.pathname;
 
 <header class="site-header">
   <div class="container header-inner">
-    <a href="/" class="site-title" aria-label="Karthik Gurumoorthy, home">
+    <a href="/" class="site-title" aria-label={`${personName}, home`}>
       <span class="site-mark" aria-hidden="true">kg</span>
       <span>
         <strong>Karthik’s little corner</strong>

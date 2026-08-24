@@ -1,9 +1,23 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { contactPageCards } from '../adapters/presentation/person.js';
+import { getPerson } from '../core/storage/content.js';
+
+const person = await getPerson();
+const cards = contactPageCards(person);
+
+/** Presentation-only icons — not part of the Person domain model. */
+const cardIcons: Record<string, string> = {
+  email: '📧',
+  atproto: '☁️',
+  github: '💻',
+  linkedin: '💼',
+  website: '⬡',
+};
 ---
 
 <Layout
-  title="Contact - Karthik Gurumoorthy"
+  title={`Contact - ${person.name}`}
   description="Get in touch via email, LinkedIn, GitHub, or Bluesky."
 >
   <div class="section">
@@ -16,35 +30,18 @@ import Layout from '../layouts/Layout.astro';
       </p>
 
       <div class="contact-methods">
-        <a href="mailto:karthi@hey.com" class="contact-card u-email" rel="me">
-          <div class="icon">📧</div>
-          <h3>Email</h3>
-          <p>karthi@hey.com</p>
-        </a>
-
-        <a href="https://bsky.app/profile/karthikg.in" target="_blank" rel="me atproto noopener noreferrer" class="contact-card">
-          <div class="icon">☁️</div>
-          <h3>Bluesky</h3>
-          <p>@karthikg.in</p>
-        </a>
-
-        <a href="https://github.com/karthikg80" target="_blank" rel="me noopener noreferrer" class="contact-card">
-          <div class="icon">💻</div>
-          <h3>GitHub</h3>
-          <p>karthikg80</p>
-        </a>
-
-        <a href="https://www.linkedin.com/in/karthikg80/" target="_blank" rel="me noopener noreferrer" class="contact-card">
-          <div class="icon">💼</div>
-          <h3>LinkedIn</h3>
-          <p>Connect professionally</p>
-        </a>
-
-        <a href="https://theafoundry.com" target="_blank" rel="me noopener noreferrer" class="contact-card">
-          <div class="icon">⬡</div>
-          <h3>Thea Foundry</h3>
-          <p>theafoundry.com</p>
-        </a>
+        {cards.map((card) => (
+          <a
+            href={card.href}
+            class:list={['contact-card', card.className]}
+            rel={card.rel}
+            target={card.openInNewTab ? '_blank' : undefined}
+          >
+            <div class="icon">{cardIcons[card.kind] ?? '•'}</div>
+            <h3>{card.label}</h3>
+            <p>{card.detail}</p>
+          </a>
+        ))}
       </div>
     </div>
   </div>

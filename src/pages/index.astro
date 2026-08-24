@@ -1,20 +1,27 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import {
+  mailtoHref,
+  primaryEmail,
+  siteDisplayHost,
+} from '../adapters/presentation/person.js';
+import { getPerson } from '../core/storage/content.js';
 import { classifyStoredNote } from '../core/storage/map-note.js';
 import { formatNoteDate, getPublishedNotes, notePath } from '../lib/notes';
 
-const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://karthikg.in';
+const person = await getPerson();
+const email = primaryEmail(person);
 const [latestNote] = await getPublishedNotes();
 ---
 
 <Layout
-  title="Karthik Gurumoorthy"
-  description="I build useful software for families and everyday life. Founder of Thea Foundry, after 18 years on high-scale payments systems."
+  title={person.name}
+  description={person.tagline}
 >
   <div class="home">
     <section class="intro container">
       <div class="intro-copy h-card">
-        <img class="u-photo u-logo avatar" src="/avatar.svg" alt="Karthik Gurumoorthy" width="72" height="72" />
+        <img class="u-photo u-logo avatar" src={person.avatarPath} alt={person.name} width="72" height="72" />
         <p class="kicker">Oh, hello there.</p>
         <h1>
           I’m <span class="p-name">Karthik</span>. I make small, useful software.
@@ -22,13 +29,13 @@ const [latestNote] = await getPublishedNotes();
         <p class="lede p-note">
           Mostly for families and everyday life. Before this, I spent 18 years
           working on high-scale payment systems. Now I run
-          <a class="p-org" href="https://theafoundry.com" rel="me">Thea Foundry</a>,
+          <a class="p-org" href={person.organization.url} rel="me">{person.organization.name}</a>,
           a tiny software studio with a fondness for calm tools and clear boundaries.
         </p>
         <p class="identity-links">
-          <a class="u-url u-uid" href={siteUrl}>karthikg.in</a>
+          <a class="u-url u-uid" href={person.siteUrl}>{siteDisplayHost(person)}</a>
           <span aria-hidden="true">·</span>
-          <a class="u-email" href="mailto:karthi@hey.com">email me</a>
+          {email && <a class="u-email" href={mailtoHref(email.value)}>email me</a>}
           <span aria-hidden="true">·</span>
           <a href="/now">what I’m doing now</a>
         </p>
