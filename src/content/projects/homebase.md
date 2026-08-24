@@ -7,7 +7,9 @@ tags:
   - Auth
   - Next.js
   - Supabase
-link: https://homebase.theafoundry.com
+links:
+  - kind: live
+    url: https://homebase.theafoundry.com
 featured: true
 id: 01a03192-07d7-7578-9177-b1ff2a03b264
 slug: homebase

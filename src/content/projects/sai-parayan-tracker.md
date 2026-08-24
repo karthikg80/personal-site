@@ -6,7 +6,9 @@ tags:
   - Communities
   - Reading
   - Next.js
-link: https://sai-parayan.theafoundry.com
+links:
+  - kind: live
+    url: https://sai-parayan.theafoundry.com
 featured: false
 id: 01a03192-07da-706b-9006-abb1c8ff932c
 slug: sai-parayan-tracker

@@ -6,7 +6,9 @@ tags:
   - Families
   - Food
   - Privacy
-link: https://theakitchen.app
+links:
+  - kind: live
+    url: https://theakitchen.app
 featured: false
 id: 01a03192-07db-70a9-a4d9-fc8863882d81
 slug: thea-kitchen

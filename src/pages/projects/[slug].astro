@@ -1,0 +1,169 @@
+---
+import { render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { getPerson, getProjectRecords } from '../../core/storage/content.js';
+import { projectLinkOfKind } from '../../core/storage/map-project.js';
+import { projectPath } from '../../lib/projects';
+
+export async function getStaticPaths() {
+  const records = await getProjectRecords();
+  return records.map((record) => ({
+    params: { slug: record.project.slug },
+    props: { record },
+  }));
+}
+
+const { record } = Astro.props;
+const { project, entry } = record;
+const person = await getPerson();
+const { Content } = await render(entry);
+const canonicalPath = projectPath(project.slug);
+const canonicalUrl = new URL(canonicalPath, Astro.site ?? Astro.url).toString();
+const live = projectLinkOfKind(project, 'live');
+const github = projectLinkOfKind(project, 'github');
+const publishedLabel = project.createdAt.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<Layout
+  title={`${project.title} - ${person.name}`}
+  description={project.description}
+>
+  <article class="project h-entry">
+    <header class="project-header container">
+      <p class="eyebrow">project</p>
+      <h1 class="p-name">{project.title}</h1>
+      <p class="project-meta">
+        <time class="dt-published" datetime={project.createdAt.toISOString()}>{publishedLabel}</time>
+      </p>
+      <p class="project-summary p-summary">{project.description}</p>
+      <a class="u-url permalink" href={canonicalUrl}>permalink</a>
+      {(live || github) && (
+        <p class="external-links">
+          {live && (
+            <a href={live.url} target="_blank" rel="noopener noreferrer">Visit project →</a>
+          )}
+          {github && (
+            <a href={github.url} target="_blank" rel="noopener noreferrer">GitHub →</a>
+          )}
+        </p>
+      )}
+    </header>
+
+    <div class="project-body container e-content">
+      <Content />
+    </div>
+
+    <footer class="project-footer container">
+      {project.topics.length > 0 && (
+        <ul aria-label="Topics">
+          {project.topics.map((topic) => <li class="p-category">{topic}</li>)}
+        </ul>
+      )}
+      <p>
+        <a href="/projects">← all projects</a>
+      </p>
+    </footer>
+  </article>
+</Layout>
+
+<style>
+  .project {
+    padding: clamp(3.5rem, 9vw, 6rem) 0 var(--space-2xl);
+  }
+
+  .project-header,
+  .project-body,
+  .project-footer {
+    max-width: var(--reading-width);
+  }
+
+  .eyebrow {
+    margin-bottom: 0.7rem;
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  h1 {
+    max-width: 16ch;
+    margin-bottom: 1rem;
+    font-size: clamp(2.6rem, 7vw, 4.6rem);
+    font-weight: 400;
+  }
+
+  .project-meta,
+  .permalink {
+    color: var(--color-text-light);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .permalink {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .project-summary {
+    max-width: 36rem;
+    margin: var(--space-lg) 0 0;
+    color: var(--color-text-light);
+    font-size: var(--text-lg);
+    font-style: italic;
+    line-height: 1.55;
+  }
+
+  .external-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.2rem;
+    margin-top: var(--space-lg);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+
+  .project-body {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-xl);
+    border-top: 1px solid var(--color-border);
+    font-size: 1.12rem;
+    line-height: 1.75;
+  }
+
+  .project-body :global(p) {
+    margin-bottom: 1.35rem;
+  }
+
+  .project-footer {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px dashed var(--color-border);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .project-footer ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    list-style: none;
+    margin-bottom: 1rem;
+  }
+
+  .project-footer li {
+    padding: 0.12rem 0.45rem;
+    border-bottom: 1px dotted var(--color-border);
+    color: var(--color-text-light);
+  }
+</style>

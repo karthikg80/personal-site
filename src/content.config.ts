@@ -16,8 +16,15 @@ const projectsCollection = defineCollection({
     description: z.string(),
     date: z.coerce.date(),
     tags: z.array(z.string()),
-    link: z.url().optional(),
-    github: z.url().optional(),
+    links: z
+      .array(
+        z.object({
+          kind: z.enum(['live', 'github', 'other']),
+          url: z.url(),
+          label: z.string().optional(),
+        })
+      )
+      .default([]),
     featured: z.boolean().default(false),
   }),
 });

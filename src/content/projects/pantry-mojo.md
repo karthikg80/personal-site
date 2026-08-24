@@ -7,7 +7,9 @@ tags:
   - Receipts
   - Next.js
   - Supabase
-link: https://pantrymojo.com
+links:
+  - kind: live
+    url: https://pantrymojo.com
 featured: false
 id: 01a03192-07d9-7027-8dd1-43bce15eb314
 slug: pantry-mojo

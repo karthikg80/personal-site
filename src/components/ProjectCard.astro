@@ -4,12 +4,22 @@ interface Props {
   description: string;
   date: Date;
   tags: string[];
-  link?: string;
-  github?: string;
+  href: string;
+  liveUrl?: string;
+  githubUrl?: string;
   featured?: boolean;
 }
 
-const { title, description, date, tags, link, github, featured = false } = Astro.props;
+const {
+  title,
+  description,
+  date,
+  tags,
+  href,
+  liveUrl,
+  githubUrl,
+  featured = false,
+} = Astro.props;
 
 const formattedDate = date.toLocaleDateString('en-US', {
   year: 'numeric',
@@ -21,7 +31,9 @@ const formattedDate = date.toLocaleDateString('en-US', {
   {featured && <span class="featured-badge">Featured</span>}
 
   <div class="card-header">
-    <h3 class="p-name">{title}</h3>
+    <h3 class="p-name">
+      <a class="u-url" href={href}>{title}</a>
+    </h3>
     <time class="date dt-published" datetime={date.toISOString()}>{formattedDate}</time>
   </div>
 
@@ -33,15 +45,15 @@ const formattedDate = date.toLocaleDateString('en-US', {
     ))}
   </div>
 
-  {(link || github) && (
+  {(liveUrl || githubUrl) && (
     <div class="links">
-      {link && (
-        <a href={link} target="_blank" rel="noopener noreferrer" class="project-link u-url">
-          View Project →
+      {liveUrl && (
+        <a href={liveUrl} target="_blank" rel="noopener noreferrer" class="project-link">
+          Visit project →
         </a>
       )}
-      {github && (
-        <a href={github} target="_blank" rel="noopener noreferrer" class="project-link">
+      {githubUrl && (
+        <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="project-link">
           GitHub →
         </a>
       )}
@@ -96,6 +108,15 @@ const formattedDate = date.toLocaleDateString('en-US', {
     font-size: var(--text-2xl);
     color: var(--color-text);
     flex: 1;
+  }
+
+  .card-header a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .card-header a:hover {
+    color: var(--color-primary);
   }
 
   .date {

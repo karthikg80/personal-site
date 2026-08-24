@@ -7,7 +7,9 @@ tags:
   - Privacy
   - Next.js
   - Supabase
-link: https://neighborbook.theafoundry.com
+links:
+  - kind: live
+    url: https://neighborbook.theafoundry.com
 featured: true
 id: 01a03192-07d8-729c-8080-fcafaf73f46d
 slug: neighborbook
