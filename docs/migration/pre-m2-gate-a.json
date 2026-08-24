@@ -1,0 +1,24 @@
+{
+  "noteFileCount": 2,
+  "projectFileCount": 5,
+  "publishedNoteCount": 1,
+  "publishedNoteSlugs": [
+    "first-note-probably"
+  ],
+  "canonicalNotePaths": [
+    "/notes/first-note-probably/"
+  ],
+  "projectSlugs": [
+    "homebase",
+    "neighborbook",
+    "pantry-mojo",
+    "sai-parayan-tracker",
+    "thea-kitchen"
+  ],
+  "syndication": [
+    "https://bsky.app/profile/karthikg.in/post/3mtrz4v5yut2a"
+  ],
+  "legacyRssGuids": [
+    "https://karthikg.in/notes/first-note-probably/"
+  ]
+}

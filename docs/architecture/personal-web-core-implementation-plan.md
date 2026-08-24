@@ -1,6 +1,6 @@
 # Personal Web Core — Implementation Plan
 
-**Status:** Approved — **M1 complete**; M2+ not started  
+**Status:** Approved — **M1 complete**; **M2 complete**; M3+ not started  
 **Design authority:** [`personal-web-core-design.md`](./personal-web-core-design.md)  
 **Principles:** incremental, behavior-preserving first, deployable after every step, no database, no deferred protocols.
 

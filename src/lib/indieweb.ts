@@ -1,4 +1,8 @@
-export type NoteKind = 'note' | 'scrap' | 'reply' | 'bookmark';
+import { deriveNoteKind, type NoteKind } from '../core/domain/note.js';
+import { derivePublicationState } from '../core/domain/publication.js';
+import type { Relationship } from '../core/domain/relationship.js';
+
+export type { NoteKind };
 
 export type NoteClassification = {
   presentation?: 'note' | 'scrap';
@@ -6,15 +10,34 @@ export type NoteClassification = {
   bookmarkOf?: string;
 };
 
+/**
+ * Compatibility export — single publication rule lives in core/domain/publication.ts.
+ */
 export function isPublishedNote(data: { draft: boolean; privacyReviewed: boolean }): boolean {
-  return !data.draft && data.privacyReviewed;
+  return derivePublicationState(data.draft, data.privacyReviewed) === 'public';
 }
 
+/**
+ * Compatibility export — delegates to deriveNoteKind after mapping legacy fields.
+ */
 export function classifyNote(data: NoteClassification): NoteKind {
-  if (data.inReplyTo) return 'reply';
-  if (data.bookmarkOf) return 'bookmark';
-  if (data.presentation === 'scrap') return 'scrap';
-  return 'note';
+  const relationships: Relationship[] = [];
+  if (data.inReplyTo) {
+    relationships.push({
+      type: 'reply-to',
+      target: { kind: 'external', url: data.inReplyTo },
+    });
+  }
+  if (data.bookmarkOf) {
+    relationships.push({
+      type: 'bookmark-of',
+      target: { kind: 'external', url: data.bookmarkOf },
+    });
+  }
+  return deriveNoteKind({
+    presentation: data.presentation ?? 'note',
+    relationships,
+  });
 }
 
 export function hostLabel(url: string): string {

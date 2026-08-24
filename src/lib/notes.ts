@@ -1,20 +1,27 @@
-import { getCollection, type CollectionEntry } from 'astro:content';
-import { classifyNote, isPublishedNote, type NoteKind } from './indieweb';
+import { type CollectionEntry } from 'astro:content';
+
+import { getPublishedNoteRecords } from '../core/storage/content.js';
+import { classifyNote, type NoteKind } from './indieweb';
 
 export type Note = CollectionEntry<'notes'>;
 export type { NoteKind };
 
 export { classifyNote };
 
+/**
+ * Returns Astro collection entries for published notes.
+ * Publication filtering uses the canonical domain rule via storage mapping.
+ * Entries are retained so pages can call render(entry).
+ */
 export async function getPublishedNotes(): Promise<Note[]> {
-  const notes = await getCollection(
-    'notes',
-    ({ data }) => isPublishedNote(data)
-  );
-
-  return notes.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+  const records = await getPublishedNoteRecords();
+  return records.map((record) => record.entry);
 }
 
+/**
+ * Presentation helper — Astro entry id is the filename stem (matches slug after M1).
+ * Kept outside domain; routing adapters will own path policy later (M8).
+ */
 export function notePath(note: Note): string {
   return `/notes/${note.id}/`;
 }
