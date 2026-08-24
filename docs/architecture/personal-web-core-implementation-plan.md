@@ -1,6 +1,6 @@
 # Personal Web Core — Implementation Plan
 
-**Status:** Approved — **M1 complete**; **M2 complete**; M3+ not started  
+**Status:** Approved — **M1–M8 complete**  
 **Design authority:** [`personal-web-core-design.md`](./personal-web-core-design.md)  
 **Principles:** incremental, behavior-preserving first, deployable after every step, no database, no deferred protocols.
 
@@ -225,11 +225,15 @@ Wire `Layout.astro`, `index.astro`, `contact.astro` from `person.yaml`. Page pro
 
 ## Milestone 8 — Historical slug + redirects
 
-- `previousSlugs` append on rename
-- `scripts/generate-slug-redirects.ts` → `src/generated/slug-redirects.mjs`
-- `astro.config.mjs` merges redirects (explicit `status: 308`)
-- WM adapter builds target URLs from `slug` + `previousSlugs` (not domain WM API)
-- Fixture tests only — no production slug rename required
+**Complete.**
+
+- `previousSlugs` append on rename (fixtures only; no production rename)
+- `scripts/generate-slug-redirects.ts` → `src/generated/slug-redirects.mjs` (committed; regenerated on every `npm run build` / `npm run generate:redirects`)
+- `astro.config.mjs` merges redirects with explicit `status: 308`
+- Routing adapter: `src/adapters/routing/slug-redirects.ts` (+ path helpers)
+- WM adapter: `noteMentionTargets` + merge/dedupe for historical Note URLs
+- Collision validation fails the build on ambiguous histories
+- Sitemap/canonical/RSS links use current slug only; RSS GUID policy unchanged (M3)
 
 **Gate F.**
 

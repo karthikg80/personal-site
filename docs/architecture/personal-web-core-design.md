@@ -329,26 +329,36 @@ The domain holds **`slug`** and **`previousSlugs`** only. Constructing `/notes/<
 
 ### 8.3 Slug rename
 
-1. `id` unchanged.
-2. Append old slug to `previousSlugs` (dedupe; never remove).
-3. **Routing adapter** (not ContentStore) derives 308 redirects: `/notes/old-slug/` → `/notes/new-slug/`.
-4. Canonical URL, sitemap `<loc>`, and new POSSE permalinks use **new** slug.
-5. **RSS `<guid>` unchanged** (frozen `legacyRssGuid` if set — §8.5).
-6. **RSS `<link>`** updates to new canonical URL.
-7. Existing Bluesky syndication URLs untouched; old note URL redirects to new — links still resolve.
-8. **Webmention adapter** chooses fetch targets from domain location history + canonical URL (§13) — not a domain API.
+1. Keep `id` unchanged.
+2. Append the old slug to `previousSlugs` (never remove history; never include the current slug).
+3. Set `slug` to the new value.
+4. Rename the Markdown file to match the new slug if repository convention requires it.
+5. Run `npm test` and `npm run build` (build regenerates `src/generated/slug-redirects.mjs`).
+6. Verify the generated redirect: `/notes/<old>/` → `/notes/<new>/` with status **308** (direct to current; no chains).
+7. Verify RSS GUID unchanged (`legacyRssGuid` or URN) while `<link>` uses the new canonical URL.
+8. Deploy.
+
+Canonical URL, sitemap `<loc>`, and new POSSE permalinks use the **new** slug only. Historical URLs must not appear in the sitemap. Existing Bluesky syndication URLs are untouched; old note URLs redirect to the new location. The Webmention adapter fetches mentions for the current URL plus every historical Note URL.
 
 ### 8.4 Redirect implementation
 
 ```text
-ContentStore → domain objects
+ContentStore → domain objects (slug + previousSlugs)
                     ↓
             routing adapter (deriveSlugRedirects)
                     ↓
-         Astro/Vercel redirect config (build-time)
+         scripts/generate-slug-redirects.ts
+                    ↓
+         src/generated/slug-redirects.mjs
+                    ↓
+         astro.config.mjs redirects (status: 308)
+                    ↓
+         @astrojs/vercel → Vercel redirects
 ```
 
-No runtime DB. Redirects emitted at build from `previousSlugs` on each object. Collision validation: no slug may appear as both a current slug and a previousSlug of a different object.
+**Generated artifact policy:** `src/generated/slug-redirects.mjs` is committed and regenerated on every `npm run build` / `npm run generate:redirects` so clean checkouts and Astro config imports always succeed. Empty history yields `export const slugRedirects = {};`.
+
+No runtime DB. Collision validation: within each collection, no slug may appear as both a current slug and a previousSlug of a different object; duplicate historical sources fail loudly. `/notes/foo/` and `/projects/foo/` may coexist.
 
 ### 8.5 RSS item identity (permanent policy)
 

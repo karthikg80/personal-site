@@ -2,13 +2,25 @@
 import { webmentionFeedUrl, webmentionReceiverUrl } from '../adapters/webmention/webmention-io.js';
 
 interface Props {
+  /** Canonical current URL used by the manual send form. */
   target: string;
+  /** Current + historical lookup URLs. Defaults to [target]. */
+  targets?: string[];
 }
 
-const { target } = Astro.props;
+const { target, targets = [target] } = Astro.props;
+const uniqueTargets = [...new Set(targets)];
+const feedUrls = uniqueTargets.map((entry) => webmentionFeedUrl(entry));
+const singleFeed = uniqueTargets.length === 1 ? feedUrls[0] : undefined;
+const multiFeeds = uniqueTargets.length > 1 ? JSON.stringify(feedUrls) : undefined;
 ---
 
-<section class="correspondence" aria-labelledby="correspondence-title" data-webmentions={webmentionFeedUrl(target)}>
+<section
+  class="correspondence"
+  aria-labelledby="correspondence-title"
+  data-webmentions={singleFeed}
+  data-webmention-feeds={multiFeeds}
+>
   <p class="kicker">from other sites</p>
   <h2 id="correspondence-title">Correspondence</h2>
   <p class="lede">
@@ -50,115 +62,256 @@ const { target } = Astro.props;
   </form>
 </section>
 
-<script>
-  type MentionAuthor = {
-    name?: string;
-    url?: string;
-    photo?: string;
-  };
+{singleFeed && (
+  <script>
+    type MentionAuthor = {
+      name?: string;
+      url?: string;
+      photo?: string;
+    };
 
-  type Mention = {
-    url?: string;
-    published?: string;
-    author?: MentionAuthor;
-    content?: { text?: string; html?: string };
-    'wm-property'?: string;
-  };
+    type Mention = {
+      url?: string;
+      published?: string;
+      author?: MentionAuthor;
+      content?: { text?: string; html?: string };
+      'wm-property'?: string;
+    };
 
-  const root = document.querySelector<HTMLElement>('[data-webmentions]');
-  const feed = root?.dataset.webmentions;
-  if (!root || !feed) {
-    /* The correspondence tray is missing on this page. */
-  } else {
-    const tray = root;
-    const empty = tray.querySelector<HTMLElement>('[data-empty]');
-    const groups = tray.querySelector<HTMLElement>('.mention-groups');
+    const root = document.querySelector<HTMLElement>('[data-webmentions]');
+    const feed = root?.dataset.webmentions;
+    if (!root || !feed) {
+      /* The correspondence tray is missing on this page. */
+    } else {
+      const tray = root;
+      const empty = tray.querySelector<HTMLElement>('[data-empty]');
+      const groups = tray.querySelector<HTMLElement>('.mention-groups');
 
-    function authorName(mention: Mention): string {
-      return mention.author?.name?.trim() || 'Someone';
+      function authorName(mention: Mention): string {
+        return mention.author?.name?.trim() || 'Someone';
+      }
+
+      function mentionUrl(mention: Mention): string {
+        return mention.url || mention.author?.url || '#';
+      }
+
+      void fetch(feed)
+        .then((response) => (response.ok ? response.json() : { children: [] }))
+        .then((payload: { children?: Mention[] }) => {
+          const mentions = payload.children ?? [];
+          if (mentions.length === 0) return;
+
+          empty?.setAttribute('hidden', '');
+          groups?.removeAttribute('hidden');
+
+          const facepile = mentions.filter((mention) => ['like-of', 'repost-of'].includes(mention['wm-property'] ?? ''));
+          const replies = mentions.filter((mention) => mention['wm-property'] === 'in-reply-to');
+          const others = mentions.filter((mention) => !['like-of', 'repost-of', 'in-reply-to'].includes(mention['wm-property'] ?? ''));
+
+          if (facepile.length > 0) {
+            const group = tray.querySelector('[data-group="facepile"]');
+            const list = group?.querySelector('ul');
+            group?.removeAttribute('hidden');
+            for (const mention of facepile) {
+              const item = document.createElement('li');
+              const link = document.createElement('a');
+              link.href = mentionUrl(mention);
+              link.rel = 'nofollow noopener noreferrer';
+              link.title = `${authorName(mention)} ${mention['wm-property'] === 'repost-of' ? 'reposted' : 'liked'} this`;
+              if (mention.author?.photo) {
+                const photo = document.createElement('img');
+                photo.src = mention.author.photo;
+                photo.alt = authorName(mention);
+                photo.width = 36;
+                photo.height = 36;
+                link.append(photo);
+              } else {
+                link.textContent = authorName(mention).slice(0, 1);
+              }
+              item.append(link);
+              list?.append(item);
+            }
+          }
+
+          function renderEntries(selector: string, items: Mention[]): void {
+            if (items.length === 0) return;
+            const group = tray.querySelector(selector);
+            const list = group?.querySelector('ol');
+            group?.removeAttribute('hidden');
+            for (const mention of items) {
+              const item = document.createElement('li');
+              const article = document.createElement('article');
+              const header = document.createElement('header');
+              const author = document.createElement('a');
+              const time = document.createElement('time');
+              const body = document.createElement('p');
+              author.href = mention.author?.url || mentionUrl(mention);
+              author.rel = 'nofollow noopener noreferrer';
+              author.textContent = authorName(mention);
+              if (mention.published) {
+                time.dateTime = mention.published;
+                time.textContent = new Intl.DateTimeFormat('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                }).format(new Date(mention.published));
+              }
+              header.append(author, time);
+              body.textContent = mention.content?.text?.trim() || 'mentioned this note';
+              article.append(header, body);
+              item.append(article);
+              list?.append(item);
+            }
+          }
+
+          renderEntries('[data-group="replies"]', replies);
+          renderEntries('[data-group="mentions"]', others);
+        })
+        .catch(() => {
+          /* Keep the empty state if webmention.io is unreachable or not registered yet. */
+        });
+    }
+  </script>
+)}
+
+{multiFeeds && (
+  <script>
+    type MentionAuthor = {
+      name?: string;
+      url?: string;
+      photo?: string;
+    };
+
+    type Mention = {
+      url?: string;
+      published?: string;
+      author?: MentionAuthor;
+      content?: { text?: string; html?: string };
+      'wm-property'?: string;
+      'wm-id'?: number | string;
+    };
+
+    function mergeWebmentionMentions(batches: Mention[][]): Mention[] {
+      const merged: Mention[] = [];
+      const seen = new Set<string>();
+      for (const batch of batches) {
+        for (const mention of batch) {
+          const key =
+            mention['wm-id'] !== undefined && mention['wm-id'] !== null
+              ? `id:${mention['wm-id']}`
+              : ['fallback', mention.url ?? '', mention['wm-property'] ?? '', mention.author?.url ?? '', mention.published ?? ''].join('|');
+          if (seen.has(key)) continue;
+          seen.add(key);
+          merged.push(mention);
+        }
+      }
+      return merged;
     }
 
-    function mentionUrl(mention: Mention): string {
-      return mention.url || mention.author?.url || '#';
+    const root = document.querySelector<HTMLElement>('[data-webmention-feeds]');
+    const feedsRaw = root?.dataset.webmentionFeeds;
+    if (!root || !feedsRaw) {
+      /* The correspondence tray is missing on this page. */
+    } else {
+      const tray = root;
+      const empty = tray.querySelector<HTMLElement>('[data-empty]');
+      const groups = tray.querySelector<HTMLElement>('.mention-groups');
+      const feeds = JSON.parse(feedsRaw) as string[];
+
+      function authorName(mention: Mention): string {
+        return mention.author?.name?.trim() || 'Someone';
+      }
+
+      function mentionUrl(mention: Mention): string {
+        return mention.url || mention.author?.url || '#';
+      }
+
+      void Promise.allSettled(
+        feeds.map((feed) =>
+          fetch(feed)
+            .then((response) => (response.ok ? response.json() : { children: [] }))
+            .then((payload: { children?: Mention[] }) => payload.children ?? [])
+        )
+      )
+        .then((results) => {
+          const batches = results.map((result) =>
+            result.status === 'fulfilled' ? result.value : []
+          );
+          const mentions = mergeWebmentionMentions(batches);
+          if (mentions.length === 0) return;
+
+          empty?.setAttribute('hidden', '');
+          groups?.removeAttribute('hidden');
+
+          const facepile = mentions.filter((mention) => ['like-of', 'repost-of'].includes(mention['wm-property'] ?? ''));
+          const replies = mentions.filter((mention) => mention['wm-property'] === 'in-reply-to');
+          const others = mentions.filter((mention) => !['like-of', 'repost-of', 'in-reply-to'].includes(mention['wm-property'] ?? ''));
+
+          if (facepile.length > 0) {
+            const group = tray.querySelector('[data-group="facepile"]');
+            const list = group?.querySelector('ul');
+            group?.removeAttribute('hidden');
+            for (const mention of facepile) {
+              const item = document.createElement('li');
+              const link = document.createElement('a');
+              link.href = mentionUrl(mention);
+              link.rel = 'nofollow noopener noreferrer';
+              link.title = `${authorName(mention)} ${mention['wm-property'] === 'repost-of' ? 'reposted' : 'liked'} this`;
+              if (mention.author?.photo) {
+                const photo = document.createElement('img');
+                photo.src = mention.author.photo;
+                photo.alt = authorName(mention);
+                photo.width = 36;
+                photo.height = 36;
+                link.append(photo);
+              } else {
+                link.textContent = authorName(mention).slice(0, 1);
+              }
+              item.append(link);
+              list?.append(item);
+            }
+          }
+
+          function renderEntries(selector: string, items: Mention[]): void {
+            if (items.length === 0) return;
+            const group = tray.querySelector(selector);
+            const list = group?.querySelector('ol');
+            group?.removeAttribute('hidden');
+            for (const mention of items) {
+              const item = document.createElement('li');
+              const article = document.createElement('article');
+              const header = document.createElement('header');
+              const author = document.createElement('a');
+              const time = document.createElement('time');
+              const body = document.createElement('p');
+              author.href = mention.author?.url || mentionUrl(mention);
+              author.rel = 'nofollow noopener noreferrer';
+              author.textContent = authorName(mention);
+              if (mention.published) {
+                time.dateTime = mention.published;
+                time.textContent = new Intl.DateTimeFormat('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                }).format(new Date(mention.published));
+              }
+              header.append(author, time);
+              body.textContent = mention.content?.text?.trim() || 'mentioned this note';
+              article.append(header, body);
+              item.append(article);
+              list?.append(item);
+            }
+          }
+
+          renderEntries('[data-group="replies"]', replies);
+          renderEntries('[data-group="mentions"]', others);
+        })
+        .catch(() => {
+          /* Keep the empty state if webmention.io is unreachable or not registered yet. */
+        });
     }
-
-    void fetch(feed)
-      .then((response) => (response.ok ? response.json() : { children: [] }))
-      .then((payload: { children?: Mention[] }) => {
-        const mentions = payload.children ?? [];
-        if (mentions.length === 0) return;
-
-        empty?.setAttribute('hidden', '');
-        groups?.removeAttribute('hidden');
-
-        const facepile = mentions.filter((mention) => ['like-of', 'repost-of'].includes(mention['wm-property'] ?? ''));
-        const replies = mentions.filter((mention) => mention['wm-property'] === 'in-reply-to');
-        const others = mentions.filter((mention) => !['like-of', 'repost-of', 'in-reply-to'].includes(mention['wm-property'] ?? ''));
-
-        if (facepile.length > 0) {
-          const group = tray.querySelector('[data-group="facepile"]');
-          const list = group?.querySelector('ul');
-          group?.removeAttribute('hidden');
-          for (const mention of facepile) {
-            const item = document.createElement('li');
-            const link = document.createElement('a');
-            link.href = mentionUrl(mention);
-            link.rel = 'nofollow noopener noreferrer';
-            link.title = `${authorName(mention)} ${mention['wm-property'] === 'repost-of' ? 'reposted' : 'liked'} this`;
-            if (mention.author?.photo) {
-              const photo = document.createElement('img');
-              photo.src = mention.author.photo;
-              photo.alt = authorName(mention);
-              photo.width = 36;
-              photo.height = 36;
-              link.append(photo);
-            } else {
-              link.textContent = authorName(mention).slice(0, 1);
-            }
-            item.append(link);
-            list?.append(item);
-          }
-        }
-
-        function renderEntries(selector: string, items: Mention[]): void {
-          if (items.length === 0) return;
-          const group = tray.querySelector(selector);
-          const list = group?.querySelector('ol');
-          group?.removeAttribute('hidden');
-          for (const mention of items) {
-            const item = document.createElement('li');
-            const article = document.createElement('article');
-            const header = document.createElement('header');
-            const author = document.createElement('a');
-            const time = document.createElement('time');
-            const body = document.createElement('p');
-            author.href = mention.author?.url || mentionUrl(mention);
-            author.rel = 'nofollow noopener noreferrer';
-            author.textContent = authorName(mention);
-            if (mention.published) {
-              time.dateTime = mention.published;
-              time.textContent = new Intl.DateTimeFormat('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              }).format(new Date(mention.published));
-            }
-            header.append(author, time);
-            body.textContent = mention.content?.text?.trim() || 'mentioned this note';
-            article.append(header, body);
-            item.append(article);
-            list?.append(item);
-          }
-        }
-
-        renderEntries('[data-group="replies"]', replies);
-        renderEntries('[data-group="mentions"]', others);
-      })
-      .catch(() => {
-        /* Keep the empty state if webmention.io is unreachable or not registered yet. */
-      });
-  }
-</script>
+  </script>
+)}
 
 <style>
   .correspondence {

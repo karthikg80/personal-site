@@ -5,7 +5,6 @@ import { parse as parseYaml } from 'yaml';
 
 import { assertUniqueObjectIds, parseObjectId, type ObjectId } from '../domain/ids.js';
 
-const SITE = 'https://karthikg.in';
 const CONTENT_ROOT = join(import.meta.dirname, '../../content');
 
 type ParsedFrontmatter = Record<string, unknown>;
@@ -126,17 +125,15 @@ export function validateCanonicalIdentities(): void {
   const records = loadCanonicalIdentityRecords();
   assertUniqueObjectIds(records.map((record) => record.id));
 
-  const noteSlugs = new Set<string>();
-  const projectSlugs = new Set<string>();
+  const noteOccupied = new Map<string, string>();
+  const projectOccupied = new Map<string, string>();
 
   for (const record of records) {
     if (record.kind === 'note' || record.kind === 'project') {
       const slug = record.slug!;
-      const slugSet = record.kind === 'note' ? noteSlugs : projectSlugs;
-      if (slugSet.has(slug)) {
-        throw new Error(`Duplicate ${record.kind} slug: ${slug}`);
-      }
-      slugSet.add(slug);
+      const occupied = record.kind === 'note' ? noteOccupied : projectOccupied;
+
+      claimSlug(occupied, slug, `${record.label} current slug`);
 
       const seenPrevious = new Set<string>();
       for (const previous of record.previousSlugs) {
@@ -147,6 +144,7 @@ export function validateCanonicalIdentities(): void {
           throw new Error(`${record.label}: duplicate previousSlugs entry ${previous}`);
         }
         seenPrevious.add(previous);
+        claimSlug(occupied, previous, `${record.label} previousSlugs`);
       }
     }
 
@@ -156,10 +154,11 @@ export function validateCanonicalIdentities(): void {
       const isPublic = isPublicNote(frontmatter);
 
       if (record.legacyRssGuid) {
-        const expected = `${SITE}/notes/${record.slug}/`;
-        if (record.legacyRssGuid !== expected) {
+        const allowedSlugs = new Set([record.slug!, ...record.previousSlugs]);
+        const match = record.legacyRssGuid.match(/^https:\/\/karthikg\.in\/notes\/([^/]+)\/$/);
+        if (!match || !allowedSlugs.has(match[1]!)) {
           throw new Error(
-            `${record.label}: legacyRssGuid must be ${expected}, got ${record.legacyRssGuid}`
+            `${record.label}: legacyRssGuid must be a karthikg.in/notes/<slug>/ URL for this note's current or previous slug`
           );
         }
         if (!isPublic) {
@@ -170,6 +169,14 @@ export function validateCanonicalIdentities(): void {
       }
     }
   }
+}
+
+function claimSlug(occupied: Map<string, string>, slug: string, claimant: string): void {
+  const existing = occupied.get(slug);
+  if (existing) {
+    throw new Error(`Slug collision for "${slug}": ${existing} vs ${claimant}`);
+  }
+  occupied.set(slug, claimant);
 }
 
 export function collectMigrationSnapshot() {

@@ -44,6 +44,10 @@ describe('import boundaries', () => {
       'components/',
       'from \'../../adapters',
       'from "../../adapters',
+      'redirect',
+      'vercel',
+      '/notes/',
+      '/projects/',
     ]);
 
     for (const file of files) {
@@ -61,6 +65,7 @@ describe('import boundaries', () => {
       'adapters/syndication',
       'adapters/presentation',
       'adapters/feeds',
+      'adapters/routing',
       'bsky.social',
       'app.bsky.feed.post',
       'webmention.io',

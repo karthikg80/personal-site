@@ -3,8 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "npm run generate:redirects && astro dev",
+    "generate:redirects": "tsx scripts/generate-slug-redirects.ts",
+    "build": "npm run generate:redirects && astro build",
     "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",

@@ -7,9 +7,9 @@ The private `/drafting` room can shape ordinary working notes with an agent and 
 ## Identity fields
 
 - `id` is an immutable UUIDv7 assigned once at creation (handoff or migration). **Never regenerate it** when editing, renaming, or moving a note.
-- `slug` is the current URL segment (`/notes/<slug>/`). It may change later; append the old value to `previousSlugs` when it does (a future milestone).
-- `legacyRssGuid` is **migration-only** compatibility metadata for notes that were already public before Personal Web Core. **Do not add it to new notes.**
-- `previousSlugs` stays `[]` until a slug rename occurs.
+- `slug` is the current URL segment (`/notes/<slug>/`). When renaming a published note, append the old value to `previousSlugs`, set the new `slug`, and rename the file to match if needed. Build emits a **308** redirect from each historical path to the current path.
+- `legacyRssGuid` is **migration-only** compatibility metadata for notes that were already public before Personal Web Core. **Do not add it to new notes.** After a rename, leave it unchanged — RSS GUID stays frozen while `<link>` follows the new slug.
+- `previousSlugs` stays `[]` until a slug rename occurs. Never put the current slug in `previousSlugs`.
 
 ```md
 ---

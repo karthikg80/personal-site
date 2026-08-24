@@ -19,6 +19,10 @@ describe('domain package purity', () => {
       '../components/',
       '../layouts/',
       'generate-object-id',
+      'redirect',
+      'vercel',
+      '/notes/',
+      '/projects/',
     ];
 
     for (const file of files) {

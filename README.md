@@ -29,6 +29,8 @@ npm run build
 npm run preview
 ```
 
+`npm run build` regenerates slug redirects (`src/generated/slug-redirects.mjs`) from Note/Project `previousSlugs`, then runs `astro build`. Historical paths redirect with HTTP **308** to the current slug. Production content currently has empty `previousSlugs`, so no public redirects are emitted.
+
 The Vercel adapter assembles the deployable build in `.vercel/output/` while preserving static output for all public pages.
 
 ## Private Drafting Room

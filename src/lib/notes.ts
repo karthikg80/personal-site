@@ -15,11 +15,11 @@ export async function getPublishedNotes(): Promise<Note[]> {
 }
 
 /**
- * Presentation helper — Astro entry id is the filename stem (matches slug after M1).
- * Kept outside domain; routing adapters will own path policy later (M8).
+ * Current canonical note path from frontmatter slug.
+ * Kept outside domain; historical paths belong to the routing/Webmention adapters.
  */
 export function notePath(note: Note): string {
-  return `/notes/${note.id}/`;
+  return `/notes/${note.data.slug}/`;
 }
 
 export function formatNoteDate(date: Date): string {

@@ -3,16 +3,19 @@ import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
 import { noteRelationshipSchema } from './core/storage/note-relationship-schema.js';
+import {
+  contentSlugSchema,
+  previousSlugsSchema,
+  withSlugHistory,
+} from './core/storage/slug-schema.js';
 
 const objectIdSchema = z.string().uuid();
-const slugSchema = z.string().min(1);
-const previousSlugsSchema = z.array(z.string().min(1)).default([]);
 
 const projectsCollection = defineCollection({
   loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: './src/content/projects' }),
-  schema: z.object({
+  schema: withSlugHistory({
     id: objectIdSchema,
-    slug: slugSchema,
+    slug: contentSlugSchema,
     previousSlugs: previousSlugsSchema,
     title: z.string(),
     description: z.string(),
@@ -33,9 +36,9 @@ const projectsCollection = defineCollection({
 
 const notesCollection = defineCollection({
   loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: './src/content/notes' }),
-  schema: z.object({
+  schema: withSlugHistory({
     id: objectIdSchema,
-    slug: slugSchema,
+    slug: contentSlugSchema,
     previousSlugs: previousSlugsSchema,
     title: z.string(),
     date: z.coerce.date(),

@@ -8,6 +8,7 @@ import {
   externalReplyUrl,
   relationshipMicroformatClass,
 } from '../adapters/presentation/note-relationships.js';
+import { noteMentionTargets } from '../adapters/webmention/mention-targets.js';
 import { deriveNoteKind } from '../core/domain/note.js';
 import { getPerson } from '../core/storage/content.js';
 import { mapNote } from '../core/storage/map-note.js';
@@ -24,7 +25,9 @@ const kind = deriveNoteKind(domainNote);
 const isScrap = kind === 'scrap';
 const replyUrl = externalReplyUrl(domainNote);
 const bookmarkUrl = externalBookmarkUrl(domainNote);
+const siteOrigin = (Astro.site ?? Astro.url).toString().replace(/\/$/, '');
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
+const mentionTargets = noteMentionTargets(domainNote, siteOrigin);
 ---
 
 <Layout
@@ -99,7 +102,7 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toStri
         <span aria-hidden="true"> · </span>
         <a href="/rss.xml">follow by RSS</a>
       </p>
-      <Webmentions target={canonicalUrl} />
+      <Webmentions target={canonicalUrl} targets={mentionTargets} />
     </footer>
   </article>
 </Layout>
