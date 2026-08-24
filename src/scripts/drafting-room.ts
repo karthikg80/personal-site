@@ -1,4 +1,13 @@
 import { ensureCanonicalId } from '../lib/publishing/canonical-id';
+import {
+  applyPrepareSuccess,
+  buildPrepareRequest,
+  captureEditorialSnapshot,
+  derivePrepareUi,
+  isCanonicalPrepared,
+  isWorkingCopyDirty,
+  type EditorialSnapshot,
+} from '../lib/publishing/drafting-prepare-state';
 import { buildHandoffMarkdown } from '../lib/publishing/handoff';
 
 type ReviewKey = 'firsthand' | 'facts' | 'people' | 'location' | 'voice';
@@ -14,12 +23,24 @@ type AgentNote = {
 type Draft = {
   id: string;
   canonicalId?: string;
+  slug?: string;
+  slugManual?: boolean;
+  date?: string;
+  tags?: string[];
+  presentation?: 'note' | 'scrap';
+  summary?: string;
   title: string;
   sparks: string;
   body: string;
   voiceNote: string;
   review: Record<ReviewKey, boolean>;
   agentNotes: AgentNote[];
+  blobSha?: string;
+  commitSha?: string;
+  preparedAt?: string;
+  publishedAt?: string;
+  lastPreparedSnapshot?: EditorialSnapshot;
+  privacyAcknowledged?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -175,12 +196,55 @@ if (accessForm) {
   const agentStatus = element<HTMLParagraphElement>('agent-status');
   const agentMessage = element<HTMLTextAreaElement>('agent-message');
   const handoffStatus = element<HTMLParagraphElement>('handoff-status');
+  const slugInput = element<HTMLInputElement>('prepare-slug');
+  const dateInput = element<HTMLInputElement>('prepare-date');
+  const tagsInput = element<HTMLInputElement>('prepare-tags');
+  const presentationSelect = element<HTMLSelectElement>('prepare-presentation');
+  const summaryInput = element<HTMLTextAreaElement>('prepare-summary');
+  const privacyAck = element<HTMLInputElement>('privacy-acknowledgement');
+  const prepareButton = element<HTMLButtonElement>('prepare-canonical');
+  const reviewLink = element<HTMLAnchorElement>('review-canonical');
+  const prepareGitStatus = element<HTMLParagraphElement>('prepare-git-status');
+  const prepareWorkingStatus = element<HTMLParagraphElement>('prepare-working-status');
+  const prepareFutureUrl = element<HTMLParagraphElement>('prepare-future-url');
+  const prepareStatus = element<HTMLParagraphElement>('prepare-status');
 
   let notebook: NotebookState | null = null;
   let encryptionKey: CryptoKey | null = null;
   let notebookSalt: Uint8Array | null = null;
   let saveTimer: number | undefined;
   let saveQueue: Promise<void> = Promise.resolve();
+
+  function utcToday(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function parseTags(value: string): string[] {
+    return value.split(',').map((tag) => tag.trim()).filter(Boolean);
+  }
+
+  function slugify(value: string): string {
+    return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'untitled-note';
+  }
+
+  function currentSlug(draft: Draft): string {
+    if (isCanonicalPrepared(draft) && draft.slug) return draft.slug;
+    if (draft.slugManual && draft.slug) return draft.slug;
+    return slugify(titleInput.value || draft.title);
+  }
+
+  function editorialFromDraft(draft: Draft): EditorialSnapshot {
+    return captureEditorialSnapshot({
+      title: draft.title,
+      date: draft.date || utcToday(),
+      tags: draft.tags ?? [],
+      presentation: draft.presentation ?? 'note',
+      summary: draft.summary ?? '',
+      body: draft.body,
+      sparks: draft.sparks,
+      relationships: [],
+    });
+  }
 
   function currentDraft(): Draft {
     if (!notebook) throw new Error('Notebook is locked.');
@@ -201,10 +265,74 @@ if (accessForm) {
     draft.sparks = sparksInput.value;
     draft.body = bodyInput.value;
     draft.voiceNote = voiceInput.value;
+    draft.date = dateInput.value || utcToday();
+    draft.tags = parseTags(tagsInput.value);
+    draft.presentation = presentationSelect.value === 'scrap' ? 'scrap' : 'note';
+    draft.summary = summaryInput.value;
+    draft.privacyAcknowledged = privacyAck.checked;
+    if (!isCanonicalPrepared(draft)) {
+      draft.slug = slugInput.value.trim() || slugify(draft.title);
+    }
     draft.updatedAt = new Date().toISOString();
     for (const key of reviewKeys) {
       const checkbox = document.querySelector<HTMLInputElement>(`[data-check="${key}"]`);
       draft.review[key] = checkbox?.checked ?? false;
+    }
+  }
+
+  function renderPrepareUi(): void {
+    const draft = currentDraft();
+    const snapshot = editorialFromDraft(draft);
+    const ui = derivePrepareUi({
+      linkage: draft,
+      snapshot,
+      privacyAcknowledged: privacyAck.checked,
+    });
+
+    slugInput.disabled = ui.slugLocked;
+    slugInput.value = currentSlug(draft);
+    prepareButton.textContent = ui.prepareLabel;
+    prepareButton.disabled = !ui.canPrepare || prepareButton.getAttribute('aria-busy') === 'true';
+    prepareGitStatus.textContent = ui.gitStatus;
+    prepareWorkingStatus.textContent = ui.workingStatus;
+
+    const slug = currentSlug(draft);
+    prepareFutureUrl.textContent = `Future URL: https://karthikg.in/notes/${slug}/`;
+
+    if (ui.reviewHref) {
+      reviewLink.hidden = false;
+      reviewLink.href = ui.reviewHref;
+    } else {
+      reviewLink.hidden = true;
+      reviewLink.removeAttribute('href');
+    }
+  }
+
+  function clearLocalAcknowledgementIfDirty(): void {
+    const draft = currentDraft();
+    const snapshot = editorialFromDraft(draft);
+    if (!isCanonicalPrepared(draft)) return;
+    if (!isWorkingCopyDirty(snapshot, draft.lastPreparedSnapshot)) return;
+    if (!draft.privacyAcknowledged && !privacyAck.checked) return;
+    draft.privacyAcknowledged = false;
+    privacyAck.checked = false;
+  }
+
+  async function refreshPublishedStatus(): Promise<void> {
+    const draft = currentDraft();
+    if (!draft.canonicalId || !draft.slug || draft.publishedAt) return;
+    try {
+      const params = new URLSearchParams({ id: draft.canonicalId, slug: draft.slug });
+      const response = await fetch(`/api/drafting/canonical?${params}`, { credentials: 'same-origin' });
+      if (!response.ok) return;
+      const result = await response.json() as { draft?: boolean };
+      if (result.draft === false) {
+        draft.publishedAt = new Date().toISOString();
+        scheduleSave();
+        renderPrepareUi();
+      }
+    } catch {
+      // Lookup is best-effort; stay on the last known local state.
     }
   }
 
@@ -277,6 +405,9 @@ if (accessForm) {
         useButton.addEventListener('click', () => {
           bodyInput.value = note.text;
           showStage('shape');
+          syncInputsToDraft();
+          clearLocalAcknowledgementIfDirty();
+          renderPrepareUi();
           scheduleSave();
           bodyInput.focus();
         });
@@ -292,12 +423,23 @@ if (accessForm) {
     sparksInput.value = draft.sparks;
     bodyInput.value = draft.body;
     voiceInput.value = draft.voiceNote;
+    dateInput.value = draft.date || utcToday();
+    tagsInput.value = (draft.tags ?? []).join(', ');
+    presentationSelect.value = draft.presentation ?? 'note';
+    summaryInput.value = draft.summary ?? '';
+    slugInput.value = currentSlug(draft);
+    const snapshot = editorialFromDraft(draft);
+    const dirty = isCanonicalPrepared(draft) && isWorkingCopyDirty(snapshot, draft.lastPreparedSnapshot);
+    if (dirty) draft.privacyAcknowledged = false;
+    privacyAck.checked = draft.privacyAcknowledged ?? false;
     for (const key of reviewKeys) {
       const checkbox = document.querySelector<HTMLInputElement>(`[data-check="${key}"]`);
       if (checkbox) checkbox.checked = draft.review[key];
     }
     renderDraftList();
     renderAgentLog();
+    renderPrepareUi();
+    void refreshPublishedStatus();
   }
 
   function showStage(stage: string): void {
@@ -347,13 +489,42 @@ if (accessForm) {
     }
   });
 
-  for (const input of [titleInput, sparksInput, bodyInput, voiceInput]) {
+  for (const input of [titleInput, sparksInput, bodyInput]) {
     input.addEventListener('input', () => {
+      if (input === titleInput && !currentDraft().slugManual && !isCanonicalPrepared(currentDraft())) {
+        slugInput.value = slugify(titleInput.value);
+      }
       syncInputsToDraft();
+      clearLocalAcknowledgementIfDirty();
       if (input === titleInput) renderDraftList();
+      renderPrepareUi();
       scheduleSave();
     });
   }
+  voiceInput.addEventListener('input', () => {
+    syncInputsToDraft();
+    scheduleSave();
+  });
+  for (const input of [slugInput, dateInput, tagsInput, summaryInput]) {
+    input.addEventListener('input', () => {
+      if (input === slugInput) currentDraft().slugManual = true;
+      syncInputsToDraft();
+      clearLocalAcknowledgementIfDirty();
+      renderPrepareUi();
+      scheduleSave();
+    });
+  }
+  presentationSelect.addEventListener('change', () => {
+    syncInputsToDraft();
+    clearLocalAcknowledgementIfDirty();
+    renderPrepareUi();
+    scheduleSave();
+  });
+  privacyAck.addEventListener('change', () => {
+    syncInputsToDraft();
+    renderPrepareUi();
+    scheduleSave();
+  });
   document.querySelectorAll<HTMLInputElement>('[data-check]').forEach((checkbox) => checkbox.addEventListener('change', scheduleSave));
   document.querySelectorAll<HTMLButtonElement>('.stage-button').forEach((button) => button.addEventListener('click', () => showStage(button.dataset.stage ?? 'gather')));
 
@@ -442,10 +613,6 @@ if (accessForm) {
     void askAgent('custom', agentMessage.value);
   });
 
-  function slugify(value: string): string {
-    return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'untitled-note';
-  }
-
   function markdownHandoff(): { filename: string; content: string; complete: boolean } {
     syncInputsToDraft();
     const draft = currentDraft();
@@ -453,12 +620,12 @@ if (accessForm) {
     scheduleSave();
     const body = draft.body.trim() || draft.sparks.trim();
     const complete = reviewKeys.every((key) => draft.review[key]);
-    const slug = slugify(draft.title);
+    const slug = isCanonicalPrepared(draft) && draft.slug ? draft.slug : slugify(draft.title);
     const { filename, content } = buildHandoffMarkdown({
       canonicalId: draft.canonicalId,
       title: draft.title,
       slug,
-      date: new Date().toISOString().slice(0, 10),
+      date: draft.date || utcToday(),
       body,
     });
     return { filename, content, complete };
@@ -467,9 +634,9 @@ if (accessForm) {
   element<HTMLButtonElement>('copy-handoff').addEventListener('click', async () => {
     const handoff = markdownHandoff();
     await navigator.clipboard.writeText(handoff.content);
-    handoffStatus.textContent = handoff.complete
-      ? 'Copied with safe publication flags. Exact-text approval and the Git review still remain.'
-      : 'Copied with safe publication flags. Some human review checks are still open.';
+    handoffStatus.textContent = `${handoff.complete
+      ? 'Copied with publication disabled. Exact-text approval and the Git review still remain.'
+      : 'Copied with publication disabled. Some human review checks are still open.'} Do not treat this file as privacy-reviewed.`;
   });
 
   element<HTMLButtonElement>('download-handoff').addEventListener('click', () => {
@@ -479,7 +646,94 @@ if (accessForm) {
     link.download = handoff.filename;
     link.click();
     URL.revokeObjectURL(link.href);
-    handoffStatus.textContent = 'Downloaded a plaintext Markdown handoff with publication disabled.';
+    handoffStatus.textContent = 'Downloaded a plaintext Markdown handoff with publication disabled. Do not treat this file as privacy-reviewed.';
+  });
+
+  prepareButton.addEventListener('click', async () => {
+    syncInputsToDraft();
+    const draft = currentDraft();
+    const snapshot = editorialFromDraft(draft);
+    const ui = derivePrepareUi({
+      linkage: draft,
+      snapshot,
+      privacyAcknowledged: privacyAck.checked,
+    });
+    if (!ui.canPrepare) return;
+    if (!draft.body.trim() && !draft.sparks.trim()) {
+      prepareStatus.textContent = 'Add a body or sparks first.';
+      return;
+    }
+
+    draft.canonicalId = ensureCanonicalId(draft.canonicalId);
+    const slug = currentSlug(draft);
+    const payload = buildPrepareRequest({
+      canonicalId: draft.canonicalId,
+      slug,
+      title: draft.title,
+      date: draft.date || utcToday(),
+      tags: draft.tags ?? [],
+      presentation: draft.presentation ?? 'note',
+      summary: draft.summary,
+      body: draft.body,
+      sparks: draft.sparks,
+    });
+
+    prepareButton.disabled = true;
+    prepareButton.setAttribute('aria-busy', 'true');
+    prepareStatus.textContent = 'writing the canonical draft…';
+
+    try {
+      const response = await fetch('/api/drafting/prepare', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json() as {
+        ok?: boolean;
+        error?: string;
+        objectId?: string;
+        slug?: string;
+        blobSha?: string;
+        commitSha?: string;
+      };
+
+      if (response.status === 503) {
+        prepareStatus.textContent = result.error ?? 'GitHub is not configured for notes.';
+        return;
+      }
+
+      if (!response.ok || !result.ok || !result.objectId || !result.slug || !result.blobSha) {
+        if (response.status === 409 && /published/i.test(result.error ?? '')) {
+          draft.publishedAt = new Date().toISOString();
+          scheduleSave();
+        }
+        prepareStatus.textContent = result.error ?? 'Prepare failed.';
+        return;
+      }
+
+      const next = applyPrepareSuccess(
+        draft,
+        {
+          objectId: result.objectId,
+          slug: result.slug,
+          blobSha: result.blobSha,
+          commitSha: result.commitSha,
+        },
+        snapshot,
+        new Date().toISOString()
+      );
+      Object.assign(draft, next);
+      slugInput.value = draft.slug ?? slug;
+      privacyAck.checked = true;
+      prepareStatus.textContent = 'Canonical draft prepared. Review the Git revision before publishing.';
+      scheduleSave();
+    } catch {
+      prepareStatus.textContent = 'Prepare failed.';
+    } finally {
+      prepareButton.removeAttribute('aria-busy');
+      renderPrepareUi();
+    }
   });
 
   element<HTMLButtonElement>('delete-draft').addEventListener('click', () => {

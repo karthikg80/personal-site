@@ -89,6 +89,7 @@ Astro.response.headers.set('X-Frame-Options', securityHeaders['X-Frame-Options']
         Publish to karthikg.in
       </button>
     )}
+    <p id="publish-status" class="form-status" role="status" aria-live="polite"></p>
   </section>
   <Fragment set:html={note.bodyHtml} />
 </NoteLayout>
@@ -133,4 +134,14 @@ Astro.response.headers.set('X-Frame-Options', securityHeaders['X-Frame-Options']
     font-size: var(--text-sm);
     font-weight: 700;
   }
+
+  .form-status {
+    min-height: 1.2em;
+    margin: 0.7rem 0 0;
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+  }
 </style>
+
+<script src="../../../scripts/drafting-publish.ts"></script>

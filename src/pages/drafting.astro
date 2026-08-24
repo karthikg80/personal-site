@@ -131,7 +131,7 @@ if (import.meta.env.PROD) {
 
               <section class="stage-panel review-panel" data-panel="review" hidden>
                 <h2>Human review</h2>
-                <p>These checks do not publish the note. They prepare a safe Markdown handoff for the reviewed Git workflow.</p>
+                <p>These checks do not publish the note. The privacy acknowledgement below is what allows a canonical Git draft. Copy/Download remains a recovery handoff with publication disabled.</p>
                 <div class="checklist">
                   <label><input type="checkbox" data-check="firsthand" /> Every experience and opinion is mine.</label>
                   <label><input type="checkbox" data-check="facts" /> Names, links, claims, and timing are verified.</label>
@@ -141,6 +141,45 @@ if (import.meta.env.PROD) {
                 </div>
                 <label for="voice-note">What did this draft teach me about my voice?</label>
                 <textarea id="voice-note" rows="5" placeholder="What felt natural? What felt performed? What should move next time?"></textarea>
+
+                <div class="prepare-block">
+                  <h3>Canonical draft</h3>
+                  <p>Prepare writes an unpublished, privacy-reviewed Note to Git. It does not publish on karthikg.in.</p>
+
+                  <label for="prepare-slug">slug</label>
+                  <input id="prepare-slug" type="text" maxlength="80" autocomplete="off" spellcheck="false" />
+
+                  <label for="prepare-date">date (UTC)</label>
+                  <input id="prepare-date" type="date" />
+
+                  <label for="prepare-tags">tags</label>
+                  <input id="prepare-tags" type="text" maxlength="240" placeholder="comma-separated, optional" />
+
+                  <label for="prepare-presentation">presentation</label>
+                  <select id="prepare-presentation">
+                    <option value="note">note</option>
+                    <option value="scrap">scrap</option>
+                  </select>
+
+                  <label for="prepare-summary">summary (optional)</label>
+                  <textarea id="prepare-summary" rows="2" maxlength="400" placeholder="One or two sentences, if the note needs them."></textarea>
+
+                  <p id="prepare-future-url" class="prepare-url"></p>
+                  <p id="prepare-git-status" class="prepare-status-line"></p>
+                  <p id="prepare-working-status" class="prepare-status-line"></p>
+
+                  <label class="privacy-ack">
+                    <input id="privacy-acknowledgement" type="checkbox" />
+                    I reviewed this exact text for private/sensitive information and approve it entering the public source repository.
+                  </label>
+
+                  <div class="handoff-actions">
+                    <button id="prepare-canonical" type="button">Prepare for publication</button>
+                    <a id="review-canonical" class="review-link" hidden href="#">Review canonical draft</a>
+                  </div>
+                  <p id="prepare-status" class="form-status" role="status" aria-live="polite"></p>
+                </div>
+
                 <div class="handoff-actions">
                   <button id="copy-handoff" type="button">copy safe Markdown handoff</button>
                   <button id="download-handoff" class="quiet-button" type="button">download .md</button>
@@ -238,9 +277,9 @@ if (import.meta.env.PROD) {
 
   .access-form > div { display: flex; gap: 0.65rem; }
 
-  input, textarea, button { font: inherit; }
+  input, textarea, select, button { font: inherit; }
 
-  input, textarea {
+  input, textarea, select {
     width: 100%;
     color: var(--color-text);
     background: rgb(255 253 246 / 78%);
@@ -413,8 +452,44 @@ if (import.meta.env.PROD) {
   .checklist { margin: 1.3rem 0 1.8rem; }
   .checklist label { display: grid; grid-template-columns: auto 1fr; gap: 0.65rem; align-items: start; font-family: var(--font-serif); font-weight: 400; }
   .checklist input { width: auto; margin-top: 0.32rem; accent-color: var(--color-primary); }
-  .handoff-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1rem; }
+  .handoff-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; margin-top: 1rem; }
   .danger-button { color: var(--color-primary); background: transparent; border-color: var(--color-primary); }
+
+  .prepare-block {
+    margin: 2rem 0 1.6rem;
+    padding: 1.1rem 0 0.2rem;
+    border-top: 1px dashed var(--color-border);
+  }
+  .prepare-block h3 { margin: 0 0 0.45rem; font-size: var(--text-xl); }
+  .prepare-block > p { margin: 0 0 1rem; color: var(--color-text-light); font-size: var(--text-sm); }
+  .prepare-block label { margin-top: 0.85rem; }
+  .prepare-block input, .prepare-block select, .prepare-block textarea {
+    padding: 0.55rem 0.65rem;
+    background: rgb(255 253 246 / 58%);
+  }
+  .prepare-url, .prepare-status-line {
+    margin: 0.35rem 0 0;
+    color: var(--color-text);
+    font-size: var(--text-sm);
+  }
+  .prepare-status-line { color: var(--color-text-light); }
+  .privacy-ack {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.65rem;
+    align-items: start;
+    margin: 1.2rem 0 0;
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+  .privacy-ack input { width: auto; margin-top: 0.32rem; accent-color: var(--color-primary); }
+  #prepare-canonical:disabled { cursor: not-allowed; }
+  .review-link {
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
 
   .agent-desk {
     align-self: start;

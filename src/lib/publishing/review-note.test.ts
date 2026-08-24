@@ -117,3 +117,22 @@ describe('production Note route', () => {
     expect(source).not.toContain('/drafting');
   });
 });
+
+describe('review Publish wiring', () => {
+  it('posts only the three Publish fields and reloads on 409', () => {
+    const page = readFileSync(
+      join(import.meta.dirname, '../../pages/drafting/review/[slug].astro'),
+      'utf8'
+    );
+    const script = readFileSync(
+      join(import.meta.dirname, '../../scripts/drafting-publish.ts'),
+      'utf8'
+    );
+    expect(page).toContain('data-publish');
+    expect(page).toContain('src="../../../scripts/drafting-publish.ts"');
+    expect(script).toContain("fetch('/api/drafting/publish'");
+    expect(script).toContain('buildPublishRequest');
+    expect(script).toContain('window.location.reload()');
+    expect(script).not.toMatch(/webmention|bluesky/i);
+  });
+});
