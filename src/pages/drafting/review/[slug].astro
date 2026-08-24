@@ -18,6 +18,7 @@ const securityHeaders = {
   'X-Frame-Options': 'DENY',
 };
 
+/** Used by frontmatter early returns. astro check ts(6133) is a false positive. */
 function notFound(): Response {
   return new Response('Not found', {
     status: 404,

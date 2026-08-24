@@ -853,6 +853,28 @@ npm run build
 
 Expected: tests pass; `validateCanonicalIdentities` still accepts current production notes; first-note-probably unchanged; no `legacyRssGuid` in serialized **new** notes; agent API files unmodified except if you must share a tiny JSON helper (prefer not).
 
+### astro check baseline (do not clean in this PR)
+
+`origin/main` at `1c75ef9` (2026-08-24) is already red. This branch must not add **errors** relative to that snapshot. Compare by file + `ts(code)` + message, not by file count (`astro check` scans more files on this branch).
+
+Captured on a clean `origin/main` worktree vs this branch after the GitHub fetch-mock typing fix:
+
+| | `origin/main` `1c75ef9` | this branch |
+| --- | --- | --- |
+| Errors | 8 | 8 (same set) |
+| Hints | 5 | 6 |
+
+**Errors present on `origin/main` (out of scope):**
+
+- `astro.config.mjs:11` `ts(2322)` — empty `slugRedirects` vs `Record<string, RedirectConfig>`
+- `src/adapters/webmention/discovery.test.ts:68` `ts(2352)` — `fetchMock.mock.calls[0] as [string, RequestInit]`
+- `src/core/domain/ids.test.ts:39,40,47` `ts(2322)` — string vs branded `ObjectId` (four diagnostics)
+- `src/core/storage/slug-schema.ts:36,37` `ts(2339)` — `slug` / `previousSlugs` on a generic Zod shape
+
+**Hints present on `origin/main`:** unused `legacyRssGuidCount` in `scripts/migrate-assign-ids.ts`; Zod `.url()` / `.uuid()` deprecations in `src/content.config.ts` and `note-relationship-schema.ts`; unused `z` import in `slug-schema.test.ts`.
+
+**Hint introduced by this branch (false positive, not an error):** `src/pages/drafting/review/[slug].astro` `ts(6133)` unused `notFound`. The function is used by frontmatter early `return notFound()`; Astro’s checker does not count those. Do not rename or inline it just to silence the hint.
+
 Manual (production-like):
 
 1. Configure drafting secrets + `GITHUB_NOTES_TOKEN` locally or on Vercel preview **only after** Task 6+.
