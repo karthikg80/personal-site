@@ -16,9 +16,10 @@ import { formatNoteDate } from '../lib/notes';
 
 interface Props {
   note: CollectionEntry<'notes'>;
+  showWebmentions?: boolean;
 }
 
-const { note } = Astro.props;
+const { note, showWebmentions = true } = Astro.props;
 const person = await getPerson();
 const domainNote = mapNote(note.data);
 const kind = deriveNoteKind(domainNote);
@@ -27,7 +28,9 @@ const replyUrl = externalReplyUrl(domainNote);
 const bookmarkUrl = externalBookmarkUrl(domainNote);
 const siteOrigin = (Astro.site ?? Astro.url).toString().replace(/\/$/, '');
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
-const mentionTargets = noteMentionTargets(domainNote, siteOrigin);
+    const mentionTargets = showWebmentions
+      ? noteMentionTargets(domainNote, siteOrigin)
+      : [];
 ---
 
 <Layout
@@ -79,6 +82,8 @@ const mentionTargets = noteMentionTargets(domainNote, siteOrigin);
       </span>
     </header>
 
+    <slot name="chrome" />
+
     <div class="note-body container e-content">
       <slot />
     </div>
@@ -102,7 +107,9 @@ const mentionTargets = noteMentionTargets(domainNote, siteOrigin);
         <span aria-hidden="true"> · </span>
         <a href="/rss.xml">follow by RSS</a>
       </p>
-      <Webmentions target={canonicalUrl} targets={mentionTargets} />
+      {showWebmentions && (
+        <Webmentions target={canonicalUrl} targets={mentionTargets} />
+      )}
     </footer>
   </article>
 </Layout>

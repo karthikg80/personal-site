@@ -721,6 +721,8 @@ Authenticated SSR route:
 
 This previews the actual canonical Git object with production rendering. It does not recertify privacy.
 
+**Local images:** Review rendering uses `renderNoteBodyHtml()` (Astro’s Sätteri processor on the GitHub blob). Parity with `render(entry)` is guaranteed for the Markdown constructs in the 8A fixtures. **Local Astro image-pipeline paths are not supported** for GitHub-fetched review Markdown. If a canonical draft contains such an image, review fails with a clear error instead of silently emitting `__ASTRO_IMAGE_` markup that production would rewrite.
+
 ---
 
 ## 16. Publication-state UX
