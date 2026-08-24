@@ -23,7 +23,10 @@ export interface ExternalIdentity {
 export interface Person {
   id: ObjectId;
   siteUrl: string;
+  /** Full canonical name used in titles, copyright, and author h-cards. */
   name: string;
+  /** Short public identity used in the homepage h-card p-name. */
+  displayName: string;
   tagline: string;
   avatarPath: string;
   organization: Organization;

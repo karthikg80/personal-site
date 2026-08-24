@@ -112,6 +112,7 @@ describe('mapPerson', () => {
       id: '01a03192-07db-70a9-a4da-03a139669a11',
       siteUrl: 'https://karthikg.in',
       name: 'Karthik Gurumoorthy',
+      displayName: 'Karthik',
       tagline: 'tagline',
       avatarPath: '/avatar.svg',
       organization: { name: 'Thea Foundry', url: 'https://theafoundry.com' },
@@ -146,6 +147,7 @@ describe('mapPerson', () => {
 
     expect(person.siteUrl).toBe('https://karthikg.in');
     expect(person.name).toBe('Karthik Gurumoorthy');
+    expect(person.displayName).toBe('Karthik');
     expect(person.avatarPath).toBe('/avatar.svg');
     expect(person.organization).toEqual({
       name: 'Thea Foundry',

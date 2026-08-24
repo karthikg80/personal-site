@@ -14,6 +14,7 @@ const person: Person = {
   id: parseObjectId('01a03192-07db-70a9-a4da-03a139669a11'),
   siteUrl: 'https://karthikg.in',
   name: 'Karthik Gurumoorthy',
+  displayName: 'Karthik',
   tagline: 'I build useful software for families and everyday life.',
   avatarPath: '/avatar.svg',
   organization: { name: 'Thea Foundry', url: 'https://theafoundry.com' },

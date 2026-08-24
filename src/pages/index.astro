@@ -24,7 +24,7 @@ const [latestNote] = await getPublishedNotes();
         <img class="u-photo u-logo avatar" src={person.avatarPath} alt={person.name} width="72" height="72" />
         <p class="kicker">Oh, hello there.</p>
         <h1>
-          I’m <span class="p-name">Karthik</span>. I make small, useful software.
+          I’m <span class="p-name">{person.displayName}</span>. I make small, useful software.
         </h1>
         <p class="lede p-note">
           Mostly for families and everyday life. Before this, I spent 18 years

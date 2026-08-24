@@ -10,6 +10,7 @@ export type PersonStorageData = {
   id: string;
   siteUrl: string;
   name: string;
+  displayName: string;
   tagline: string;
   avatarPath: string;
   organization: Organization;
@@ -23,6 +24,7 @@ export function mapPerson(data: PersonStorageData): Person {
     id: parseObjectId(data.id),
     siteUrl: data.siteUrl,
     name: data.name,
+    displayName: data.displayName,
     tagline: data.tagline,
     avatarPath: data.avatarPath,
     organization: { ...data.organization },
