@@ -5,6 +5,7 @@ import type { Note } from '../../core/domain/note.js';
 import {
   externalBookmarkUrl,
   externalReplyUrl,
+  relationshipMicroformatClass,
 } from './note-relationships.js';
 
 const baseNote: Note = {
@@ -21,6 +22,11 @@ const baseNote: Note = {
 };
 
 describe('note relationship presentation projection', () => {
+  it('maps reply-to to u-in-reply-to and bookmark-of to u-bookmark-of', () => {
+    expect(relationshipMicroformatClass('reply-to')).toBe('u-in-reply-to');
+    expect(relationshipMicroformatClass('bookmark-of')).toBe('u-bookmark-of');
+  });
+
   it('projects reply-to to an external URL for u-in-reply-to', () => {
     expect(
       externalReplyUrl({

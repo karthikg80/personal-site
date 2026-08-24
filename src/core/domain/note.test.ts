@@ -53,11 +53,20 @@ describe('deriveNoteKind', () => {
   });
 
   it('prefers reply over bookmark regardless of array order', () => {
-    const relationships: Relationship[] = [
+    const bookmarkThenReply: Relationship[] = [
       { type: 'bookmark-of', target: { kind: 'external', url: 'https://example.com/page' } },
       { type: 'reply-to', target: { kind: 'external', url: 'https://example.com/post' } },
     ];
-    expect(deriveNoteKind({ presentation: 'note', relationships })).toBe('reply');
+    const replyThenBookmark: Relationship[] = [
+      { type: 'reply-to', target: { kind: 'external', url: 'https://example.com/post' } },
+      { type: 'bookmark-of', target: { kind: 'external', url: 'https://example.com/page' } },
+    ];
+    expect(deriveNoteKind({ presentation: 'note', relationships: bookmarkThenReply })).toBe(
+      'reply'
+    );
+    expect(deriveNoteKind({ presentation: 'note', relationships: replyThenBookmark })).toBe(
+      'reply'
+    );
   });
 
   it('prefers bookmark over scrap presentation', () => {

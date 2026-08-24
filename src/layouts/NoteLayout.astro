@@ -6,6 +6,7 @@ import { hostLabel } from '../adapters/presentation/host-label.js';
 import {
   externalBookmarkUrl,
   externalReplyUrl,
+  relationshipMicroformatClass,
 } from '../adapters/presentation/note-relationships.js';
 import { deriveNoteKind } from '../core/domain/note.js';
 import { getPerson } from '../core/storage/content.js';
@@ -47,13 +48,13 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toStri
       {replyUrl && (
         <p class="context">
           In reply to
-          <a class="u-in-reply-to" href={replyUrl}>{hostLabel(replyUrl)}</a>
+          <a class={relationshipMicroformatClass('reply-to')} href={replyUrl}>{hostLabel(replyUrl)}</a>
         </p>
       )}
       {bookmarkUrl && (
         <p class="context">
           Bookmarked
-          <a class="u-bookmark-of" href={bookmarkUrl}>{hostLabel(bookmarkUrl)}</a>
+          <a class={relationshipMicroformatClass('bookmark-of')} href={bookmarkUrl}>{hostLabel(bookmarkUrl)}</a>
         </p>
       )}
       <h1 class="p-name">{note.data.title}</h1>

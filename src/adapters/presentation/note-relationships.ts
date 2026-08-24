@@ -1,5 +1,15 @@
 import type { Note } from '../../core/domain/note.js';
-import { findRelationship } from '../../core/domain/relationship.js';
+import {
+  findRelationship,
+  type RelationshipType,
+} from '../../core/domain/relationship.js';
+
+/** Microformat class for a canonical relationship type (presentation only). */
+export function relationshipMicroformatClass(
+  type: RelationshipType
+): 'u-in-reply-to' | 'u-bookmark-of' {
+  return type === 'reply-to' ? 'u-in-reply-to' : 'u-bookmark-of';
+}
 
 /** External reply-to URL for u-in-reply-to projection. */
 export function externalReplyUrl(note: Pick<Note, 'relationships'>): string | undefined {
