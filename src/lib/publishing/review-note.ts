@@ -7,6 +7,7 @@ import {
   type NoteBlob,
 } from './github-notes.js';
 import { LOCAL_IMAGE_REVIEW_ERROR, renderNoteBodyHtml } from './note-body-html.js';
+import { prepareReviewBodyHtml } from './review-html.js';
 import { parseCanonicalNoteFile } from './note-markdown.js';
 import { NOTES_DIR, noteRepoPath } from './note-path.js';
 
@@ -80,9 +81,11 @@ export async function loadReviewNote(
 
     if (parsed.fields.slug !== slug) return notFound();
 
+    const futureUrl = `https://karthikg.in/notes/${slug}/`;
+
     let bodyHtml: string;
     try {
-      bodyHtml = await renderNoteBodyHtml(parsed.body);
+      bodyHtml = prepareReviewBodyHtml(await renderNoteBodyHtml(parsed.body), { futureUrl });
     } catch (error) {
       if (error instanceof Error && error.message === LOCAL_IMAGE_REVIEW_ERROR) {
         return fail(409, error.message);
@@ -114,7 +117,7 @@ export async function loadReviewNote(
         draft: parsed.draft,
         privacyReviewed: parsed.privacyReviewed,
         canPublish: parsed.privacyReviewed === true && parsed.draft === true,
-        futureUrl: `https://karthikg.in/notes/${slug}/`,
+        futureUrl,
         bodyHtml,
         data,
       },

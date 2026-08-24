@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildHandoffMarkdown } from './handoff.js';
 import { GitHubNotesError, type GitHubNotesConfig, type NoteBlob } from './github-notes.js';
-import { publishCanonicalNote, serializePreparedNote } from './note-markdown.js';
+import { parseCanonicalNoteFile, publishCanonicalNote, serializePreparedNote } from './note-markdown.js';
 import { executePrepare, type PrepareNotesAccess } from './prepare-flow.js';
 
 const objectId = '018f3b2a-7c4e-7b3a-b123-456789abcdef';
@@ -53,6 +53,19 @@ function memoryNotes(seed?: { slug: string; text: string; sha?: string }): Prepa
     putCount: () => putCount,
     getNotesConfig: () => config,
     getNoteFile: async (_config, noteSlug) => files.get(noteSlug) ?? null,
+    findNoteByObjectId: async (_config, id) => {
+      for (const [fileSlug, blob] of files) {
+        try {
+          const parsed = parseCanonicalNoteFile(blob.text);
+          if (parsed.fields.id === id) {
+            return { slug: fileSlug, sha: blob.sha, text: blob.text };
+          }
+        } catch {
+          continue;
+        }
+      }
+      return null;
+    },
     putNoteFile: async (_config, input) => {
       putCount += 1;
       const sha = `sha-${putCount}`;
@@ -150,6 +163,9 @@ describe('executePrepare', () => {
       getNoteFile: async () => {
         throw new Error('should not read Git');
       },
+      findNoteByObjectId: async () => {
+        throw new Error('should not scan Git');
+      },
       putNoteFile: async () => {
         throw new Error('should not write Git');
       },
@@ -178,6 +194,7 @@ describe('executePrepare', () => {
     const notes: PrepareNotesAccess = {
       getNotesConfig: () => config,
       getNoteFile: async (_config, noteSlug) => files.get(noteSlug) ?? null,
+      findNoteByObjectId: async () => null,
       putNoteFile: async (_config, input) => {
         puts += 1;
         if (puts === 1 && !input.sha) {
@@ -195,5 +212,21 @@ describe('executePrepare', () => {
     const result = await executePrepare(valid, notes);
     expect(result).toMatchObject({ ok: true, blobSha: 'sha-2' });
     expect(puts).toBe(2);
+  });
+
+  it('rejects create when the ObjectId already exists at another slug', async () => {
+    const notes = memoryNotes({
+      slug: 'older-slug',
+      text: preparedMarkdown({ slug: 'older-slug' }),
+      sha: 'sha-old',
+    });
+    const result = await executePrepare(valid, notes);
+    expect(result).toEqual({
+      ok: false,
+      status: 409,
+      error: 'This ObjectId already exists at another path.',
+    });
+    expect(notes.putCount()).toBe(0);
+    expect(notes.files.has(slug)).toBe(false);
   });
 });

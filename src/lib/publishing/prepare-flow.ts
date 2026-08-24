@@ -1,10 +1,12 @@
 import {
+  findNoteByObjectId,
   getNoteFile,
   getNotesConfig,
   GitHubNotesError,
   putNoteFile,
   type GitHubNotesConfig,
   type NoteBlob,
+  type RecoveredNoteFile,
 } from './github-notes.js';
 import { parseCanonicalNoteFile } from './note-markdown.js';
 import { parsePrepareRequest, type ParsedPrepare } from './prepare-request.js';
@@ -28,6 +30,10 @@ export type PrepareResult =
 export type PrepareNotesAccess = {
   getNotesConfig: () => GitHubNotesConfig | null;
   getNoteFile: (config: GitHubNotesConfig, slug: string) => Promise<NoteBlob | null>;
+  findNoteByObjectId: (
+    config: GitHubNotesConfig,
+    objectId: string
+  ) => Promise<RecoveredNoteFile | null>;
   putNoteFile: (
     config: GitHubNotesConfig,
     input: { slug: string; text: string; message: string; sha?: string }
@@ -37,6 +43,7 @@ export type PrepareNotesAccess = {
 const defaultAccess: PrepareNotesAccess = {
   getNotesConfig,
   getNoteFile,
+  findNoteByObjectId,
   putNoteFile,
 };
 
@@ -166,6 +173,10 @@ export async function executePrepare(
     const existing = await access.getNoteFile(config, parsed.slug);
     if (existing) {
       return await updatePrepared(access, config, parsed, existing);
+    }
+    const elsewhere = await access.findNoteByObjectId(config, parsed.canonicalId);
+    if (elsewhere) {
+      return fail(409, 'This ObjectId already exists at another path.');
     }
     return await createPrepared(access, config, parsed);
   } catch (error) {

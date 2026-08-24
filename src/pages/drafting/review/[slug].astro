@@ -16,6 +16,8 @@ const securityHeaders = {
   'X-Robots-Tag': 'noindex, nofollow, noarchive',
   'Referrer-Policy': 'no-referrer',
   'X-Frame-Options': 'DENY',
+  'Content-Security-Policy':
+    "default-src 'self'; base-uri 'none'; connect-src 'self'; form-action 'none'; frame-ancestors 'none'; img-src 'self' https: data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'",
 };
 
 /** Used by frontmatter early returns. astro check ts(6133) is a false positive. */
@@ -68,6 +70,7 @@ Astro.response.headers.set('Cache-Control', securityHeaders['Cache-Control']);
 Astro.response.headers.set('X-Robots-Tag', securityHeaders['X-Robots-Tag']);
 Astro.response.headers.set('Referrer-Policy', securityHeaders['Referrer-Policy']);
 Astro.response.headers.set('X-Frame-Options', securityHeaders['X-Frame-Options']);
+Astro.response.headers.set('Content-Security-Policy', securityHeaders['Content-Security-Policy']);
 ---
 
 <NoteLayout note={entry} showWebmentions={false}>

@@ -53,6 +53,27 @@ describe('loadReviewNote', () => {
     expect(result.note.data.title).toBe('Building for the web of 2030');
   });
 
+  it('renders review HTML inertly and rewrites relative links to the future public URL', async () => {
+    const active = serializePreparedNote({
+      id: objectId,
+      slug,
+      title: 'Building for the web of 2030',
+      date: '2026-08-24',
+      tags: [],
+      presentation: 'note',
+      relationships: [],
+      body: '<script>fetch("/api/drafting/publish")</script>\n[other](other)\n',
+    });
+    const result = await loadReviewNote(slug, memoryNotes({ slug, text: active }));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.note.bodyHtml).not.toMatch(/<script/i);
+    expect(result.note.bodyHtml).not.toContain('fetch("/api/drafting/publish")');
+    expect(result.note.bodyHtml).toContain(
+      'href="https://karthikg.in/notes/building-for-the-web-of-2030/other"'
+    );
+  });
+
   it('returns 404 when the Git file is missing', async () => {
     const result = await loadReviewNote(slug, memoryNotes());
     expect(result).toEqual({ ok: false, status: 404, error: 'Not found.' });
@@ -130,6 +151,9 @@ describe('review Publish wiring', () => {
     );
     expect(page).toContain('data-publish');
     expect(page).toContain('src="../../../scripts/drafting-publish.ts"');
+    expect(page).toContain('Content-Security-Policy');
+    expect(page).toContain("script-src 'self'");
+    expect(page).toContain("base-uri 'none'");
     expect(script).toContain("fetch('/api/drafting/publish'");
     expect(script).toContain('buildPublishRequest');
     expect(script).toContain('window.location.reload()');
