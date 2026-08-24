@@ -41,14 +41,27 @@ Drafts are encrypted in browser storage with AES-GCM and a key derived from the 
 
 Agent moves are opt-in. The current note is sent to OpenAI only when the writer clicks an agent action. The server reads `OPENAI_API_KEY`; the key is never exposed to the browser. Requests use the Responses API with `store: false`, which prevents the generated response from being stored for later API retrieval. The default model is `gpt-5.6-luna`, overridable with `DRAFTING_MODEL`.
 
-The handoff always exports:
+Ordinary publishing from this room is **Prepare**, then review, then **Publish**:
+
+1. Draft in the room.
+2. Review the exact publication-bound text.
+3. Check the repository-entry privacy acknowledgement.
+4. Prepare writes an unpublished Git Note: `draft: true`, `privacyReviewed: true`.
+5. Review `/drafting/review/<slug>/` (the Git blob, production Markdown).
+6. Publish flips only `draft` to `false`.
+7. Confirm the public URL after deploy.
+8. Optional CLI: `npm run webmentions:send` and `npm run posse:bluesky -- <slug>`.
+
+Prepare and Publish are session-authenticated server routes. They use a server-only `GITHUB_NOTES_TOKEN` (fine-grained PAT, Contents R/W, this repo only) and never expose that token to the browser. Without the token, Prepare/Publish validate then return `503` — they do not pretend the Note is prepared. The editorial agent cannot Prepare or Publish.
+
+Copy/Download remains a recovery handoff. It always exports:
 
 ```yaml
 draft: true
 privacyReviewed: false
 ```
 
-It cannot publish or modify the public content collection. Exact-text approval and the reviewed Git release remain separate.
+Do not commit that file as a privacy-reviewed canonical Note. `canonicalId` on a local draft is identity only; a Git object exists only after a successful Prepare stores `preparedAt` and `blobSha`.
 
 ## Project Structure
 
@@ -86,16 +99,17 @@ It cannot publish or modify the public content collection. Exact-text approval a
 ### Draft or publish a Workbench Note
 
 1. Keep raw observations and sensitive source material outside this repository.
-2. Draft from `docs/workbench-note-template.md` in private storage. This checkout provides a Git-ignored `private-notes/` folder for non-sensitive local review.
-3. After editorial approval, copy the publishable draft into `src/content/notes/<slug>.md` with both publication controls still at their safe defaults:
+2. Draft in `/drafting`, or from `docs/workbench-note-template.md` in private storage. This checkout provides a Git-ignored `private-notes/` folder for non-sensitive local review.
+3. Follow `docs/editorial-and-privacy.md` for the factual, editorial, and privacy review of the exact text.
+4. Prepare from the drafting room after the repository-entry acknowledgement. That commits `src/content/notes/<slug>.md` with:
 
    ```yaml
    draft: true
-   privacyReviewed: false
+   privacyReviewed: true
    ```
 
-4. Follow `docs/editorial-and-privacy.md` for the factual, editorial, and privacy review.
-5. Publish only after explicit approval by setting both `draft: false` and `privacyReviewed: true`.
+   The Note is still unpublished on karthikg.in.
+5. Review `/drafting/review/<slug>/`, then Publish. Publish flips only `draft: false`. Do not paste a Copy/Download file into Git as if it were privacy-reviewed; that handoff always has `privacyReviewed: false`.
 6. After the public deploy is live, send webmentions for outbound links:
 
    ```sh
@@ -109,11 +123,11 @@ It cannot publish or modify the public content collection. Exact-text approval a
    npm run posse:bluesky -- <slug>
    ```
 
-   Then add the printed URL to the note's `syndication` list and redeploy.
+   Then add the printed URL to the note's `syndication` list and redeploy. Webmention and Bluesky are not part of Prepare or Publish.
 
 A reply uses a `relationships` entry with `type: reply-to`; a bookmark uses `type: bookmark-of`. Both stay behind the same publication gate.
 
-The archive is at `/notes`, individual notes use `/notes/<slug>`, and the full-text feed is `/rss.xml`. Draft or unreviewed notes are excluded from routes, the homepage, RSS, and the sitemap.
+The archive is at `/notes`, individual notes use `/notes/<slug>`, and the full-text feed is `/rss.xml`. Prepared unpublished notes (`draft: true`) and unreviewed notes are excluded from routes, the homepage, RSS, and the sitemap.
 
 ### Update profile content
 
