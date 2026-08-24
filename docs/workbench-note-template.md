@@ -4,16 +4,34 @@ Keep working drafts outside Git. This checkout ignores `private-notes/` for loca
 
 The private `/drafting` room can shape ordinary working notes with an agent and export this template with both publication gates closed. It is device-local, not a home for prohibited sensitive material.
 
+## Identity fields
+
+- `id` is an immutable UUIDv7 assigned once at creation (handoff or migration). **Never regenerate it** when editing, renaming, or moving a note.
+- `slug` is the current URL segment (`/notes/<slug>/`). When renaming a published note, append the old value to `previousSlugs`, set the new `slug`, and rename the file to match if needed. Build emits a **308** redirect from each historical path to the current path.
+- `legacyRssGuid` is **migration-only** compatibility metadata for notes that were already public before Personal Web Core. **Do not add it to new notes.** After a rename, leave it unchanged — RSS GUID stays frozen while `<link>` follows the new slug.
+- `previousSlugs` stays `[]` until a slug rename occurs. Never put the current slug in `previousSlugs`.
+
 ```md
 ---
+id: 018f0000-0000-7000-8000-000000000000
 title: "Week ending Month Day"
+slug: week-ending-month-day
 date: YYYY-MM-DD
+previousSlugs: []
 summary: "One sentence that says what is inside."
 tags:
   - making
 presentation: note # use scrap for an intentionally rough, notebook-like page
-# inReplyTo: https://example.com/post   # a reply; markup becomes u-in-reply-to
-# bookmarkOf: https://example.com/page  # a bookmark; markup becomes u-bookmark-of
+relationships: []
+# relationships:
+#   - type: reply-to
+#     target:
+#       kind: external
+#       url: https://example.com/post
+#   - type: bookmark-of
+#     target:
+#       kind: external
+#       url: https://example.com/page
 syndication: []
 draft: true
 privacyReviewed: false

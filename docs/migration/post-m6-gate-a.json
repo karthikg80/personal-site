@@ -1,0 +1,39 @@
+{
+  "comparedAgainst": "a45cff8 (post-M5 + displayName)",
+  "expectedPublicChanges": [
+    "5 new /projects/<slug>/ pages",
+    "projects listing primary/u-url now first-party",
+    "sitemap gains 5 project detail URLs"
+  ],
+  "unchangedByteIdentical": [
+    "index.html",
+    "rss.xml",
+    "about/index.html",
+    "now/index.html",
+    "contact/index.html",
+    "notes/index.html",
+    "notes/first-note-probably/index.html",
+    ".well-known/atproto-did"
+  ],
+  "intentionalDiffs": [
+    "projects/index.html",
+    "sitemap.xml"
+  ],
+  "newPages": [
+    "/projects/homebase/",
+    "/projects/neighborbook/",
+    "/projects/pantry-mojo/",
+    "/projects/sai-parayan-tracker/",
+    "/projects/thea-kitchen/"
+  ],
+  "projectCount": 5,
+  "cardOrderByDateDesc": [
+    "neighborbook",
+    "thea-kitchen",
+    "sai-parayan-tracker",
+    "pantry-mojo",
+    "homebase"
+  ],
+  "testsPassed": 74,
+  "build": "success"
+}

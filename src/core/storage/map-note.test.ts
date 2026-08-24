@@ -1,0 +1,183 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parse as parseYaml } from 'yaml';
+
+import { mapNote } from './map-note.js';
+import { mapProject } from './map-project.js';
+import { mapPerson, type PersonStorageData } from './map-person.js';
+
+describe('mapNote', () => {
+  const base = {
+    id: '01a03192-07d5-76ce-8aa7-6a9dd5f9a4d5',
+    slug: 'first-note-probably',
+    previousSlugs: [] as string[],
+    title: 'First note, probably',
+    summary: 'A summary',
+    presentation: 'scrap' as const,
+    tags: ['making', 'personal web'],
+    draft: false,
+    privacyReviewed: true,
+    relationships: [] as [],
+    syndication: ['https://bsky.app/profile/karthikg.in/post/3mtrz4v5yut2a'],
+    legacyRssGuid: 'https://karthikg.in/notes/first-note-probably/',
+    date: new Date('2026-08-22T00:00:00.000Z'),
+  };
+
+  it('preserves identity, slug, topics, syndication, and legacyRssGuid', () => {
+    const note = mapNote(base);
+    expect(note.id).toBe(base.id);
+    expect(note.slug).toBe('first-note-probably');
+    expect(note.previousSlugs).toEqual([]);
+    expect(note.topics).toEqual(['making', 'personal web']);
+    expect(note.publication).toBe('public');
+    expect(note.syndication).toEqual([
+      { url: 'https://bsky.app/profile/karthikg.in/post/3mtrz4v5yut2a' },
+    ]);
+    expect(note.legacyRssGuid).toBe('https://karthikg.in/notes/first-note-probably/');
+    expect(note.createdAt.toISOString()).toBe('2026-08-22T00:00:00.000Z');
+  });
+
+  it('maps canonical relationships exactly', () => {
+    const note = mapNote({
+      ...base,
+      relationships: [
+        {
+          type: 'reply-to',
+          target: { kind: 'external', url: 'https://example.com/post' },
+        },
+        {
+          type: 'bookmark-of',
+          target: { kind: 'external', url: 'https://example.com/saved' },
+        },
+      ],
+    });
+    expect(note.relationships).toEqual([
+      { type: 'reply-to', target: { kind: 'external', url: 'https://example.com/post' } },
+      { type: 'bookmark-of', target: { kind: 'external', url: 'https://example.com/saved' } },
+    ]);
+  });
+
+  it('maps missing relationships to empty array', () => {
+    const { relationships: _ignored, ...withoutRelationships } = base;
+    expect(mapNote(withoutRelationships).relationships).toEqual([]);
+  });
+
+  it('maps explicit empty relationships', () => {
+    expect(mapNote({ ...base, relationships: [] }).relationships).toEqual([]);
+  });
+
+  it('fails when id is missing rather than generating one', () => {
+    expect(() => mapNote({ ...base, id: '' })).toThrow(/required|Invalid ObjectId/);
+  });
+
+  it('derives awaiting-privacy-review', () => {
+    const note = mapNote({ ...base, draft: false, privacyReviewed: false });
+    expect(note.publication).toBe('awaiting-privacy-review');
+  });
+});
+
+describe('mapProject', () => {
+  it('preserves id/slug and maps tags and links[]', () => {
+    const project = mapProject({
+      id: '01a03192-07d8-729c-8080-fcafaf73f46d',
+      slug: 'neighborbook',
+      previousSlugs: [],
+      title: 'Neighborbook',
+      description: 'Private community memory',
+      tags: ['Communities', 'Privacy'],
+      links: [{ kind: 'live', url: 'https://neighborbook.theafoundry.com' }],
+      featured: true,
+      date: new Date('2026-07-30T00:00:00.000Z'),
+    });
+
+    expect(project.id).toBe('01a03192-07d8-729c-8080-fcafaf73f46d');
+    expect(project.slug).toBe('neighborbook');
+    expect(project.topics).toEqual(['Communities', 'Privacy']);
+    expect(project.links).toEqual([
+      { kind: 'live', url: 'https://neighborbook.theafoundry.com' },
+    ]);
+    expect(project.featured).toBe(true);
+  });
+
+  it('handles projects with no external links', () => {
+    const project = mapProject({
+      id: '01a03192-07d8-729c-8080-fcafaf73f46d',
+      slug: 'neighborbook',
+      previousSlugs: [],
+      title: 'Neighborbook',
+      description: 'Private community memory',
+      tags: [],
+      links: [],
+      featured: false,
+      date: new Date('2026-07-30T00:00:00.000Z'),
+    });
+    expect(project.links).toEqual([]);
+  });
+});
+
+describe('mapPerson', () => {
+  it('preserves id and ATProto identifiers inside externalIdentities', () => {
+    const person = mapPerson({
+      id: '01a03192-07db-70a9-a4da-03a139669a11',
+      siteUrl: 'https://karthikg.in',
+      name: 'Karthik Gurumoorthy',
+      displayName: 'Karthik',
+      tagline: 'tagline',
+      avatarPath: '/avatar.svg',
+      organization: { name: 'Thea Foundry', url: 'https://theafoundry.com' },
+      contactMethods: [{ kind: 'email', value: 'karthi@hey.com', rel: ['me'] }],
+      externalIdentities: [
+        {
+          kind: 'atproto',
+          label: 'Bluesky',
+          url: 'https://bsky.app/profile/karthikg.in',
+          rel: ['me', 'atproto'],
+          identifiers: {
+            handle: 'karthikg.in',
+            did: 'did:plc:k25m3ebqwdr32ojecqpjfzbh',
+          },
+        },
+      ],
+      interests: ['personal web'],
+    });
+
+    expect(person.id).toBe('01a03192-07db-70a9-a4da-03a139669a11');
+    expect(person.externalIdentities[0]?.kind).toBe('atproto');
+    expect(person.externalIdentities[0]?.identifiers).toEqual({
+      handle: 'karthikg.in',
+      did: 'did:plc:k25m3ebqwdr32ojecqpjfzbh',
+    });
+    expect('atproto' in person).toBe(false);
+  });
+
+  it('maps committed person.yaml identity facts without a top-level atproto field', () => {
+    const raw = readFileSync(join(import.meta.dirname, '../../content/person.yaml'), 'utf8');
+    const person = mapPerson(parseYaml(raw) as PersonStorageData);
+
+    expect(person.siteUrl).toBe('https://karthikg.in');
+    expect(person.name).toBe('Karthik Gurumoorthy');
+    expect(person.displayName).toBe('Karthik');
+    expect(person.avatarPath).toBe('/avatar.svg');
+    expect(person.organization).toEqual({
+      name: 'Thea Foundry',
+      url: 'https://theafoundry.com',
+    });
+    expect(person.contactMethods).toEqual([
+      { kind: 'email', value: 'karthi@hey.com', rel: ['me'] },
+    ]);
+    expect(person.externalIdentities.map((identity) => identity.kind)).toEqual([
+      'github',
+      'atproto',
+      'linkedin',
+      'website',
+    ]);
+    expect(person.externalIdentities.find((identity) => identity.kind === 'github')?.rel).toEqual([
+      'me',
+    ]);
+    expect(
+      person.externalIdentities.find((identity) => identity.kind === 'atproto')?.rel
+    ).toEqual(['me', 'atproto']);
+    expect('atproto' in person).toBe(false);
+  });
+});

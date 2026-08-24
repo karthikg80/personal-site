@@ -1,0 +1,44 @@
+id: 01a03192-07db-70a9-a4da-03a139669a11
+siteUrl: https://karthikg.in
+name: Karthik Gurumoorthy
+displayName: Karthik
+tagline: I build useful software for families and everyday life. Founder of Thea
+  Foundry, after 18 years on high-scale payments systems.
+avatarPath: /avatar.svg
+organization:
+  name: Thea Foundry
+  url: https://theafoundry.com
+contactMethods:
+  - kind: email
+    value: karthi@hey.com
+    rel:
+      - me
+externalIdentities:
+  - kind: github
+    label: GitHub
+    url: https://github.com/karthikg80
+    rel:
+      - me
+  - kind: atproto
+    label: Bluesky
+    url: https://bsky.app/profile/karthikg.in
+    rel:
+      - me
+      - atproto
+    identifiers:
+      handle: karthikg.in
+      did: did:plc:k25m3ebqwdr32ojecqpjfzbh
+  - kind: linkedin
+    label: LinkedIn
+    url: https://www.linkedin.com/in/karthikg80/
+    rel:
+      - me
+  - kind: website
+    label: Thea Foundry
+    url: https://theafoundry.com
+    rel:
+      - me
+interests:
+  - personal web
+  - calm software
+  - household tools

@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
+import { getProjectRecords } from '../core/storage/content.js';
 import { getPublishedNotes, notePath } from '../lib/notes';
+import { projectPath } from '../lib/projects';
 
 const staticPaths = [
   '/',
@@ -16,7 +18,12 @@ const staticPaths = [
 export const GET: APIRoute = async ({ site }) => {
   const origin = (site ?? new URL('https://karthikg.in')).toString().replace(/\/$/, '');
   const notes = await getPublishedNotes();
-  const paths = [...staticPaths, ...notes.map(notePath)];
+  const projects = await getProjectRecords();
+  const paths = [
+    ...staticPaths,
+    ...notes.map(notePath),
+    ...projects.map((record) => projectPath(record.project.slug)),
+  ];
   const urls = paths
     .map((path) => `<url><loc>${origin}${path === '/' ? '/' : path}</loc></url>`)
     .join('');

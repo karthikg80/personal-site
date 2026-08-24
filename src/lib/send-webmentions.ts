@@ -1,13 +1,13 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  discoverWebmentionEndpoint,
-  extractOutboundLinks,
-  isPublishedNote,
-  markdownToLinkHtml,
-  sendWebmention,
-} from './indieweb';
+import { parse as parseYaml } from 'yaml';
+
+import { discoverWebmentionEndpoint, sendWebmention } from '../adapters/webmention/discovery.js';
+import { extractOutboundLinks, markdownToLinkHtml } from '../adapters/webmention/outbound-targets.js';
+import { derivePublicationState, isPublicPublication } from '../core/domain/publication.js';
+import type { RelationshipStorage } from '../core/storage/map-note.js';
+import { asUrlString } from '../core/storage/url-value.js';
 
 const SITE = 'https://karthikg.in';
 const NOTES_DIR = fileURLToPath(new URL('../../src/content/notes', import.meta.url));
@@ -15,26 +15,26 @@ const NOTES_DIR = fileURLToPath(new URL('../../src/content/notes', import.meta.u
 type Frontmatter = {
   draft?: boolean;
   privacyReviewed?: boolean;
-  inReplyTo?: string;
-  bookmarkOf?: string;
+  relationships?: RelationshipStorage[];
 };
 
 function parseFrontmatter(raw: string): { data: Frontmatter; body: string } {
   const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (!match) return { data: {}, body: raw };
+  return {
+    data: parseYaml(match[1]) as Frontmatter,
+    body: match[2],
+  };
+}
 
-  const data: Frontmatter = {};
-  for (const line of match[1].split('\n')) {
-    const [key, ...rest] = line.split(':');
-    if (!key || rest.length === 0) continue;
-    const value = rest.join(':').trim().replace(/^['"]|['"]$/g, '');
-    if (key === 'draft') data.draft = value === 'true';
-    if (key === 'privacyReviewed') data.privacyReviewed = value === 'true';
-    if (key === 'inReplyTo') data.inReplyTo = value;
-    if (key === 'bookmarkOf') data.bookmarkOf = value;
+function externalUrlsFromFrontmatter(data: Frontmatter): string[] {
+  const urls: string[] = [];
+  for (const relationship of data.relationships ?? []) {
+    if (relationship.target.kind === 'external') {
+      urls.push(asUrlString(relationship.target.url));
+    }
   }
-
-  return { data, body: match[2] };
+  return urls;
 }
 
 async function discover(target: string): Promise<string | null> {
@@ -58,16 +58,18 @@ async function main(): Promise<void> {
   for (const file of files) {
     const raw = await readFile(join(NOTES_DIR, file), 'utf8');
     const { data, body } = parseFrontmatter(raw);
-    if (!isPublishedNote({ draft: data.draft ?? true, privacyReviewed: data.privacyReviewed ?? false })) {
+    const publication = derivePublicationState(data.draft ?? true, data.privacyReviewed ?? false);
+    if (!isPublicPublication(publication)) {
       continue;
     }
 
     const slug = file.replace(/\.md$/, '');
     const source = `${SITE}/notes/${slug}/`;
-    const targets = extractOutboundLinks(markdownToLinkHtml(body), SITE, {
-      inReplyTo: data.inReplyTo,
-      bookmarkOf: data.bookmarkOf,
-    });
+    const targets = extractOutboundLinks(
+      markdownToLinkHtml(body),
+      SITE,
+      externalUrlsFromFrontmatter(data)
+    );
 
     for (const target of targets) {
       const endpoint = await discover(target).catch(() => null);

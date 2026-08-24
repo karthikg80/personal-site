@@ -1,5 +1,15 @@
 ---
+import type { Person } from '../core/domain/person.js';
+import { externalIdentity } from '../adapters/presentation/person.js';
+
+interface Props {
+  person: Person;
+}
+
+const { person } = Astro.props;
 const currentYear = new Date().getFullYear();
+const github = externalIdentity(person, 'github');
+const bluesky = externalIdentity(person, 'atproto');
 ---
 
 <footer>
@@ -11,8 +21,12 @@ const currentYear = new Date().getFullYear();
     <nav aria-label="Elsewhere">
       <a href="/colophon">colophon</a>
       <a href="/resume">résumé</a>
-      <a href="https://github.com/karthikg80" rel="me noopener noreferrer" target="_blank">github</a>
-      <a href="https://bsky.app/profile/karthikg.in" rel="me atproto noopener noreferrer" target="_blank">bluesky</a>
+      {github && (
+        <a href={github.url} rel={[...github.rel, 'noopener', 'noreferrer'].join(' ')} target="_blank">github</a>
+      )}
+      {bluesky && (
+        <a href={bluesky.url} rel={[...bluesky.rel, 'noopener', 'noreferrer'].join(' ')} target="_blank">bluesky</a>
+      )}
       <a href="/rss.xml">rss</a>
     </nav>
     <nav class="webring" aria-label="IndieWeb Webring">
@@ -20,7 +34,7 @@ const currentYear = new Date().getFullYear();
       <a href="https://xn--sr8hvo.ws">an indieweb webring <span aria-hidden="true">🕸💍</span></a>
       <a href="https://xn--sr8hvo.ws/next" aria-label="Next site in the IndieWeb Webring">next →</a>
     </nav>
-    <p class="copyright">© {currentYear} Karthik Gurumoorthy · <a href="#main-content">back to top ↑</a></p>
+    <p class="copyright">© {currentYear} {person.name} · <a href="#main-content">back to top ↑</a></p>
   </div>
 </footer>
 

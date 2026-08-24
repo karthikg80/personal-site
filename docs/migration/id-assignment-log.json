@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-08-24T02:20:48.988Z",
+  "notes": [
+    {
+      "file": "README.md",
+      "changed": true,
+      "id": "01a03192-07d1-7607-a29d-2e6ccd38f21f"
+    },
+    {
+      "file": "first-note-probably.md",
+      "changed": true,
+      "id": "01a03192-07d5-76ce-8aa7-6a9dd5f9a4d5"
+    }
+  ],
+  "projects": [
+    {
+      "file": "homebase.md",
+      "changed": true,
+      "id": "01a03192-07d7-7578-9177-b1ff2a03b264"
+    },
+    {
+      "file": "neighborbook.md",
+      "changed": true,
+      "id": "01a03192-07d8-729c-8080-fcafaf73f46d"
+    },
+    {
+      "file": "pantry-mojo.md",
+      "changed": true,
+      "id": "01a03192-07d9-7027-8dd1-43bce15eb314"
+    },
+    {
+      "file": "sai-parayan-tracker.md",
+      "changed": true,
+      "id": "01a03192-07da-706b-9006-abb1c8ff932c"
+    },
+    {
+      "file": "thea-kitchen.md",
+      "changed": true,
+      "id": "01a03192-07db-70a9-a4d9-fc8863882d81"
+    }
+  ],
+  "person": {
+    "changed": true,
+    "id": "01a03192-07db-70a9-a4da-03a139669a11"
+  }
+}

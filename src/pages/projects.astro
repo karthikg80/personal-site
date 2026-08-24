@@ -1,17 +1,19 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import { getCollection } from 'astro:content';
+import { getPerson, getProjectRecords } from '../core/storage/content.js';
+import { projectLinkOfKind } from '../core/storage/map-project.js';
+import { projectPath } from '../lib/projects';
 
-const allProjects = await getCollection('projects');
-
-const projects = allProjects.sort((a, b) =>
-  b.data.date.getTime() - a.data.date.getTime()
+const person = await getPerson();
+const records = await getProjectRecords();
+const projects = records.sort(
+  (a, b) => b.project.createdAt.getTime() - a.project.createdAt.getTime()
 );
 ---
 
 <Layout
-  title="Projects - Karthik Gurumoorthy"
+  title={`Projects - ${person.name}`}
   description="Selected work from Thea Foundry: Neighborbook, Homebase, Thea Kitchen, Pantry Mojo, and Sai Parayan Tracker."
 >
   <div class="section">
@@ -25,15 +27,16 @@ const projects = allProjects.sort((a, b) =>
       </div>
 
       <div class="projects-grid">
-        {projects.map((project) => (
+        {projects.map(({ project }) => (
           <ProjectCard
-            title={project.data.title}
-            description={project.data.description}
-            date={project.data.date}
-            tags={project.data.tags}
-            link={project.data.link}
-            github={project.data.github}
-            featured={project.data.featured}
+            title={project.title}
+            description={project.description}
+            date={project.createdAt}
+            tags={project.topics}
+            href={projectPath(project.slug)}
+            liveUrl={projectLinkOfKind(project, 'live')?.url}
+            githubUrl={projectLinkOfKind(project, 'github')?.url}
+            featured={project.featured}
           />
         ))}
       </div>

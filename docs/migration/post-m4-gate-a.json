@@ -1,0 +1,30 @@
+{
+  "comparedAgainst": "187906f (post-M3)",
+  "htmlXmlFilesCompared": 12,
+  "distClientByteIdentical": true,
+  "vercelStaticByteIdentical": true,
+  "rssExactVsPreM3Baseline": true,
+  "noteFileCount": 2,
+  "projectFileCount": 5,
+  "publishedNoteCount": 1,
+  "publishedNoteSlugs": ["first-note-probably"],
+  "canonicalNotePaths": ["/notes/first-note-probably/"],
+  "projectSlugs": [
+    "homebase",
+    "neighborbook",
+    "pantry-mojo",
+    "sai-parayan-tracker",
+    "thea-kitchen"
+  ],
+  "syndication": [
+    "https://bsky.app/profile/karthikg.in/post/3mtrz4v5yut2a"
+  ],
+  "legacyRssGuids": [
+    "https://karthikg.in/notes/first-note-probably/"
+  ],
+  "webmentionReceiverUrl": "https://webmention.io/karthikg.in/webmention",
+  "webmentionPingbackUrl": "https://webmention.io/karthikg.in/xmlrpc",
+  "atprotoDid": "did:plc:k25m3ebqwdr32ojecqpjfzbh",
+  "testsPassed": 62,
+  "build": "success"
+}

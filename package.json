@@ -3,12 +3,15 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "npm run generate:redirects && astro dev",
+    "generate:redirects": "tsx scripts/generate-slug-redirects.ts",
+    "build": "npm run generate:redirects && astro build",
     "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
+    "validate:ids": "vitest run src/core/storage/validate-canonical-ids.test.ts src/core/domain/ids.test.ts src/core/authoring/generate-object-id.test.ts",
+    "migrate:assign-ids": "tsx scripts/migrate-assign-ids.ts",
     "webmentions:send": "tsx src/lib/send-webmentions.ts",
     "posse:bluesky": "tsx src/lib/posse-bluesky.ts"
   },
@@ -16,14 +19,16 @@
     "@ai-sdk/openai": "^4.0.46",
     "@astrojs/vercel": "^11.0.7",
     "ai": "^7.0.77",
-    "astro": "^7.2.4"
+    "astro": "^7.2.4",
+    "uuid": "^14.0.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@types/node": "^26.2.0",
     "tsx": "^4.23.12",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "yaml": "^2.8.2"
   },
   "overrides": {
     "@vercel/routing-utils": "6.5.0",

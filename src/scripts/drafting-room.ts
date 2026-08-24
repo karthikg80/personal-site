@@ -1,3 +1,5 @@
+import { generateObjectId } from '../core/authoring/generate-object-id';
+
 type ReviewKey = 'firsthand' | 'facts' | 'people' | 'location' | 'voice';
 type AgentMode = 'interview' | 'shapes' | 'draft' | 'privacy' | 'voice' | 'custom';
 
@@ -451,12 +453,17 @@ if (accessForm) {
     const draft = currentDraft();
     const body = draft.body.trim() || draft.sparks.trim();
     const complete = reviewKeys.every((key) => draft.review[key]);
+    const slug = slugify(draft.title);
     const content = [
       '---',
+      `id: ${generateObjectId()}`,
       `title: ${yamlString(draft.title)}`,
+      `slug: ${yamlString(slug)}`,
       `date: ${new Date().toISOString().slice(0, 10)}`,
+      'previousSlugs: []',
       'tags: []',
       'presentation: note',
+      'relationships: []',
       'syndication: []',
       'draft: true',
       'privacyReviewed: false',
@@ -465,7 +472,7 @@ if (accessForm) {
       body,
       '',
     ].join('\n');
-    return { filename: `${slugify(draft.title)}.md`, content, complete };
+    return { filename: `${slug}.md`, content, complete };
   }
 
   element<HTMLButtonElement>('copy-handoff').addEventListener('click', async () => {
