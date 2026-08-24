@@ -1,12 +1,8 @@
 import { type CollectionEntry } from 'astro:content';
 
 import { getPublishedNoteRecords } from '../core/storage/content.js';
-import { classifyNote, type NoteKind } from './indieweb';
 
 export type Note = CollectionEntry<'notes'>;
-export type { NoteKind };
-
-export { classifyNote };
 
 /**
  * Returns Astro collection entries for published notes.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mapNote } from './map-note.js';
+import { mapNote, classifyStoredNote } from './map-note.js';
 import { mapProject } from './map-project.js';
 import { mapPerson } from './map-person.js';
 
@@ -57,6 +57,25 @@ describe('mapNote', () => {
   it('derives awaiting-privacy-review', () => {
     const note = mapNote({ ...base, draft: false, privacyReviewed: false });
     expect(note.publication).toBe('awaiting-privacy-review');
+  });
+});
+
+describe('classifyStoredNote', () => {
+  it('maps storage fields through deriveNoteKind without a second precedence table', () => {
+    expect(classifyStoredNote({ inReplyTo: 'https://example.com/post' })).toBe('reply');
+    expect(classifyStoredNote({ bookmarkOf: 'https://example.com/page' })).toBe('bookmark');
+    expect(classifyStoredNote({ presentation: 'scrap' })).toBe('scrap');
+    expect(classifyStoredNote({})).toBe('note');
+  });
+
+  it('keeps reply ahead of bookmark when both storage fields are present', () => {
+    expect(
+      classifyStoredNote({
+        inReplyTo: 'https://example.com/post',
+        bookmarkOf: 'https://example.com/page',
+        presentation: 'scrap',
+      })
+    ).toBe('reply');
   });
 });
 

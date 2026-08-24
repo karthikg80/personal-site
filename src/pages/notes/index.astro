@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { classifyNote } from '../../lib/indieweb';
+import { classifyStoredNote } from '../../core/storage/map-note.js';
 import { formatNoteDate, getPublishedNotes, notePath } from '../../lib/notes';
 
 const notes = await getPublishedNotes();
@@ -31,9 +31,9 @@ const notes = await getPublishedNotes();
                   {formatNoteDate(note.data.date)}
                 </time>
                 <div>
-                  {classifyNote(note.data) === 'reply' && <span class="rough-marker">reply</span>}
-                  {classifyNote(note.data) === 'bookmark' && <span class="rough-marker">bookmark</span>}
-                  {classifyNote(note.data) === 'scrap' && <span class="rough-marker">rough note</span>}
+                  {classifyStoredNote(note.data) === 'reply' && <span class="rough-marker">reply</span>}
+                  {classifyStoredNote(note.data) === 'bookmark' && <span class="rough-marker">bookmark</span>}
+                  {classifyStoredNote(note.data) === 'scrap' && <span class="rough-marker">rough note</span>}
                   <h2 class="p-name"><a class="u-url" href={notePath(note)}>{note.data.title}</a></h2>
                   {note.data.summary && <p class="p-summary">{note.data.summary}</p>}
                   {note.data.tags.length > 0 && (

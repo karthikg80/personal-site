@@ -1,13 +1,10 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  discoverWebmentionEndpoint,
-  extractOutboundLinks,
-  isPublishedNote,
-  markdownToLinkHtml,
-  sendWebmention,
-} from './indieweb';
+
+import { discoverWebmentionEndpoint, sendWebmention } from '../adapters/webmention/discovery.js';
+import { extractOutboundLinks, markdownToLinkHtml } from '../adapters/webmention/outbound-targets.js';
+import { derivePublicationState, isPublicPublication } from '../core/domain/publication.js';
 
 const SITE = 'https://karthikg.in';
 const NOTES_DIR = fileURLToPath(new URL('../../src/content/notes', import.meta.url));
@@ -58,7 +55,8 @@ async function main(): Promise<void> {
   for (const file of files) {
     const raw = await readFile(join(NOTES_DIR, file), 'utf8');
     const { data, body } = parseFrontmatter(raw);
-    if (!isPublishedNote({ draft: data.draft ?? true, privacyReviewed: data.privacyReviewed ?? false })) {
+    const publication = derivePublicationState(data.draft ?? true, data.privacyReviewed ?? false);
+    if (!isPublicPublication(publication)) {
       continue;
     }
 

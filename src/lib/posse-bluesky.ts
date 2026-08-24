@@ -1,5 +1,7 @@
 import { readFile } from 'node:fs/promises';
-import { buildBlueskyPostText } from './indieweb';
+
+import { buildBlueskyPostText } from '../adapters/syndication/bluesky/post-text.js';
+import { derivePublicationState, isPublicPublication } from '../core/domain/publication.js';
 
 const SITE = 'https://karthikg.in';
 
@@ -69,7 +71,8 @@ async function main(): Promise<void> {
 
   const raw = await readFile(new URL(`../../src/content/notes/${slug}.md`, import.meta.url), 'utf8');
   const note = parseFrontmatter(raw);
-  if (note.draft !== false || note.privacyReviewed !== true) {
+  const publication = derivePublicationState(note.draft === true, note.privacyReviewed === true);
+  if (!isPublicPublication(publication)) {
     console.error(`${slug} is not published. POSSE only after both publication flags are open.`);
     process.exit(1);
   }

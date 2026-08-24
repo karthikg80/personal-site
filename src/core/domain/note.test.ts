@@ -51,6 +51,21 @@ describe('deriveNoteKind', () => {
     ];
     expect(deriveNoteKind({ presentation: 'scrap', relationships })).toBe('reply');
   });
+
+  it('prefers reply over bookmark', () => {
+    const relationships: Relationship[] = [
+      { type: 'reply-to', target: { kind: 'external', url: 'https://example.com/post' } },
+      { type: 'bookmark-of', target: { kind: 'external', url: 'https://example.com/page' } },
+    ];
+    expect(deriveNoteKind({ presentation: 'note', relationships })).toBe('reply');
+  });
+
+  it('prefers bookmark over scrap presentation', () => {
+    const relationships: Relationship[] = [
+      { type: 'bookmark-of', target: { kind: 'external', url: 'https://example.com/page' } },
+    ];
+    expect(deriveNoteKind({ presentation: 'scrap', relationships })).toBe('bookmark');
+  });
 });
 
 describe('isPublicNote', () => {

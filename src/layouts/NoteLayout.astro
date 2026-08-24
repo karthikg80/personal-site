@@ -2,7 +2,8 @@
 import type { CollectionEntry } from 'astro:content';
 import Layout from './Layout.astro';
 import Webmentions from '../components/Webmentions.astro';
-import { classifyNote, hostLabel } from '../lib/indieweb';
+import { hostLabel } from '../adapters/presentation/host-label.js';
+import { classifyStoredNote } from '../core/storage/map-note.js';
 import { formatNoteDate } from '../lib/notes';
 
 interface Props {
@@ -11,7 +12,7 @@ interface Props {
 
 const { note } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
-const kind = classifyNote(note.data);
+const kind = classifyStoredNote(note.data);
 const isScrap = kind === 'scrap';
 ---
 

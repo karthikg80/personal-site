@@ -1,5 +1,5 @@
 import { parseObjectId, type ObjectId } from '../domain/ids.js';
-import type { Note } from '../domain/note.js';
+import { deriveNoteKind, type Note, type NoteKind } from '../domain/note.js';
 import { derivePublicationState } from '../domain/publication.js';
 import type { Relationship } from '../domain/relationship.js';
 import type { SyndicationCopy } from '../domain/syndication.js';
@@ -23,7 +23,13 @@ export type NoteStorageData = {
   updated?: Date;
 };
 
-function relationshipsFromStorage(data: NoteStorageData): Relationship[] {
+type StoredNoteKindFields = {
+  presentation?: 'note' | 'scrap';
+  inReplyTo?: string | URL;
+  bookmarkOf?: string | URL;
+};
+
+function relationshipsFromStorage(data: StoredNoteKindFields): Relationship[] {
   const relationships: Relationship[] = [];
   const inReplyTo = asOptionalUrlString(data.inReplyTo);
   const bookmarkOf = asOptionalUrlString(data.bookmarkOf);
@@ -41,6 +47,17 @@ function relationshipsFromStorage(data: NoteStorageData): Relationship[] {
     });
   }
   return relationships;
+}
+
+/**
+ * Storage-field entry point for note kind.
+ * Kind precedence lives only in deriveNoteKind.
+ */
+export function classifyStoredNote(data: StoredNoteKindFields): NoteKind {
+  return deriveNoteKind({
+    presentation: data.presentation ?? 'note',
+    relationships: relationshipsFromStorage(data),
+  });
 }
 
 /**
