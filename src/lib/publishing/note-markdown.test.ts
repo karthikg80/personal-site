@@ -43,6 +43,8 @@ describe('serializePreparedNote', () => {
     expect(yaml).not.toMatch(/legacyRssGuid/);
     expect(yaml).toMatch(/^previousSlugs: \[\]$/m);
     expect(yaml).toMatch(/^syndication: \[\]$/m);
+    expect(yaml).toContain('webmentions: false');
+    expect(yaml).toContain('bluesky: false');
   });
 
   it('preserves the Markdown body after the second fence', () => {
@@ -94,6 +96,7 @@ describe('publishCanonicalNote', () => {
     expect(parsed.fields.relationships).toEqual(fields.relationships);
     expect(parsed.body).toBe(fields.body);
     expect(frontmatter(published)).toMatch(/^syndication: \[\]$/m);
+    expect(frontmatter(published)).toContain('webmentions: false');
     expect(published).not.toMatch(/privacyReviewed: false/);
   });
 
@@ -103,6 +106,20 @@ describe('publishCanonicalNote', () => {
       'privacyReviewed: false'
     );
     expect(() => publishCanonicalNote(unreviewed)).toThrow(/privacyReviewed/);
+  });
+
+  it('preserves distribution intent; Publish still flips only draft', () => {
+    const prepared = serializePreparedNote({
+      ...fields,
+      distribution: { webmentions: true, bluesky: true },
+    });
+    expect(frontmatter(prepared)).toContain('webmentions: true');
+    expect(frontmatter(prepared)).toContain('bluesky: true');
+    const published = publishCanonicalNote(prepared);
+    expect(parseCanonicalNoteFile(published).draft).toBe(false);
+    expect(frontmatter(published)).toContain('webmentions: true');
+    expect(frontmatter(published)).toContain('bluesky: true');
+    expect(frontmatter(published)).toMatch(/^draft: false$/m);
   });
 
   it('refuses a file that is already public', () => {

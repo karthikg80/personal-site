@@ -13,7 +13,8 @@
     "validate:ids": "vitest run src/core/storage/validate-canonical-ids.test.ts src/core/domain/ids.test.ts src/core/authoring/generate-object-id.test.ts",
     "migrate:assign-ids": "tsx scripts/migrate-assign-ids.ts",
     "webmentions:send": "tsx src/lib/send-webmentions.ts",
-    "posse:bluesky": "tsx src/lib/posse-bluesky.ts"
+    "posse:bluesky": "tsx src/lib/posse-bluesky.ts",
+    "distribute:published-note": "tsx src/scripts/distribute-published-note.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.46",

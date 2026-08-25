@@ -74,6 +74,7 @@ describe('editorial Prepare → unpublished → Publish transition', () => {
     expect(afterPrepare.parsed.privacyReviewed).toBe(true);
     expect(afterPrepare.note.publication).toBe('draft');
     expect(isPublicNote(afterPrepare.note)).toBe(false);
+    expect(prepared.markdown).toMatch(/webmentions: false/);
 
     const handoff = buildHandoffMarkdown({
       canonicalId: objectId,
@@ -145,7 +146,7 @@ describe('agent and distribution stay off the mutation path', () => {
     expect(agent).toContain('Nothing you produce is approved for publication');
   });
 
-  it('Webmention and Bluesky remain separate CLI actions', () => {
+  it('Webmention and Bluesky stay off Prepare/Publish; distribution is a later Action', () => {
     const pkg = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8')) as {
       scripts: Record<string, string>;
     };
@@ -159,9 +160,11 @@ describe('agent and distribution stay off the mutation path', () => {
       expect(source).not.toMatch(/webmention|bluesky|posse/i);
     }
 
-    const webmentions = readFileSync(join(repoRoot, 'src/lib/send-webmentions.ts'), 'utf8');
-    const bluesky = readFileSync(join(repoRoot, 'src/lib/posse-bluesky.ts'), 'utf8');
+    const webmentions = readFileSync(join(repoRoot, 'src/lib/webmentions/send-outbound.ts'), 'utf8');
+    const bluesky = readFileSync(join(repoRoot, 'src/lib/syndication/bluesky.ts'), 'utf8');
     expect(webmentions).toContain('isPublicPublication');
     expect(bluesky).toContain('isPublicPublication');
+    expect(webmentions).toContain('--slug=');
+    expect(bluesky).toContain('putRecord');
   });
 });

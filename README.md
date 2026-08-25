@@ -49,10 +49,10 @@ Ordinary publishing from this room is **Prepare**, then review, then **Publish**
 4. Prepare writes an unpublished Git Note: `draft: true`, `privacyReviewed: true`.
 5. Review `/drafting/review/<slug>/` (the Git blob, production Markdown).
 6. Publish flips only `draft` to `false`.
-7. Confirm the public URL after deploy.
-8. Optional CLI: `npm run webmentions:send` and `npm run posse:bluesky -- <slug>`.
+7. Confirm the public URL after deploy. If the note opted in at Prepare, a GitHub Action then sends Webmentions and/or creates a Bluesky copy and writes `syndication`.
+8. Optional CLI fallback: `npm run webmentions:send -- --slug=<slug>` and `npm run posse:bluesky -- <slug>`.
 
-Prepare and Publish are session-authenticated server routes. They use a server-only `GITHUB_NOTES_TOKEN` (fine-grained PAT, Contents R/W, this repo only) and never expose that token to the browser. Without the token, Prepare/Publish validate then return `503` — they do not pretend the Note is prepared. The editorial agent cannot Prepare or Publish.
+Prepare and Publish are session-authenticated server routes. They use a server-only `GITHUB_NOTES_TOKEN` (fine-grained PAT, Contents R/W, this repo only) and never expose that token to the browser. Without the token, Prepare/Publish validate then return `503` — they do not pretend the Note is prepared. The editorial agent cannot Prepare or Publish. Webmentions and Bluesky are not part of those requests: they run after Vercel promotes the publish commit, if the note opted in at Prepare.
 
 Copy/Download remains a recovery handoff. It always exports:
 
@@ -110,20 +110,22 @@ Do not commit that file as a privacy-reviewed canonical Note. `canonicalId` on a
 
    The Note is still unpublished on karthikg.in.
 5. Review `/drafting/review/<slug>/`, then Publish. Publish flips only `draft: false`. Do not paste a Copy/Download file into Git as if it were privacy-reviewed; that handoff always has `privacyReviewed: false`.
-6. After the public deploy is live, send webmentions for outbound links:
+6. After Vercel promotes that commit to production, the Distribute published note Action verifies the live URL, sends Webmentions for that slug, and/or creates an idempotent Bluesky copy (`putRecord` keyed by a TID derived from the ObjectId). It commits the Bluesky URL into `syndication` with `GITHUB_TOKEN`. Opt in at Prepare:
 
-   ```sh
-   npm run webmentions:send
+   ```yaml
+   distribution:
+     webmentions: true
+     bluesky: true
    ```
 
-7. To syndicate a published note to Bluesky, put an app password in the
-   gitignored `.env` (copy from `.env.example`) and run:
+7. CLI fallback, after the public URL is live:
 
    ```sh
+   npm run webmentions:send -- --slug=<slug>
    npm run posse:bluesky -- <slug>
    ```
 
-   Then add the printed URL to the note's `syndication` list and redeploy. Webmention and Bluesky are not part of Prepare or Publish.
+   Then add the printed Bluesky URL to `syndication` if the Action did not. Webmention and Bluesky are not part of the Prepare or Publish HTTP requests.
 
 A reply uses a `relationships` entry with `type: reply-to`; a bookmark uses `type: bookmark-of`. Both stay behind the same publication gate.
 
@@ -157,3 +159,5 @@ The archive is at `/notes`, individual notes use `/notes/<slug>`, and the full-t
 ## Deployment Notes
 
 Production is the Vercel project `karthikg80s-projects/personal-site`, deploying from `main`. The `karthikg.in` zone stays on DigitalOcean DNS; only the apex `A` record points at Vercel (`76.76.21.21`). Do not move nameservers.
+
+Post-publish distribution is `.github/workflows/distribute-published-note.yml`. It listens for Vercel `repository_dispatch` type `vercel.deployment.promoted`, then verifies `https://karthikg.in/notes/<slug>/` contains the ObjectId before sending Webmentions or creating a Bluesky copy. Enable repository dispatch in the Vercel project Git settings. Store `BLUESKY_APP_PASSWORD` as a GitHub Actions secret. The Action uses `GITHUB_TOKEN` with `contents: write` only to append `syndication`.

@@ -40,7 +40,7 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toStri
   publishedTime={note.data.date}
   updatedTime={note.data.updated}
 >
-  <article class:list={['note h-entry', { scrap: isScrap }]}>
+  <article class:list={['note h-entry', { scrap: isScrap }]} data-object-id={note.data.id}>
     <header class="note-header container">
       {kind === 'reply' ? (
         <p class="note-kind">reply</p>

@@ -173,6 +173,12 @@ if (import.meta.env.PROD) {
                     I reviewed this exact text for private/sensitive information and approve it entering the public source repository.
                   </label>
 
+                  <fieldset class="distribution-intent">
+                    <legend>After the public URL is live</legend>
+                    <label><input id="distribute-webmentions" type="checkbox" /> Send Webmentions for this note</label>
+                    <label><input id="distribute-bluesky" type="checkbox" /> Create a Bluesky copy</label>
+                  </fieldset>
+
                   <div class="handoff-actions">
                     <button id="prepare-canonical" type="button">Prepare for publication</button>
                     <a id="review-canonical" class="review-link" hidden href="#">Review canonical draft</a>
@@ -483,6 +489,29 @@ if (import.meta.env.PROD) {
     font-weight: 400;
   }
   .privacy-ack input { width: auto; margin-top: 0.32rem; accent-color: var(--color-primary); }
+  .distribution-intent {
+    margin: 1rem 0 0;
+    padding: 0.85rem 0 0;
+    border: 0;
+    border-top: 1px dashed var(--color-border);
+  }
+  .distribution-intent legend {
+    padding: 0;
+    color: var(--color-text-light);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+  .distribution-intent label {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.65rem;
+    align-items: start;
+    margin-top: 0.65rem;
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+  .distribution-intent input { width: auto; margin-top: 0.32rem; accent-color: var(--color-primary); }
   #prepare-canonical:disabled { cursor: not-allowed; }
   .review-link {
     color: var(--color-primary);

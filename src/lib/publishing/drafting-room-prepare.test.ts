@@ -24,6 +24,8 @@ describe('Drafting Room Prepare wiring', () => {
   it('Copy/Download still goes through closed-gate handoff', () => {
     expect(draftingRoom).toContain('buildHandoffMarkdown');
     expect(draftingPage).toContain('id="privacy-acknowledgement"');
+    expect(draftingPage).toContain('id="distribute-webmentions"');
+    expect(draftingPage).toContain('id="distribute-bluesky"');
     expect(draftingPage).toContain('id="prepare-canonical"');
   });
 });

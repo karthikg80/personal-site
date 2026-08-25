@@ -1,0 +1,60 @@
+name: Distribute published note
+
+on:
+  repository_dispatch:
+    types:
+      - vercel.deployment.promoted
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Publish commit SHA to distribute
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: distribute-${{ github.event.client_payload.git.sha || github.event.inputs.commit }}
+  cancel-in-progress: false
+
+jobs:
+  distribute:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.client_payload.environment == 'production' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate commit SHA
+        id: sha
+        env:
+          PAYLOAD_SHA: ${{ github.event.client_payload.git.sha }}
+          INPUT_SHA: ${{ github.event.inputs.commit }}
+        run: |
+          SHA="${PAYLOAD_SHA:-$INPUT_SHA}"
+          if [[ ! "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid or missing commit SHA"
+            exit 1
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout the promoted commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.sha.outputs.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Verify live URL and distribute
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISTRIBUTE_COMMIT: ${{ steps.sha.outputs.sha }}
+          BLUESKY_IDENTIFIER: karthikg.in
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+        run: npx tsx src/scripts/distribute-published-note.ts
