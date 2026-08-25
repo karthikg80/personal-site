@@ -26,6 +26,13 @@ describe('Drafting Room Prepare wiring', () => {
     expect(draftingPage).toContain('id="privacy-acknowledgement"');
     expect(draftingPage).toContain('id="distribute-webmentions"');
     expect(draftingPage).toContain('id="distribute-bluesky"');
+    expect(draftingPage).toContain('id="prepare-reply-to"');
     expect(draftingPage).toContain('id="prepare-canonical"');
+  });
+
+  it('Prepare sends reply-to from the room instead of wiping relationships', () => {
+    expect(draftingRoom).toContain('replyToUrl:');
+    expect(draftingRoom).toContain('relationshipsFromReplyToUrl');
+    expect(draftingRoom).not.toMatch(/relationships:\s*\[\s*\]/);
   });
 });

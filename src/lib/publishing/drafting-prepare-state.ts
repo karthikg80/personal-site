@@ -95,6 +95,15 @@ export function buildPublishRequest(input: {
   };
 }
 
+export function relationshipsFromReplyToUrl(url?: string): Array<{
+  type: 'reply-to';
+  target: { kind: 'external'; url: string };
+}> {
+  const trimmed = url?.trim() ?? '';
+  if (!trimmed) return [];
+  return [{ type: 'reply-to', target: { kind: 'external', url: trimmed } }];
+}
+
 export function buildPrepareRequest(fields: {
   canonicalId: string;
   slug: string;
@@ -105,6 +114,7 @@ export function buildPrepareRequest(fields: {
   summary?: string;
   body: string;
   sparks: string;
+  replyToUrl?: string;
   distribution?: { webmentions: boolean; bluesky: boolean };
 }): Record<string, unknown> {
   const request: Record<string, unknown> = {
@@ -114,7 +124,7 @@ export function buildPrepareRequest(fields: {
     date: fields.date,
     tags: fields.tags,
     presentation: fields.presentation,
-    relationships: [],
+    relationships: relationshipsFromReplyToUrl(fields.replyToUrl),
     body: fields.body,
     sparks: fields.sparks,
     privacyAcknowledgement: true,
