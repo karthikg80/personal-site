@@ -10,7 +10,8 @@ relationships: []
 distribution:
   webmentions: true
   bluesky: true
-syndication: []
+syndication:
+  - https://bsky.app/profile/karthikg.in/post/3mtv35aroesaj
 draft: false
 privacyReviewed: true
 ---
