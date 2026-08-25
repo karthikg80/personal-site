@@ -76,16 +76,26 @@ Astro.response.headers.set('Content-Security-Policy', securityHeaders['Content-S
 <NoteLayout note={entry} showWebmentions={false}>
   <section slot="chrome" class="review-chrome container" data-blob-sha={note.blobSha} data-object-id={note.objectId}>
     <a class="back-link" href="/drafting">← Return to the working copy</a>
-    <p class="kicker">step 3 of 4 · inspect</p>
+    <div class="review-stage-progress">
+      <div>
+        <p id="review-stage-label">Step {note.draft ? '3' : '4'} of 4</p>
+        <p id="review-stage-name">{note.draft ? 'Inspect' : 'Publish'}</p>
+      </div>
+      <div
+        id="review-progress"
+        class="review-progress-track"
+        role="progressbar"
+        aria-labelledby="review-stage-label review-stage-name"
+        aria-valuemin="1"
+        aria-valuemax="4"
+        aria-valuenow={note.draft ? '3' : '4'}
+      >
+        <span id="review-progress-bar" style={`width: ${note.draft ? '75%' : '100%'}`}></span>
+      </div>
+    </div>
+    <p class="kicker">canonical review</p>
     <h2>This is the exact Git revision.</h2>
     <p class="review-intro">Read the note below as a visitor will. Publishing is a separate action and applies only to this revision.</p>
-
-    <ol class="review-workflow" aria-label="Publication workflow">
-      <li class="complete"><span>1</span><strong>Draft</strong><small>private copy</small></li>
-      <li class="complete"><span>2</span><strong>Prepare</strong><small>in Git</small></li>
-      <li data-review-step="inspect" class:list={{ complete: !note.draft }} aria-current={note.draft ? 'step' : undefined}><span>3</span><strong>Inspect</strong><small>this revision</small></li>
-      <li data-review-step="publish" aria-current={!note.draft ? 'step' : undefined}><span>4</span><strong>Publish</strong><small>{note.draft ? 'not public' : 'committed'}</small></li>
-    </ol>
 
     <div class="publish-decision">
       <div>
@@ -151,27 +161,14 @@ Astro.response.headers.set('Content-Security-Policy', securityHeaders['Content-S
   .review-chrome h2 { max-width: 15ch; margin-bottom: 0.7rem; font-family: var(--font-serif); font-size: var(--text-2xl); }
   .review-intro { max-width: 39rem; color: var(--color-text-light); }
 
-  .review-workflow {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    margin: 1.5rem 0;
-    list-style: none;
-  }
-  .review-workflow li {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0 0.5rem;
-    padding: 0.75rem 0.5rem 0.75rem 0;
-    color: var(--color-text-light);
-    border-top: 1px solid var(--color-border);
-  }
-  .review-workflow li::before { content: ''; grid-column: 1 / -1; position: relative; top: -0.8rem; height: 3px; background: transparent; }
-  .review-workflow li.complete::before { background: var(--color-green); }
-  .review-workflow li[aria-current="step"] { color: var(--color-text); }
-  .review-workflow li[aria-current="step"]::before { background: var(--color-primary); }
-  .review-workflow span { grid-row: 2 / 4; display: grid; width: 1.55rem; height: 1.55rem; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-family: var(--font-mono); font-size: 0.62rem; }
-  .review-workflow strong, .review-workflow small { grid-column: 2; line-height: 1.25; }
-  .review-workflow small { font-size: 0.68rem; font-weight: 400; }
+  .review-stage-progress { margin: 0 0 1.7rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--color-border); }
+  .review-stage-progress > div:first-child { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+  #review-stage-label,
+  #review-stage-name { margin: 0; }
+  #review-stage-label { color: var(--color-text-light); font-family: var(--font-mono); font-size: 0.67rem; text-transform: uppercase; }
+  #review-stage-name { color: var(--color-primary); font-weight: 700; }
+  .review-progress-track { height: 3px; margin-top: 0.6rem; overflow: hidden; background: var(--color-border-soft); }
+  .review-progress-track span { display: block; height: 100%; background: var(--color-primary); transition: width 180ms ease; }
 
   .publish-decision {
     display: grid;
@@ -226,7 +223,6 @@ Astro.response.headers.set('Content-Security-Policy', securityHeaders['Content-S
   }
 
   @media (max-width: 620px) {
-    .review-workflow { grid-template-columns: repeat(2, 1fr); }
     .publish-decision { grid-template-columns: 1fr; }
     .publish-action { padding: 1rem 0 0; border-top: 1px dashed var(--color-border); border-left: 0; }
   }

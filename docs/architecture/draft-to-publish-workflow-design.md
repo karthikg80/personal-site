@@ -738,12 +738,9 @@ Do not display `awaiting-privacy-review` as a happy-path product state. Do not s
 
 `draft: true` + `privacyReviewed: false` in Git is a **legacy / recovery** state, not something Prepare writes.
 
-The Drafting Room presents two distinct progress systems:
+The Drafting Room shows one focused stage at a time: **Gather → Shape → Review → Prepare**. A compact `Step n of 4` indicator and Back/Continue controls replace an always-visible stage list. The active stage is stored inside each encrypted device-local draft; existing drafts without that field resume at Prepare when a canonical Git object exists and at Gather otherwise.
 
-- **Gather → Shape → Ready** is the reversible, device-local writing loop.
-- **Draft → Prepare → Inspect → Publish** is the trust-boundary workflow. It remains visible across the room, and the authenticated review page repeats it before the final action.
-
-The Ready stage groups the editorial prompts, canonical metadata, repository-entry acknowledgement, and optional post-live distribution intent in that order. Copy, Download, and Discard live in a collapsed recovery section so they are not mistaken for the normal publishing path. The review page names the exact Git revision and keeps ObjectId/blob SHA in optional technical details; its primary action says that it publishes **this exact revision**.
+Review contains only the editorial prompts and voice note. Prepare contains canonical metadata, the repository-entry acknowledgement, optional post-live distribution intent, and a collapsed recovery section. After Prepare, the authenticated Git review page handles **Inspect → Publish** with the same compact one-stage indicator. It names the exact Git revision, keeps ObjectId/blob SHA in optional technical details, and says that its primary action publishes **this exact revision**.
 
 ---
 

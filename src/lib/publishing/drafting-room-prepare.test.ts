@@ -35,4 +35,16 @@ describe('Drafting Room Prepare wiring', () => {
     expect(draftingRoom).toContain('relationshipsFromReplyToUrl');
     expect(draftingRoom).not.toMatch(/relationships:\s*\[\s*\]/);
   });
+
+  it('shows Gather, Shape, Review, and Prepare one stage at a time', () => {
+    expect(draftingPage).toContain('id="stage-progress-label"');
+    expect(draftingPage).toContain('data-panel="gather"');
+    expect(draftingPage).toContain('data-panel="shape" hidden');
+    expect(draftingPage).toContain('data-panel="review" hidden');
+    expect(draftingPage).toContain('data-panel="prepare" hidden');
+    expect(draftingPage).not.toContain('class="workflow-map');
+    expect(draftingPage).not.toContain('class="stage-button');
+    expect(draftingRoom).toContain("type WritingStage = 'gather' | 'shape' | 'review' | 'prepare'");
+    expect(draftingRoom).toContain('activeStage?: WritingStage');
+  });
 });

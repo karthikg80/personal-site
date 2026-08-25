@@ -97,27 +97,6 @@ if (import.meta.env.PROD) {
             </div>
           </header>
 
-          <nav class="workflow-map container" aria-label="Publication workflow" data-workflow-state="working">
-            <ol>
-              <li data-workflow-step="draft" aria-current="step">
-                <span class="workflow-number">1</span>
-                <span><strong>Draft</strong><small id="workflow-draft-status">private on this device</small></span>
-              </li>
-              <li data-workflow-step="prepare">
-                <span class="workflow-number">2</span>
-                <span><strong>Prepare</strong><small id="workflow-prepare-status">not in Git</small></span>
-              </li>
-              <li data-workflow-step="review">
-                <span class="workflow-number">3</span>
-                <span><strong>Inspect</strong><small id="workflow-review-status">exact Git revision</small></span>
-              </li>
-              <li data-workflow-step="publish">
-                <span class="workflow-number">4</span>
-                <span><strong>Publish</strong><small id="workflow-publish-status">not public</small></span>
-              </li>
-            </ol>
-          </nav>
-
           <div class="workspace container">
             <aside class="draft-shelf" aria-label="Draft notes">
               <div class="shelf-heading">
@@ -132,11 +111,23 @@ if (import.meta.env.PROD) {
               <label class="title-label" for="draft-title">working title</label>
               <input id="draft-title" class="title-input" type="text" maxlength="160" placeholder="Untitled note" />
 
-              <nav class="stage-nav" aria-label="Writing stages">
-                <button class="stage-button active" data-stage="gather" type="button" aria-current="step"><span>01</span> Gather</button>
-                <button class="stage-button" data-stage="shape" type="button"><span>02</span> Shape</button>
-                <button class="stage-button" data-stage="review" type="button"><span>03</span> Ready</button>
-              </nav>
+              <header class="stage-progress">
+                <div>
+                  <p id="stage-progress-label">Step 1 of 4</p>
+                  <p id="stage-progress-name">Gather</p>
+                </div>
+                <div
+                  id="writing-stage-progress"
+                  class="stage-progress-track"
+                  role="progressbar"
+                  aria-labelledby="stage-progress-label stage-progress-name"
+                  aria-valuemin="1"
+                  aria-valuemax="4"
+                  aria-valuenow="1"
+                >
+                  <span id="stage-progress-bar"></span>
+                </div>
+              </header>
 
               <section class="stage-panel" data-panel="gather">
                 <p class="stage-kicker">Gather</p>
@@ -162,18 +153,13 @@ if (import.meta.env.PROD) {
               </section>
 
               <section class="stage-panel review-panel" data-panel="review" hidden>
-                <p class="stage-kicker">Ready</p>
+                <p class="stage-kicker">Review</p>
                 <h2>Read it as its first editor.</h2>
-                <p>This pass decides whether the note is ready to become a canonical, still-unpublished Git draft. It does not publish anything.</p>
+                <p>This pass checks the writing. It does not put the note in Git or publish anything.</p>
 
                 <section class="review-section" aria-labelledby="editorial-checks-title">
-                  <div class="section-heading">
-                    <span>1</span>
-                    <div>
-                      <h3 id="editorial-checks-title">Editorial check</h3>
-                      <p>Slow down once. These are writing prompts, not permission to publish.</p>
-                    </div>
-                  </div>
+                  <h3 id="editorial-checks-title">Editorial check</h3>
+                  <p>Slow down once. These are writing prompts, not permission to publish.</p>
                   <div class="checklist">
                     <label><input type="checkbox" data-check="firsthand" /> Every experience and opinion is mine.</label>
                     <label><input type="checkbox" data-check="facts" /> Names, links, claims, and timing are verified.</label>
@@ -185,14 +171,20 @@ if (import.meta.env.PROD) {
                   <textarea id="voice-note" rows="4" placeholder="What felt natural? What felt performed? What should move next time?"></textarea>
                 </section>
 
+                <div class="stage-actions">
+                  <button class="quiet-button" type="button" data-go-stage="shape">← Back to the draft</button>
+                  <button type="button" data-go-stage="prepare">Continue to Prepare →</button>
+                </div>
+              </section>
+
+              <section class="stage-panel prepare-panel" data-panel="prepare" hidden>
+                <p class="stage-kicker">Prepare</p>
+                <h2>Choose what enters Git.</h2>
+                <p>This is the repository boundary. The note remains unpublished until you inspect the Git revision and Publish separately.</p>
+
                 <section class="prepare-block" aria-labelledby="prepare-title">
-                  <div class="section-heading">
-                    <span>2</span>
-                    <div>
-                      <h3 id="prepare-title">Prepare the canonical draft</h3>
-                      <p>Choose its public identity now. Prepare writes this exact revision to Git, but keeps it off karthikg.in.</p>
-                    </div>
-                  </div>
+                  <h3 id="prepare-title">Canonical draft details</h3>
+                  <p>Choose its public identity now. The slug locks after the first successful Prepare.</p>
 
                   <div class="metadata-grid">
                     <div class="metadata-wide">
@@ -268,7 +260,7 @@ if (import.meta.env.PROD) {
                 </details>
 
                 <div class="stage-actions">
-                  <button class="quiet-button" type="button" data-go-stage="shape">← Back to the draft</button>
+                  <button class="quiet-button" type="button" data-go-stage="review">← Back to editorial review</button>
                 </div>
               </section>
             </article>
@@ -411,7 +403,6 @@ if (import.meta.env.PROD) {
   }
 
   .room-header,
-  .workflow-map,
   .workspace { max-width: 82rem; }
 
   .room-header h1 { margin: 0; font-size: clamp(2.4rem, 6vw, 4rem); }
@@ -438,55 +429,6 @@ if (import.meta.env.PROD) {
     background: transparent;
     border-color: var(--color-border);
   }
-
-  .workflow-map { padding-top: 1.2rem; }
-  .workflow-map ol {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    margin: 0;
-    list-style: none;
-  }
-  .workflow-map li {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.65rem;
-    align-items: center;
-    min-width: 0;
-    padding: 0.8rem 1rem 0.8rem 0;
-    color: var(--color-text-light);
-    border-top: 1px solid var(--color-border);
-    font-family: var(--font-sans);
-  }
-  .workflow-map li::after {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: 0;
-    width: 0;
-    height: 3px;
-    background: var(--color-primary);
-    transition: width 180ms ease;
-  }
-  .workflow-map li.is-complete,
-  .workflow-map li[aria-current="step"] { color: var(--color-text); }
-  .workflow-map li.is-complete::after,
-  .workflow-map li[aria-current="step"]::after { width: 100%; }
-  .workflow-map li.is-complete::after { background: var(--color-green); }
-  .workflow-number {
-    display: grid;
-    width: 1.65rem;
-    height: 1.65rem;
-    place-items: center;
-    border: 1px solid currentColor;
-    border-radius: 50%;
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-  }
-  .workflow-map strong,
-  .workflow-map small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .workflow-map strong { font-size: 0.78rem; }
-  .workflow-map small { margin-top: 0.08rem; font-size: 0.67rem; font-weight: 400; }
 
   .workspace {
     display: grid;
@@ -561,23 +503,14 @@ if (import.meta.env.PROD) {
     font-size: clamp(2rem, 5vw, 3.2rem);
   }
 
-  .stage-nav {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    margin: 1.3rem 0 2rem;
-    border-bottom: 1px solid var(--color-border);
-  }
-  .stage-button {
-    padding: 0.55rem 0.45rem;
-    color: var(--color-text-light);
-    background: transparent;
-    border: 0;
-    border-bottom: 3px solid transparent;
-    font-size: 0.74rem;
-    text-align: left;
-  }
-  .stage-button span { margin-right: 0.35rem; font-family: var(--font-mono); font-size: 0.62rem; }
-  .stage-button.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+  .stage-progress { margin: 1.2rem 0 2rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--color-border); }
+  .stage-progress > div:first-child { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+  #stage-progress-label,
+  #stage-progress-name { margin: 0; font-family: var(--font-sans); }
+  #stage-progress-label { color: var(--color-text-light); font-family: var(--font-mono); font-size: 0.67rem; text-transform: uppercase; }
+  #stage-progress-name { color: var(--color-primary); font-size: var(--text-sm); font-weight: 700; }
+  .stage-progress-track { height: 3px; margin-top: 0.6rem; overflow: hidden; background: var(--color-border-soft); }
+  .stage-progress-track span { display: block; width: 25%; height: 100%; background: var(--color-primary); transition: width 180ms ease; }
 
   .stage-kicker {
     margin: 0 0 0.25rem;
@@ -590,7 +523,9 @@ if (import.meta.env.PROD) {
   }
   .stage-panel > h2 { max-width: 16ch; margin-bottom: 1.45rem; font-size: var(--text-2xl); }
 
-  .field-help, .review-panel > p {
+  .field-help,
+  .review-panel > p,
+  .prepare-panel > p:not(.stage-kicker) {
     margin: -0.2rem 0 0.8rem;
     color: var(--color-text-light);
     font-size: var(--text-sm);
@@ -612,7 +547,8 @@ if (import.meta.env.PROD) {
   }
   .stage-actions-end { justify-content: flex-end; }
 
-  .review-panel h2 { font-size: var(--text-2xl); }
+  .review-panel h2,
+  .prepare-panel h2 { font-size: var(--text-2xl); }
   .review-section,
   .prepare-block {
     margin: 1.6rem 0 0;
@@ -620,20 +556,10 @@ if (import.meta.env.PROD) {
     background: rgb(255 253 246 / 58%);
     border: 1px solid var(--color-border);
   }
-  .section-heading { display: grid; grid-template-columns: auto 1fr; gap: 0.8rem; align-items: start; }
-  .section-heading > span {
-    display: grid;
-    width: 1.8rem;
-    height: 1.8rem;
-    place-items: center;
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
-    border-radius: 50%;
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-  }
-  .section-heading h3 { margin: 0 0 0.2rem; font-size: var(--text-xl); }
-  .section-heading p { margin: 0; color: var(--color-text-light); font-size: var(--text-sm); }
+  .review-section h3,
+  .prepare-block h3 { margin: 0 0 0.2rem; font-size: var(--text-xl); }
+  .review-section > p,
+  .prepare-block > p { margin: 0; color: var(--color-text-light); font-size: var(--text-sm); }
   .checklist { display: grid; gap: 0.25rem; margin: 1.3rem 0 1.6rem; }
   .checklist label { display: grid; grid-template-columns: auto 1fr; gap: 0.65rem; align-items: start; margin: 0; padding: 0.5rem; font-family: var(--font-serif); font-weight: 400; }
   .checklist label:has(input:checked) { background: rgb(55 100 76 / 8%); }
@@ -764,8 +690,6 @@ if (import.meta.env.PROD) {
     .room-header { display: block; }
     .room-actions { justify-content: flex-start; margin-top: 1rem; }
     #save-state { width: auto; margin-right: auto; text-align: left; }
-    .workflow-map { overflow-x: auto; padding-inline: 1.15rem; }
-    .workflow-map ol { min-width: 35rem; }
     .workspace { grid-template-columns: 1fr; }
     .draft-shelf, .agent-desk { grid-column: 1; }
     .draft-shelf { order: 1; }
