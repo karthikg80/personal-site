@@ -215,6 +215,12 @@ if (accessForm) {
   const prepareWorkingStatus = element<HTMLParagraphElement>('prepare-working-status');
   const prepareFutureUrl = element<HTMLParagraphElement>('prepare-future-url');
   const prepareStatus = element<HTMLParagraphElement>('prepare-status');
+  const canonicalStatus = document.querySelector<HTMLElement>('[data-canonical-status]');
+  const workflowMap = document.querySelector<HTMLElement>('[data-workflow-state]');
+  const workflowDraftStatus = element<HTMLElement>('workflow-draft-status');
+  const workflowPrepareStatus = element<HTMLElement>('workflow-prepare-status');
+  const workflowReviewStatus = element<HTMLElement>('workflow-review-status');
+  const workflowPublishStatus = element<HTMLElement>('workflow-publish-status');
 
   let notebook: NotebookState | null = null;
   let encryptionKey: CryptoKey | null = null;
@@ -305,6 +311,8 @@ if (accessForm) {
     prepareButton.disabled = !ui.canPrepare || prepareButton.getAttribute('aria-busy') === 'true';
     prepareGitStatus.textContent = ui.gitStatus;
     prepareWorkingStatus.textContent = ui.workingStatus;
+    if (canonicalStatus) canonicalStatus.dataset.state = ui.kind;
+    renderWorkflowState(ui.kind);
 
     const slug = currentSlug(draft);
     prepareFutureUrl.textContent = `Future URL: https://karthikg.in/notes/${slug}/`;
@@ -316,6 +324,43 @@ if (accessForm) {
       reviewLink.hidden = true;
       reviewLink.removeAttribute('href');
     }
+  }
+
+  function renderWorkflowState(kind: 'working' | 'prepared' | 'prepared-dirty' | 'published'): void {
+    if (!workflowMap) return;
+    workflowMap.dataset.workflowState = kind;
+    const activeStep = kind === 'published'
+      ? 'publish'
+      : kind === 'prepared'
+        ? 'review'
+        : kind === 'prepared-dirty'
+          ? 'prepare'
+          : 'draft';
+    const order = ['draft', 'prepare', 'review', 'publish'];
+    const activeIndex = order.indexOf(activeStep);
+    document.querySelectorAll<HTMLElement>('[data-workflow-step]').forEach((step) => {
+      const stepIndex = order.indexOf(step.dataset.workflowStep ?? '');
+      step.classList.toggle('is-complete', stepIndex >= 0 && stepIndex < activeIndex);
+      if (step.dataset.workflowStep === activeStep) step.setAttribute('aria-current', 'step');
+      else step.removeAttribute('aria-current');
+    });
+
+    workflowDraftStatus.textContent = kind === 'published' ? 'encrypted working copy' : 'private on this device';
+    workflowPrepareStatus.textContent = kind === 'published'
+      ? 'public revision in Git'
+      : kind === 'working'
+      ? 'not in Git'
+      : kind === 'prepared-dirty'
+        ? 'update needs approval'
+        : 'unpublished in Git';
+    workflowReviewStatus.textContent = kind === 'published'
+      ? 'exact revision inspected'
+      : kind === 'working'
+      ? 'exact Git revision'
+      : kind === 'prepared-dirty'
+        ? 'older revision ready'
+        : 'revision ready to inspect';
+    workflowPublishStatus.textContent = kind === 'published' ? 'publish committed' : 'not public';
   }
 
   function clearLocalAcknowledgementIfDirty(): void {
@@ -457,7 +502,10 @@ if (accessForm) {
 
   function showStage(stage: string): void {
     document.querySelectorAll<HTMLButtonElement>('.stage-button').forEach((button) => {
-      button.classList.toggle('active', button.dataset.stage === stage);
+      const active = button.dataset.stage === stage;
+      button.classList.toggle('active', active);
+      if (active) button.setAttribute('aria-current', 'step');
+      else button.removeAttribute('aria-current');
     });
     document.querySelectorAll<HTMLElement>('.stage-panel').forEach((panel) => {
       panel.hidden = panel.dataset.panel !== stage;
@@ -548,6 +596,12 @@ if (accessForm) {
   });
   document.querySelectorAll<HTMLInputElement>('[data-check]').forEach((checkbox) => checkbox.addEventListener('change', scheduleSave));
   document.querySelectorAll<HTMLButtonElement>('.stage-button').forEach((button) => button.addEventListener('click', () => showStage(button.dataset.stage ?? 'gather')));
+  document.querySelectorAll<HTMLButtonElement>('[data-go-stage]').forEach((button) => {
+    button.addEventListener('click', () => {
+      showStage(button.dataset.goStage ?? 'gather');
+      document.querySelector<HTMLElement>('.writing-pad')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
 
   element<HTMLButtonElement>('new-draft').addEventListener('click', () => {
     if (!notebook) return;

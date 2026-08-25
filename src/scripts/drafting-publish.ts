@@ -11,7 +11,7 @@ if (button && status) {
     });
 
     button.disabled = true;
-    status.textContent = 'publishing…';
+    status.textContent = 'publishing this revision…';
 
     try {
       const response = await fetch('/api/drafting/publish', {
@@ -34,7 +34,19 @@ if (button && status) {
         return;
       }
 
-      status.textContent = result.url ? `Published. ${result.url}` : 'Published.';
+      status.textContent = result.url
+        ? `Publish committed. The public page will appear after deploy: ${result.url}`
+        : 'Publish committed. The public page will appear after deploy.';
+      button.hidden = true;
+      const inspectStep = document.querySelector<HTMLElement>('[data-review-step="inspect"]');
+      const publishStep = document.querySelector<HTMLElement>('[data-review-step="publish"]');
+      inspectStep?.classList.add('complete');
+      inspectStep?.removeAttribute('aria-current');
+      publishStep?.setAttribute('aria-current', 'step');
+      const publishStepStatus = publishStep?.querySelector('small');
+      if (publishStepStatus) publishStepStatus.textContent = 'committed';
+      const publicationState = document.getElementById('review-publication-state');
+      if (publicationState) publicationState.textContent = 'Publish committed · Deployment pending';
     } catch {
       status.textContent = 'Publish failed.';
       button.disabled = false;

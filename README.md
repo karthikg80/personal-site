@@ -52,6 +52,8 @@ Ordinary publishing from this room is **Prepare**, then review, then **Publish**
 7. Confirm the public URL after deploy. If the note opted in at Prepare, a GitHub Action then sends Webmentions and/or creates a Bluesky copy and writes `syndication`.
 8. Optional CLI fallback: `npm run webmentions:send -- --slug=<slug>` and `npm run posse:bluesky -- <slug>`.
 
+The interface keeps two kinds of progress separate. **Gather → Shape → Ready** describes the private writing loop. **Draft → Prepare → Inspect → Publish** describes movement across trust boundaries: device-only text, an unpublished Git revision, inspection of that exact revision, and finally the public site. The agent stays in the editorial margin and cannot advance the publication workflow.
+
 Prepare and Publish are session-authenticated server routes. They use a server-only `GITHUB_NOTES_TOKEN` (fine-grained PAT, Contents R/W, this repo only) and never expose that token to the browser. Without the token, Prepare/Publish validate then return `503` — they do not pretend the Note is prepared. The editorial agent cannot Prepare or Publish. Webmentions and Bluesky are not part of those requests: they run after Vercel promotes the publish commit, if the note opted in at Prepare.
 
 Copy/Download remains a recovery handoff. It always exports:

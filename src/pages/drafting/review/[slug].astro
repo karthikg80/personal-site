@@ -74,38 +74,69 @@ Astro.response.headers.set('Content-Security-Policy', securityHeaders['Content-S
 ---
 
 <NoteLayout note={entry} showWebmentions={false}>
-  <section slot="chrome" class="review-chrome" data-blob-sha={note.blobSha} data-object-id={note.objectId}>
-    <p class="kicker">canonical review</p>
-    <p class="review-status">{statusLabel}</p>
-    <p>
-      Future URL:
-      <a href={note.futureUrl}>{note.futureUrl}</a>
-    </p>
-    <p class="review-sha">Git blob <code>{note.blobSha}</code></p>
-    {note.canPublish && (
-      <button
-        type="button"
-        data-publish
-        data-object-id={note.objectId}
-        data-slug={note.slug}
-        data-expected-blob-sha={note.blobSha}
-      >
-        Publish to karthikg.in
-      </button>
-    )}
-    <p id="publish-status" class="form-status" role="status" aria-live="polite"></p>
+  <section slot="chrome" class="review-chrome container" data-blob-sha={note.blobSha} data-object-id={note.objectId}>
+    <a class="back-link" href="/drafting">← Return to the working copy</a>
+    <p class="kicker">step 3 of 4 · inspect</p>
+    <h2>This is the exact Git revision.</h2>
+    <p class="review-intro">Read the note below as a visitor will. Publishing is a separate action and applies only to this revision.</p>
+
+    <ol class="review-workflow" aria-label="Publication workflow">
+      <li class="complete"><span>1</span><strong>Draft</strong><small>private copy</small></li>
+      <li class="complete"><span>2</span><strong>Prepare</strong><small>in Git</small></li>
+      <li data-review-step="inspect" class:list={{ complete: !note.draft }} aria-current={note.draft ? 'step' : undefined}><span>3</span><strong>Inspect</strong><small>this revision</small></li>
+      <li data-review-step="publish" aria-current={!note.draft ? 'step' : undefined}><span>4</span><strong>Publish</strong><small>{note.draft ? 'not public' : 'committed'}</small></li>
+    </ol>
+
+    <div class="publish-decision">
+      <div>
+        <p class="decision-label">Current state</p>
+        <p id="review-publication-state" class="review-status">{statusLabel}</p>
+        <p class="future-url">
+          {note.draft ? 'Future URL' : 'Public URL'}
+          <a href={note.futureUrl}>{note.futureUrl}</a>
+        </p>
+      </div>
+      {note.canPublish ? (
+        <div class="publish-action">
+          <p><strong>Final decision</strong><br />Make this exact revision public after the site deploys.</p>
+          <button
+            type="button"
+            data-publish
+            data-object-id={note.objectId}
+            data-slug={note.slug}
+            data-expected-blob-sha={note.blobSha}
+          >
+            Publish this exact revision
+          </button>
+        </div>
+      ) : (
+        <p class="publish-unavailable">{note.draft ? 'This revision cannot be published until its privacy review is complete.' : 'This note is already public.'}</p>
+      )}
+      <p id="publish-status" class="form-status" role="status" aria-live="polite"></p>
+    </div>
+
+    <details class="revision-details">
+      <summary>Revision details</summary>
+      <dl>
+        <div><dt>Object</dt><dd><code>{note.objectId}</code></dd></div>
+        <div><dt>Slug</dt><dd><code>{note.slug}</code></dd></div>
+        <div><dt>Git blob</dt><dd><code>{note.blobSha}</code></dd></div>
+      </dl>
+    </details>
   </section>
   <Fragment set:html={note.bodyHtml} />
 </NoteLayout>
 
 <style>
   .review-chrome {
-    margin: 0 0 2rem;
-    padding: 1rem 0 1.4rem;
-    border-bottom: 1px dashed var(--color-border);
+    max-width: var(--reading-width);
+    margin: 1.8rem auto 0;
+    padding-bottom: 2rem;
     font-family: var(--font-sans);
     font-size: var(--text-sm);
   }
+
+  .back-link { display: inline-block; margin-bottom: 1.5rem; }
 
   .kicker {
     margin-bottom: 0.45rem;
@@ -117,18 +148,57 @@ Astro.response.headers.set('Content-Security-Policy', securityHeaders['Content-S
     text-transform: uppercase;
   }
 
+  .review-chrome h2 { max-width: 15ch; margin-bottom: 0.7rem; font-family: var(--font-serif); font-size: var(--text-2xl); }
+  .review-intro { max-width: 39rem; color: var(--color-text-light); }
+
+  .review-workflow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: 1.5rem 0;
+    list-style: none;
+  }
+  .review-workflow li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 0.5rem;
+    padding: 0.75rem 0.5rem 0.75rem 0;
+    color: var(--color-text-light);
+    border-top: 1px solid var(--color-border);
+  }
+  .review-workflow li::before { content: ''; grid-column: 1 / -1; position: relative; top: -0.8rem; height: 3px; background: transparent; }
+  .review-workflow li.complete::before { background: var(--color-green); }
+  .review-workflow li[aria-current="step"] { color: var(--color-text); }
+  .review-workflow li[aria-current="step"]::before { background: var(--color-primary); }
+  .review-workflow span { grid-row: 2 / 4; display: grid; width: 1.55rem; height: 1.55rem; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-family: var(--font-mono); font-size: 0.62rem; }
+  .review-workflow strong, .review-workflow small { grid-column: 2; line-height: 1.25; }
+  .review-workflow small { font-size: 0.68rem; font-weight: 400; }
+
+  .publish-decision {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.85fr);
+    gap: 1rem 1.5rem;
+    padding: 1.2rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: 5px 6px 0 rgb(41 40 32 / 7%);
+  }
+
+  .decision-label { margin: 0 0 0.25rem; color: var(--color-primary); font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+
   .review-status {
-    margin: 0 0 0.6rem;
+    margin: 0 0 0.8rem;
     font-weight: 700;
   }
 
-  .review-sha {
-    color: var(--color-text-light);
-    font-size: 0.75rem;
-  }
+  .future-url { margin: 0; color: var(--color-text-light); }
+  .future-url a { display: block; overflow-wrap: anywhere; }
+
+  .publish-action { padding-left: 1.2rem; border-left: 1px dashed var(--color-border); }
+  .publish-action p { color: var(--color-text-light); }
+  .publish-action strong { color: var(--color-text); }
+  .publish-unavailable { align-self: center; color: var(--color-text-light); }
 
   .review-chrome button {
-    margin-top: 0.8rem;
     padding: 0.62rem 0.82rem;
     color: #fffdf6;
     background: var(--color-primary);
@@ -139,12 +209,26 @@ Astro.response.headers.set('Content-Security-Policy', securityHeaders['Content-S
     font-weight: 700;
   }
 
+  .revision-details { margin-top: 1rem; color: var(--color-text-light); }
+  .revision-details summary { cursor: pointer; color: var(--color-text); font-weight: 700; }
+  .revision-details dl { display: grid; gap: 0.5rem; margin-top: 0.75rem; }
+  .revision-details dl div { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 0.5rem; }
+  .revision-details dt { font-weight: 700; }
+  .revision-details dd { min-width: 0; overflow-wrap: anywhere; }
+
   .form-status {
+    grid-column: 1 / -1;
     min-height: 1.2em;
     margin: 0.7rem 0 0;
     color: var(--color-primary);
     font-family: var(--font-sans);
     font-size: 0.75rem;
+  }
+
+  @media (max-width: 620px) {
+    .review-workflow { grid-template-columns: repeat(2, 1fr); }
+    .publish-decision { grid-template-columns: 1fr; }
+    .publish-action { padding: 1rem 0 0; border-top: 1px dashed var(--color-border); border-left: 0; }
   }
 </style>
 

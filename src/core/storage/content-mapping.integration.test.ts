@@ -52,7 +52,7 @@ describe('content mapping against repository', () => {
     const projects = readdirSync(join(import.meta.dirname, '../../content/projects')).filter((f) =>
       f.endsWith('.md')
     );
-    expect(notes.length).toBe(3);
+    expect(notes.length).toBe(5);
     expect(projects.length).toBe(5);
   });
 });
