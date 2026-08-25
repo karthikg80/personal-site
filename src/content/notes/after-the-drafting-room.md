@@ -14,7 +14,8 @@ relationships:
 distribution:
   webmentions: true
   bluesky: true
-syndication: []
+syndication:
+  - https://bsky.app/profile/karthikg.in/post/3mtw6wcnvicvx
 draft: false
 privacyReviewed: true
 ---
