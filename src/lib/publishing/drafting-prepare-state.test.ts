@@ -129,22 +129,37 @@ describe('buildPublishRequest', () => {
 });
 
 describe('buildPrepareRequest', () => {
+  const base = {
+    canonicalId: '018f3b2a-7c4e-7b3a-b123-456789abcdef',
+    slug: 'building-for-the-web-of-2030',
+    title: 'Building for the web of 2030',
+    date: '2026-08-24',
+    tags: [] as string[],
+    presentation: 'note' as const,
+    body: 'Hello',
+    sparks: '',
+  };
+
   it('never sends draft or privacyReviewed', () => {
-    const request = buildPrepareRequest({
-      canonicalId: '018f3b2a-7c4e-7b3a-b123-456789abcdef',
-      slug: 'building-for-the-web-of-2030',
-      title: 'Building for the web of 2030',
-      date: '2026-08-24',
-      tags: [],
-      presentation: 'note',
-      body: 'Hello',
-      sparks: '',
-    });
+    const request = buildPrepareRequest(base);
     expect(request).not.toHaveProperty('draft');
     expect(request).not.toHaveProperty('privacyReviewed');
     expect(request.privacyAcknowledgement).toBe(true);
     expect(request.relationships).toEqual([]);
     expect(request.distribution).toEqual({ webmentions: false, bluesky: false });
+  });
+
+  it('sends an external reply-to when a URL is supplied', () => {
+    const request = buildPrepareRequest({
+      ...base,
+      replyToUrl: 'https://karthikg.in/notes/changing-the-drafting-room/',
+    });
+    expect(request.relationships).toEqual([
+      {
+        type: 'reply-to',
+        target: { kind: 'external', url: 'https://karthikg.in/notes/changing-the-drafting-room/' },
+      },
+    ]);
   });
 });
 

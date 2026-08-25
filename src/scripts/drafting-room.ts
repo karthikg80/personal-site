@@ -6,6 +6,7 @@ import {
   derivePrepareUi,
   isCanonicalPrepared,
   isWorkingCopyDirty,
+  relationshipsFromReplyToUrl,
   type EditorialSnapshot,
 } from '../lib/publishing/drafting-prepare-state';
 import { buildHandoffMarkdown } from '../lib/publishing/handoff';
@@ -41,6 +42,7 @@ type Draft = {
   publishedAt?: string;
   lastPreparedSnapshot?: EditorialSnapshot;
   privacyAcknowledged?: boolean;
+  replyToUrl?: string;
   distributeWebmentions?: boolean;
   distributeBluesky?: boolean;
   createdAt: string;
@@ -203,6 +205,7 @@ if (accessForm) {
   const tagsInput = element<HTMLInputElement>('prepare-tags');
   const presentationSelect = element<HTMLSelectElement>('prepare-presentation');
   const summaryInput = element<HTMLTextAreaElement>('prepare-summary');
+  const replyToInput = element<HTMLInputElement>('prepare-reply-to');
   const privacyAck = element<HTMLInputElement>('privacy-acknowledgement');
   const distributeWebmentions = element<HTMLInputElement>('distribute-webmentions');
   const distributeBluesky = element<HTMLInputElement>('distribute-bluesky');
@@ -246,7 +249,7 @@ if (accessForm) {
       summary: draft.summary ?? '',
       body: draft.body,
       sparks: draft.sparks,
-      relationships: [],
+      relationships: relationshipsFromReplyToUrl(draft.replyToUrl),
     });
   }
 
@@ -273,6 +276,7 @@ if (accessForm) {
     draft.tags = parseTags(tagsInput.value);
     draft.presentation = presentationSelect.value === 'scrap' ? 'scrap' : 'note';
     draft.summary = summaryInput.value;
+    draft.replyToUrl = replyToInput.value.trim();
     draft.privacyAcknowledged = privacyAck.checked;
     draft.distributeWebmentions = distributeWebmentions.checked;
     draft.distributeBluesky = distributeBluesky.checked;
@@ -433,6 +437,7 @@ if (accessForm) {
     tagsInput.value = (draft.tags ?? []).join(', ');
     presentationSelect.value = draft.presentation ?? 'note';
     summaryInput.value = draft.summary ?? '';
+    replyToInput.value = draft.replyToUrl ?? '';
     slugInput.value = currentSlug(draft);
     const snapshot = editorialFromDraft(draft);
     const dirty = isCanonicalPrepared(draft) && isWorkingCopyDirty(snapshot, draft.lastPreparedSnapshot);
@@ -513,7 +518,7 @@ if (accessForm) {
     syncInputsToDraft();
     scheduleSave();
   });
-  for (const input of [slugInput, dateInput, tagsInput, summaryInput]) {
+  for (const input of [slugInput, dateInput, tagsInput, summaryInput, replyToInput]) {
     input.addEventListener('input', () => {
       if (input === slugInput) currentDraft().slugManual = true;
       syncInputsToDraft();
@@ -692,6 +697,7 @@ if (accessForm) {
       summary: draft.summary,
       body: draft.body,
       sparks: draft.sparks,
+      replyToUrl: replyToInput.value,
       distribution: {
         webmentions: distributeWebmentions.checked,
         bluesky: distributeBluesky.checked,

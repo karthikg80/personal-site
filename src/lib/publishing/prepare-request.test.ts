@@ -60,6 +60,21 @@ describe('parsePrepareRequest', () => {
     expect(parsed.markdown).toContain('bluesky: true');
   });
 
+  it('keeps an external reply-to in the unpublished Git draft', () => {
+    const parsed = parsePrepareRequest({
+      ...valid,
+      relationships: [
+        {
+          type: 'reply-to',
+          target: { kind: 'external', url: 'https://karthikg.in/notes/changing-the-drafting-room/' },
+        },
+      ],
+    });
+    expect(parsed.markdown).toMatch(/^draft: true$/m);
+    expect(parsed.markdown).toContain('reply-to');
+    expect(parsed.markdown).toContain('https://karthikg.in/notes/changing-the-drafting-room/');
+  });
+
   it('requires a title', () => {
     expect(() => parsePrepareRequest({ ...valid, title: '   ' })).toThrow(/Title is required/);
   });
