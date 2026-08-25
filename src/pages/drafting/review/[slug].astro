@@ -1,0 +1,151 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import NoteLayout from '../../../layouts/NoteLayout.astro';
+import {
+  draftingSession,
+  isDraftingConfigured,
+  verifyDraftingSession,
+} from '../../../lib/drafting-auth';
+import { loadReviewNote } from '../../../lib/publishing/review-note';
+
+export const prerender = false;
+
+const securityHeaders = {
+  'Cache-Control': 'no-store, private',
+  'X-Robots-Tag': 'noindex, nofollow, noarchive',
+  'Referrer-Policy': 'no-referrer',
+  'X-Frame-Options': 'DENY',
+  'Content-Security-Policy':
+    "default-src 'self'; base-uri 'none'; connect-src 'self'; form-action 'none'; frame-ancestors 'none'; img-src 'self' https: data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'",
+};
+
+/** Used by frontmatter early returns. astro check ts(6133) is a false positive. */
+function notFound(): Response {
+  return new Response('Not found', {
+    status: 404,
+    headers: {
+      ...securityHeaders,
+      'Content-Type': 'text/plain; charset=utf-8',
+    },
+  });
+}
+
+if (!isDraftingConfigured()) return notFound();
+if (!await verifyDraftingSession(Astro.cookies.get(draftingSession.cookieName)?.value)) {
+  return notFound();
+}
+
+const slug = Astro.params.slug;
+if (!slug) return notFound();
+
+const result = await loadReviewNote(slug);
+if (!result.ok) {
+  if (result.status === 404) return notFound();
+  return new Response(result.error, {
+    status: result.status,
+    headers: {
+      ...securityHeaders,
+      'Content-Type': 'text/plain; charset=utf-8',
+    },
+  });
+}
+
+const { note } = result;
+const entry = {
+  id: note.slug,
+  collection: 'notes',
+  data: note.data,
+} as CollectionEntry<'notes'>;
+
+const statusLabel = note.draft
+  ? note.privacyReviewed
+    ? 'Unpublished · Privacy-reviewed (this Git revision)'
+    : 'Unpublished · Privacy review required'
+  : note.privacyReviewed
+    ? 'Public'
+    : 'Unpublished';
+
+Astro.response.headers.set('Cache-Control', securityHeaders['Cache-Control']);
+Astro.response.headers.set('X-Robots-Tag', securityHeaders['X-Robots-Tag']);
+Astro.response.headers.set('Referrer-Policy', securityHeaders['Referrer-Policy']);
+Astro.response.headers.set('X-Frame-Options', securityHeaders['X-Frame-Options']);
+Astro.response.headers.set('Content-Security-Policy', securityHeaders['Content-Security-Policy']);
+---
+
+<NoteLayout note={entry} showWebmentions={false}>
+  <section slot="chrome" class="review-chrome" data-blob-sha={note.blobSha} data-object-id={note.objectId}>
+    <p class="kicker">canonical review</p>
+    <p class="review-status">{statusLabel}</p>
+    <p>
+      Future URL:
+      <a href={note.futureUrl}>{note.futureUrl}</a>
+    </p>
+    <p class="review-sha">Git blob <code>{note.blobSha}</code></p>
+    {note.canPublish && (
+      <button
+        type="button"
+        data-publish
+        data-object-id={note.objectId}
+        data-slug={note.slug}
+        data-expected-blob-sha={note.blobSha}
+      >
+        Publish to karthikg.in
+      </button>
+    )}
+    <p id="publish-status" class="form-status" role="status" aria-live="polite"></p>
+  </section>
+  <Fragment set:html={note.bodyHtml} />
+</NoteLayout>
+
+<style>
+  .review-chrome {
+    margin: 0 0 2rem;
+    padding: 1rem 0 1.4rem;
+    border-bottom: 1px dashed var(--color-border);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .kicker {
+    margin-bottom: 0.45rem;
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .review-status {
+    margin: 0 0 0.6rem;
+    font-weight: 700;
+  }
+
+  .review-sha {
+    color: var(--color-text-light);
+    font-size: 0.75rem;
+  }
+
+  .review-chrome button {
+    margin-top: 0.8rem;
+    padding: 0.62rem 0.82rem;
+    color: #fffdf6;
+    background: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+
+  .form-status {
+    min-height: 1.2em;
+    margin: 0.7rem 0 0;
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+  }
+</style>
+
+<script src="../../../scripts/drafting-publish.ts"></script>

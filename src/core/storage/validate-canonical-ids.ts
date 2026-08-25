@@ -121,6 +121,28 @@ export function loadCanonicalIdentityRecords(): CanonicalIdentityRecord[] {
   return records;
 }
 
+export function assertLegacyRssGuidRule(input: {
+  isPublic: boolean;
+  slug: string;
+  previousSlugs: string[];
+  legacyRssGuid?: string;
+}): void {
+  if (!input.legacyRssGuid) {
+    return;
+  }
+
+  const allowedSlugs = new Set([input.slug, ...input.previousSlugs]);
+  const match = input.legacyRssGuid.match(/^https:\/\/karthikg\.in\/notes\/([^/]+)\/$/);
+  if (!match || !allowedSlugs.has(match[1]!)) {
+    throw new Error(
+      `legacyRssGuid must be a karthikg.in/notes/<slug>/ URL for this note's current or previous slug`
+    );
+  }
+  if (!input.isPublic) {
+    throw new Error('legacyRssGuid is only allowed on public notes.');
+  }
+}
+
 export function validateCanonicalIdentities(): void {
   const records = loadCanonicalIdentityRecords();
   assertUniqueObjectIds(records.map((record) => record.id));
@@ -153,19 +175,16 @@ export function validateCanonicalIdentities(): void {
       const frontmatter = readMarkdownFile(join(CONTENT_ROOT, 'notes', frontmatterPath));
       const isPublic = isPublicNote(frontmatter);
 
-      if (record.legacyRssGuid) {
-        const allowedSlugs = new Set([record.slug!, ...record.previousSlugs]);
-        const match = record.legacyRssGuid.match(/^https:\/\/karthikg\.in\/notes\/([^/]+)\/$/);
-        if (!match || !allowedSlugs.has(match[1]!)) {
-          throw new Error(
-            `${record.label}: legacyRssGuid must be a karthikg.in/notes/<slug>/ URL for this note's current or previous slug`
-          );
-        }
-        if (!isPublic) {
-          throw new Error(`${record.label}: legacyRssGuid is only allowed on public notes.`);
-        }
-      } else if (isPublic) {
-        throw new Error(`${record.label}: public note must include legacyRssGuid.`);
+      try {
+        assertLegacyRssGuidRule({
+          isPublic,
+          slug: record.slug!,
+          previousSlugs: record.previousSlugs,
+          legacyRssGuid: record.legacyRssGuid,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`${record.label}: ${message}`);
       }
     }
   }

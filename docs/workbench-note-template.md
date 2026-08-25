@@ -1,8 +1,12 @@
 # Workbench Note Template
 
-Keep working drafts outside Git. This checkout ignores `private-notes/` for local review, but sensitive sources should live in encrypted storage. Copy only an approved, publishable draft into `src/content/notes/<slug>.md`.
+Keep working drafts outside Git. This checkout ignores `private-notes/` for local review, but sensitive sources should live in encrypted storage.
 
-The private `/drafting` room can shape ordinary working notes with an agent and export this template with both publication gates closed. It is device-local, not a home for prohibited sensitive material.
+Ordinary Git entry is **Prepare** from the private `/drafting` room: after the repository-entry privacy acknowledgement, the canonical file is `draft: true` and `privacyReviewed: true`. That unpublished Note is still hidden from public routes, RSS, and the sitemap until **Publish** flips only `draft`.
+
+Copy/Download is recovery, not the ordinary path. The template below matches that handoff: both gates stay closed (`privacyReviewed: false`). Do not commit a Copy/Download file as a privacy-reviewed canonical Note.
+
+The drafting room is device-local, not a home for prohibited sensitive material. The editorial agent cannot Prepare or Publish.
 
 ## Identity fields
 

@@ -38,15 +38,24 @@ privacyReviewed: true
 The publishing sequence is:
 
 1. Capture observations privately, either in encrypted private storage or the device-local drafting room when the material is suitable for an agent request.
-2. Ask the agent to interview and offer possible shapes. Only the current draft is sent, and only after an explicit action.
+2. Ask the agent to interview and offer possible shapes. Only the current draft is sent, and only after an explicit action. The agent cannot Prepare or Publish.
 3. Select and edit a draft.
 4. Ask what feels natural, what feels performed, and what this note teaches us about the evolving voice.
 5. Verify claims, links, names, timing, images, and metadata.
-6. Perform the privacy review.
-7. Approve the exact text.
-8. Export a handoff that still has `draft: true` and `privacyReviewed: false`, and includes a new immutable `id` (UUIDv7) plus `slug` and `previousSlugs: []`. Do not add `legacyRssGuid` to new notes.
-9. Change both publication flags only after approval, then deploy through the normal reviewed Git workflow.
-10. After the public URL is live, send webmentions for outbound links, replies, and bookmarks. If the note should also appear on Bluesky, POSSE it and store the public URL in `syndication` so the original keeps `u-syndication`.
+6. Perform the privacy review of the exact publication-bound text.
+7. In the drafting room, check the repository-entry acknowledgement: this exact text is safe to enter the public source repository. The five drafting hygiene checkboxes are not this acknowledgement.
+8. **Prepare** writes the canonical Git file with `draft: true` and `privacyReviewed: true`. The Note is still excluded from public routes, RSS, and the sitemap. Ordinary publishing is Prepare, not paste.
+9. Review the Git revision at `/drafting/review/<slug>/`. That page renders the canonical blob with production Markdown. Publish means this exact Git object, not the local working copy.
+10. **Publish** flips only `draft` to `false`. `privacyReviewed` stays `true`. ObjectId, slug, body, relationships, and syndication do not change.
+11. Confirm the public URL after deploy.
+12. Optional distribution stays local CLI, after the public URL is live:
+
+    ```sh
+    npm run webmentions:send
+    npm run posse:bluesky -- <slug>
+    ```
+
+Copy/Download is a recovery handoff. It always emits `draft: true` and `privacyReviewed: false`, even after a Prepare acknowledgement, and must not be committed as a reviewed canonical Note.
 
 Replies (`relationships` with `type: reply-to`) and bookmarks (`type: bookmark-of`) are still notes. They use the same dual publication gate. Do not POSSE a note until it is public on this domain.
 
