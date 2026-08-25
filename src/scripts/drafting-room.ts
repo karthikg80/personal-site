@@ -41,6 +41,8 @@ type Draft = {
   publishedAt?: string;
   lastPreparedSnapshot?: EditorialSnapshot;
   privacyAcknowledged?: boolean;
+  distributeWebmentions?: boolean;
+  distributeBluesky?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -202,6 +204,8 @@ if (accessForm) {
   const presentationSelect = element<HTMLSelectElement>('prepare-presentation');
   const summaryInput = element<HTMLTextAreaElement>('prepare-summary');
   const privacyAck = element<HTMLInputElement>('privacy-acknowledgement');
+  const distributeWebmentions = element<HTMLInputElement>('distribute-webmentions');
+  const distributeBluesky = element<HTMLInputElement>('distribute-bluesky');
   const prepareButton = element<HTMLButtonElement>('prepare-canonical');
   const reviewLink = element<HTMLAnchorElement>('review-canonical');
   const prepareGitStatus = element<HTMLParagraphElement>('prepare-git-status');
@@ -270,6 +274,8 @@ if (accessForm) {
     draft.presentation = presentationSelect.value === 'scrap' ? 'scrap' : 'note';
     draft.summary = summaryInput.value;
     draft.privacyAcknowledged = privacyAck.checked;
+    draft.distributeWebmentions = distributeWebmentions.checked;
+    draft.distributeBluesky = distributeBluesky.checked;
     if (!isCanonicalPrepared(draft)) {
       draft.slug = slugInput.value.trim() || slugify(draft.title);
     }
@@ -432,6 +438,8 @@ if (accessForm) {
     const dirty = isCanonicalPrepared(draft) && isWorkingCopyDirty(snapshot, draft.lastPreparedSnapshot);
     if (dirty) draft.privacyAcknowledged = false;
     privacyAck.checked = draft.privacyAcknowledged ?? false;
+    distributeWebmentions.checked = draft.distributeWebmentions ?? false;
+    distributeBluesky.checked = draft.distributeBluesky ?? false;
     for (const key of reviewKeys) {
       const checkbox = document.querySelector<HTMLInputElement>(`[data-check="${key}"]`);
       if (checkbox) checkbox.checked = draft.review[key];
@@ -523,6 +531,14 @@ if (accessForm) {
   privacyAck.addEventListener('change', () => {
     syncInputsToDraft();
     renderPrepareUi();
+    scheduleSave();
+  });
+  distributeWebmentions.addEventListener('change', () => {
+    syncInputsToDraft();
+    scheduleSave();
+  });
+  distributeBluesky.addEventListener('change', () => {
+    syncInputsToDraft();
     scheduleSave();
   });
   document.querySelectorAll<HTMLInputElement>('[data-check]').forEach((checkbox) => checkbox.addEventListener('change', scheduleSave));
@@ -676,6 +692,10 @@ if (accessForm) {
       summary: draft.summary,
       body: draft.body,
       sparks: draft.sparks,
+      distribution: {
+        webmentions: distributeWebmentions.checked,
+        bluesky: distributeBluesky.checked,
+      },
     });
 
     prepareButton.disabled = true;

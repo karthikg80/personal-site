@@ -2,6 +2,7 @@ import { parseObjectIdV7 } from '../../core/domain/ids.js';
 import { noteRelationshipSchema } from '../../core/storage/note-relationship-schema.js';
 import { contentSlugSchema } from '../../core/storage/slug-schema.js';
 import { ensureCanonicalId } from './canonical-id.js';
+import { parseDistributionIntent } from './distribution-intent.js';
 import { serializePreparedNote, type CanonicalNoteFields } from './note-markdown.js';
 import { noteRepoPath } from './note-path.js';
 
@@ -17,6 +18,7 @@ const PREPARE_KEYS = new Set([
   'body',
   'sparks',
   'privacyAcknowledgement',
+  'distribution',
 ]);
 
 export type PrepareRequest = {
@@ -31,6 +33,7 @@ export type PrepareRequest = {
   body?: string;
   sparks?: string;
   privacyAcknowledgement: true;
+  distribution?: { webmentions: boolean; bluesky: boolean };
 };
 
 export type ParsedPrepare = {
@@ -166,6 +169,7 @@ export function parsePrepareRequest(input: unknown): ParsedPrepare {
     presentation: parsePresentation(record.presentation),
     summary,
     relationships: parseRelationships(record.relationships),
+    distribution: parseDistributionIntent(record.distribution),
     body,
   });
 

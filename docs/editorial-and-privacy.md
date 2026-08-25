@@ -48,10 +48,10 @@ The publishing sequence is:
 9. Review the Git revision at `/drafting/review/<slug>/`. That page renders the canonical blob with production Markdown. Publish means this exact Git object, not the local working copy.
 10. **Publish** flips only `draft` to `false`. `privacyReviewed` stays `true`. ObjectId, slug, body, relationships, and syndication do not change.
 11. Confirm the public URL after deploy.
-12. Optional distribution stays local CLI, after the public URL is live:
+12. If Prepare recorded distribution intent, a GitHub Action runs after Vercel promotes that commit: verify the live ObjectId, send Webmentions for this note, create a Bluesky copy idempotently, and commit `syndication`. Manual CLI remains available:
 
     ```sh
-    npm run webmentions:send
+    npm run webmentions:send -- --slug=<slug>
     npm run posse:bluesky -- <slug>
     ```
 

@@ -144,6 +144,7 @@ describe('buildPrepareRequest', () => {
     expect(request).not.toHaveProperty('privacyReviewed');
     expect(request.privacyAcknowledgement).toBe(true);
     expect(request.relationships).toEqual([]);
+    expect(request.distribution).toEqual({ webmentions: false, bluesky: false });
   });
 });
 

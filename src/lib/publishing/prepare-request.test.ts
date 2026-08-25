@@ -42,10 +42,22 @@ describe('parsePrepareRequest', () => {
     expect(parsed.markdown).toMatch(/^---[\s\S]*draft: true/m);
     expect(parsed.markdown).toMatch(/^privacyReviewed: true/m);
     expect(parsed.markdown).not.toMatch(/legacyRssGuid/);
+    expect(parsed.markdown).toMatch(/webmentions: false/);
+    expect(parsed.markdown).toMatch(/bluesky: false/);
   });
 
   it('rejects README slug', () => {
     expect(() => parsePrepareRequest({ ...valid, slug: 'README' })).toThrow(/reserved/i);
+  });
+
+  it('records opt-in distribution intent without touching publication gates', () => {
+    const parsed = parsePrepareRequest({
+      ...valid,
+      distribution: { webmentions: true, bluesky: true },
+    });
+    expect(parsed.markdown).toMatch(/^draft: true$/m);
+    expect(parsed.markdown).toContain('webmentions: true');
+    expect(parsed.markdown).toContain('bluesky: true');
   });
 
   it('requires a title', () => {

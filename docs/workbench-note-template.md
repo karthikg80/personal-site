@@ -36,6 +36,9 @@ relationships: []
 #     target:
 #       kind: external
 #       url: https://example.com/page
+# distribution:
+#   webmentions: true
+#   bluesky: true
 syndication: []
 draft: true
 privacyReviewed: false

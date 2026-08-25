@@ -105,6 +105,7 @@ export function buildPrepareRequest(fields: {
   summary?: string;
   body: string;
   sparks: string;
+  distribution?: { webmentions: boolean; bluesky: boolean };
 }): Record<string, unknown> {
   const request: Record<string, unknown> = {
     canonicalId: fields.canonicalId,
@@ -117,6 +118,10 @@ export function buildPrepareRequest(fields: {
     body: fields.body,
     sparks: fields.sparks,
     privacyAcknowledgement: true,
+    distribution: {
+      webmentions: fields.distribution?.webmentions === true,
+      bluesky: fields.distribution?.bluesky === true,
+    },
   };
   const summary = fields.summary?.trim();
   if (summary) request.summary = summary;

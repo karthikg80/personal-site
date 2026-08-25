@@ -3,6 +3,7 @@ import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { parseObjectIdV7 } from '../../core/domain/ids.js';
 import type { RelationshipStorage } from '../../core/storage/map-note.js';
 import { noteRelationshipSchema } from '../../core/storage/note-relationship-schema.js';
+import { parseDistributionIntent, type DistributionIntent } from './distribution-intent.js';
 
 export type CanonicalNoteFields = {
   id: string;
@@ -13,6 +14,7 @@ export type CanonicalNoteFields = {
   presentation: 'note' | 'scrap';
   summary?: string;
   relationships: RelationshipStorage[];
+  distribution?: DistributionIntent;
   body: string;
 };
 
@@ -78,6 +80,10 @@ export function serializePreparedNote(fields: CanonicalNoteFields): string {
   frontmatter.tags = fields.tags;
   frontmatter.presentation = fields.presentation;
   frontmatter.relationships = fields.relationships;
+  frontmatter.distribution = {
+    webmentions: fields.distribution?.webmentions === true,
+    bluesky: fields.distribution?.bluesky === true,
+  };
   frontmatter.syndication = [];
   frontmatter.draft = true;
   frontmatter.privacyReviewed = true;
@@ -115,6 +121,7 @@ export function parseCanonicalNoteFile(raw: string): {
     presentation,
     summary,
     relationships: noteRelationshipSchema.parse(record.relationships ?? []),
+    distribution: parseDistributionIntent(record.distribution),
     body,
   };
 
