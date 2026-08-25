@@ -39,4 +39,37 @@ describe('prepareReviewBodyHtml', () => {
     expect(html).toContain('href="/notes/"');
     expect(html).toContain('href="#heading"');
   });
+
+  it('allowlists protocol after WHATWG normalization, not the raw prefix', () => {
+    const obfuscated = [
+      'java\tscript:alert(1)',
+      'java\nscript:alert(1)',
+      '\u0000javascript:alert(1)',
+    ];
+    for (const href of obfuscated) {
+      const html = prepareReviewBodyHtml(`<a href="${href}">go</a>`, { futureUrl });
+      expect(html, href).not.toMatch(/javascript:/i);
+      expect(html, href).not.toContain('alert(1)');
+    }
+  });
+
+  it('serializes query ampersands once after decoding Sätteri attribute values', async () => {
+    const rendered = await renderNoteBodyHtml('[q](other?a=1&b=2)\n');
+    expect(rendered).toContain('href="other?a=1&amp;b=2"');
+    const html = prepareReviewBodyHtml(rendered, { futureUrl });
+    expect(html).toContain(
+      'href="https://karthikg.in/notes/building-for-the-web-of-2030/other?a=1&amp;b=2"'
+    );
+    expect(html).not.toContain('&amp;amp;');
+  });
+
+  it('does not double-escape ampersands in absolute http and mailto URLs', () => {
+    const html = prepareReviewBodyHtml(
+      '<a href="https://example.com/x?a=1&amp;b=2">https</a><a href="mailto:a@example.com?subject=hi&amp;body=x">mail</a>',
+      { futureUrl }
+    );
+    expect(html).toContain('href="https://example.com/x?a=1&amp;b=2"');
+    expect(html).toContain('href="mailto:a@example.com?subject=hi&amp;body=x"');
+    expect(html).not.toContain('&amp;amp;');
+  });
 });

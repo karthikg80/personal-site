@@ -14,6 +14,8 @@ const FORBIDDEN_TAGS = [
 
 const URL_ATTRS = new Set(['href', 'src', 'poster', 'action', 'formaction', 'xlink:href']);
 
+const ALLOWED_URL_PROTOCOLS = new Set(['http:', 'https:', 'mailto:']);
+
 export function prepareReviewBodyHtml(
   html: string,
   input: { futureUrl: string }
@@ -65,35 +67,38 @@ function rewriteSrcset(value: string, futureUrl: string): string | null {
 }
 
 export function rewriteUrl(value: string, futureUrl: string): string | null {
-  const trimmed = value.trim();
-  if (trimmed === '' || trimmed.startsWith('#')) return trimmed;
-
-  const lower = trimmed.toLowerCase();
-  if (
-    lower.startsWith('javascript:')
-    || lower.startsWith('vbscript:')
-    || lower.startsWith('data:')
-    || lower.startsWith('file:')
-  ) {
-    return null;
-  }
-
-  if (trimmed.startsWith('//')) return null;
-
-  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) {
-    if (lower.startsWith('https:') || lower.startsWith('http:') || lower.startsWith('mailto:')) {
-      return trimmed;
-    }
-    return null;
-  }
-
-  if (trimmed.startsWith('/')) return trimmed;
+  const decoded = decodeHtmlAttr(value).trim();
+  if (decoded === '' || decoded.startsWith('#')) return decoded;
+  // Keep site-absolute paths as written so review can differ from production.
+  if (decoded.startsWith('/') && !decoded.startsWith('//')) return decoded;
 
   try {
-    return new URL(trimmed, futureUrl).toString();
+    const url = new URL(decoded, futureUrl);
+    if (!ALLOWED_URL_PROTOCOLS.has(url.protocol)) return null;
+    return url.href;
   } catch {
     return null;
   }
+}
+
+function decodeHtmlAttr(value: string): string {
+  return value.replace(/&(#x[0-9a-f]+|#\d+|amp|quot|apos|lt|gt);/gi, (entity, name: string) => {
+    const lower = name.toLowerCase();
+    if (lower === 'amp') return '&';
+    if (lower === 'quot') return '"';
+    if (lower === 'apos') return "'";
+    if (lower === 'lt') return '<';
+    if (lower === 'gt') return '>';
+    const code = lower.startsWith('#x')
+      ? Number.parseInt(lower.slice(2), 16)
+      : Number.parseInt(lower.slice(1), 10);
+    if (!Number.isInteger(code) || code < 0 || code > 0x10ffff) return entity;
+    try {
+      return String.fromCodePoint(code);
+    } catch {
+      return entity;
+    }
+  });
 }
 
 function escapeAttr(value: string): string {
