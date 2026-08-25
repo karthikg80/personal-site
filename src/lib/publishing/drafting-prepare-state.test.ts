@@ -79,7 +79,7 @@ describe('after Prepare, working-copy edits', () => {
     expect(ui.gitStatus).toMatch(/Privacy reviewed/i);
     expect(ui.workingStatus).toMatch(/Changed since Prepare — not reviewed/);
     expect(ui.canPrepare).toBe(false);
-    expect(ui.prepareLabel).toBe('Update canonical draft');
+    expect(ui.prepareLabel).toBe('Update the Git draft');
     expect(ui.reviewHref).toBe('/drafting/review/building-for-the-web-of-2030');
     expect(prepared.blobSha).toBe('0123456789abcdef0123456789abcdef01234567');
   });
@@ -172,6 +172,7 @@ describe('published and unprepared', () => {
     });
     expect(ui.kind).toBe('published');
     expect(ui.canPrepare).toBe(false);
+    expect(ui.prepareLabel).toBe('Already published');
   });
 
   it('does not become Prepared when acknowledgement is missing', () => {

@@ -87,8 +87,8 @@ if (import.meta.env.PROD) {
           <header class="room-header container">
             <div>
               <p class="kicker">private drafting room</p>
-              <h1>Shape a note slowly.</h1>
-              <p class="room-intro">Collect what happened. Ask better questions. Keep the final decision human.</p>
+              <h1>From spark to public note.</h1>
+              <p class="room-intro">Write privately, prepare one exact revision, then make the publishing decision in a separate review.</p>
             </div>
             <div class="room-actions">
               <span id="save-state" role="status" aria-live="polite">saved on this device</span>
@@ -96,6 +96,27 @@ if (import.meta.env.PROD) {
               {!localBypass && <button id="leave-room" class="quiet-button" type="button">sign out</button>}
             </div>
           </header>
+
+          <nav class="workflow-map container" aria-label="Publication workflow" data-workflow-state="working">
+            <ol>
+              <li data-workflow-step="draft" aria-current="step">
+                <span class="workflow-number">1</span>
+                <span><strong>Draft</strong><small id="workflow-draft-status">private on this device</small></span>
+              </li>
+              <li data-workflow-step="prepare">
+                <span class="workflow-number">2</span>
+                <span><strong>Prepare</strong><small id="workflow-prepare-status">not in Git</small></span>
+              </li>
+              <li data-workflow-step="review">
+                <span class="workflow-number">3</span>
+                <span><strong>Inspect</strong><small id="workflow-review-status">exact Git revision</small></span>
+              </li>
+              <li data-workflow-step="publish">
+                <span class="workflow-number">4</span>
+                <span><strong>Publish</strong><small id="workflow-publish-status">not public</small></span>
+              </li>
+            </ol>
+          </nav>
 
           <div class="workspace container">
             <aside class="draft-shelf" aria-label="Draft notes">
@@ -111,97 +132,151 @@ if (import.meta.env.PROD) {
               <label class="title-label" for="draft-title">working title</label>
               <input id="draft-title" class="title-input" type="text" maxlength="160" placeholder="Untitled note" />
 
-              <nav class="stage-nav" aria-label="Draft stages">
-                <button class="stage-button active" data-stage="gather" type="button">1 · gather</button>
-                <button class="stage-button" data-stage="shape" type="button">2 · shape</button>
-                <button class="stage-button" data-stage="review" type="button">3 · review</button>
+              <nav class="stage-nav" aria-label="Writing stages">
+                <button class="stage-button active" data-stage="gather" type="button" aria-current="step"><span>01</span> Gather</button>
+                <button class="stage-button" data-stage="shape" type="button"><span>02</span> Shape</button>
+                <button class="stage-button" data-stage="review" type="button"><span>03</span> Ready</button>
               </nav>
 
               <section class="stage-panel" data-panel="gather">
+                <p class="stage-kicker">Gather</p>
+                <h2>Start with what is true.</h2>
                 <label for="draft-sparks">What actually happened?</label>
                 <p class="field-help">Fragments, links, decisions, questions. Avoid sensitive source material.</p>
                 <textarea id="draft-sparks" rows="16" placeholder="A few rough observations…"></textarea>
+                <div class="stage-actions stage-actions-end">
+                  <button class="quiet-button" type="button" data-go-stage="shape">Shape these notes →</button>
+                </div>
               </section>
 
               <section class="stage-panel" data-panel="shape" hidden>
+                <p class="stage-kicker">Shape</p>
+                <h2>Find the note inside the material.</h2>
                 <label for="draft-body">Current shape</label>
                 <p class="field-help">Markdown is welcome. Awkwardness is allowed.</p>
                 <textarea id="draft-body" rows="24" placeholder="Begin wherever the note has some energy…"></textarea>
+                <div class="stage-actions">
+                  <button class="quiet-button" type="button" data-go-stage="gather">← Back to sparks</button>
+                  <button type="button" data-go-stage="review">Ready for a human read →</button>
+                </div>
               </section>
 
               <section class="stage-panel review-panel" data-panel="review" hidden>
-                <h2>Human review</h2>
-                <p>These checks do not publish the note. The privacy acknowledgement below is what allows a canonical Git draft. Copy/Download remains a recovery handoff with publication disabled.</p>
-                <div class="checklist">
-                  <label><input type="checkbox" data-check="firsthand" /> Every experience and opinion is mine.</label>
-                  <label><input type="checkbox" data-check="facts" /> Names, links, claims, and timing are verified.</label>
-                  <label><input type="checkbox" data-check="people" /> Other people’s privacy and consent are protected.</label>
-                  <label><input type="checkbox" data-check="location" /> No live location, schedule, travel, or identifying routine leaks.</label>
-                  <label><input type="checkbox" data-check="voice" /> The words still sound like something I might say.</label>
-                </div>
-                <label for="voice-note">What did this draft teach me about my voice?</label>
-                <textarea id="voice-note" rows="5" placeholder="What felt natural? What felt performed? What should move next time?"></textarea>
+                <p class="stage-kicker">Ready</p>
+                <h2>Read it as its first editor.</h2>
+                <p>This pass decides whether the note is ready to become a canonical, still-unpublished Git draft. It does not publish anything.</p>
 
-                <div class="prepare-block">
-                  <h3>Canonical draft</h3>
-                  <p>Prepare writes an unpublished, privacy-reviewed Note to Git. It does not publish on karthikg.in.</p>
+                <section class="review-section" aria-labelledby="editorial-checks-title">
+                  <div class="section-heading">
+                    <span>1</span>
+                    <div>
+                      <h3 id="editorial-checks-title">Editorial check</h3>
+                      <p>Slow down once. These are writing prompts, not permission to publish.</p>
+                    </div>
+                  </div>
+                  <div class="checklist">
+                    <label><input type="checkbox" data-check="firsthand" /> Every experience and opinion is mine.</label>
+                    <label><input type="checkbox" data-check="facts" /> Names, links, claims, and timing are verified.</label>
+                    <label><input type="checkbox" data-check="people" /> Other people’s privacy and consent are protected.</label>
+                    <label><input type="checkbox" data-check="location" /> No live location, schedule, travel, or identifying routine leaks.</label>
+                    <label><input type="checkbox" data-check="voice" /> The words still sound like something I might say.</label>
+                  </div>
+                  <label for="voice-note">A note to my future writing self <span class="optional">optional</span></label>
+                  <textarea id="voice-note" rows="4" placeholder="What felt natural? What felt performed? What should move next time?"></textarea>
+                </section>
 
-                  <label for="prepare-slug">slug</label>
-                  <input id="prepare-slug" type="text" maxlength="80" autocomplete="off" spellcheck="false" />
+                <section class="prepare-block" aria-labelledby="prepare-title">
+                  <div class="section-heading">
+                    <span>2</span>
+                    <div>
+                      <h3 id="prepare-title">Prepare the canonical draft</h3>
+                      <p>Choose its public identity now. Prepare writes this exact revision to Git, but keeps it off karthikg.in.</p>
+                    </div>
+                  </div>
 
-                  <label for="prepare-date">date (UTC)</label>
-                  <input id="prepare-date" type="date" />
+                  <div class="metadata-grid">
+                    <div class="metadata-wide">
+                      <label for="prepare-slug">URL slug</label>
+                      <input id="prepare-slug" type="text" maxlength="80" autocomplete="off" spellcheck="false" />
+                    </div>
 
-                  <label for="prepare-tags">tags</label>
-                  <input id="prepare-tags" type="text" maxlength="240" placeholder="comma-separated, optional" />
+                    <div>
+                      <label for="prepare-date">Date <span class="optional">UTC</span></label>
+                      <input id="prepare-date" type="date" />
+                    </div>
 
-                  <label for="prepare-presentation">presentation</label>
-                  <select id="prepare-presentation">
-                    <option value="note">note</option>
-                    <option value="scrap">scrap</option>
-                  </select>
+                    <div>
+                      <label for="prepare-presentation">Format</label>
+                      <select id="prepare-presentation">
+                        <option value="note">note</option>
+                        <option value="scrap">scrap</option>
+                      </select>
+                    </div>
 
-                  <label for="prepare-summary">summary (optional)</label>
-                  <textarea id="prepare-summary" rows="2" maxlength="400" placeholder="One or two sentences, if the note needs them."></textarea>
+                    <div class="metadata-wide">
+                      <label for="prepare-tags">Tags <span class="optional">comma-separated · optional</span></label>
+                      <input id="prepare-tags" type="text" maxlength="240" />
+                    </div>
 
-                  <label for="prepare-reply-to">in reply to (optional)</label>
-                  <input id="prepare-reply-to" type="url" maxlength="500" placeholder="https://karthikg.in/notes/…" autocomplete="off" spellcheck="false" />
+                    <div class="metadata-wide">
+                      <label for="prepare-summary">Summary <span class="optional">optional</span></label>
+                      <textarea id="prepare-summary" rows="2" maxlength="400" placeholder="One or two sentences, if the note needs them."></textarea>
+                    </div>
 
-                  <p id="prepare-future-url" class="prepare-url"></p>
-                  <p id="prepare-git-status" class="prepare-status-line"></p>
-                  <p id="prepare-working-status" class="prepare-status-line"></p>
+                    <div class="metadata-wide">
+                      <label for="prepare-reply-to">In reply to <span class="optional">optional</span></label>
+                      <input id="prepare-reply-to" type="url" maxlength="500" placeholder="https://…" autocomplete="off" spellcheck="false" />
+                    </div>
+                  </div>
 
-                  <label class="privacy-ack">
-                    <input id="privacy-acknowledgement" type="checkbox" />
-                    I reviewed this exact text for private/sensitive information and approve it entering the public source repository.
-                  </label>
+                  <div class="canonical-status" data-canonical-status>
+                    <p id="prepare-future-url" class="prepare-url"></p>
+                    <p id="prepare-git-status" class="prepare-status-line"></p>
+                    <p id="prepare-working-status" class="prepare-status-line"></p>
+                  </div>
+
+                  <div class="repository-gate">
+                    <p class="gate-label">Repository boundary</p>
+                    <label class="privacy-ack">
+                      <input id="privacy-acknowledgement" type="checkbox" />
+                      <span><strong>I approve this exact text entering the public source repository.</strong> I reviewed it for private and sensitive information.</span>
+                    </label>
+                  </div>
 
                   <fieldset class="distribution-intent">
-                    <legend>After the public URL is live</legend>
+                    <legend>Optional distribution, only after the URL is live</legend>
                     <label><input id="distribute-webmentions" type="checkbox" /> Send Webmentions for this note</label>
                     <label><input id="distribute-bluesky" type="checkbox" /> Create a Bluesky copy</label>
                   </fieldset>
 
                   <div class="handoff-actions">
-                    <button id="prepare-canonical" type="button">Prepare for publication</button>
-                    <a id="review-canonical" class="review-link" hidden href="#">Review canonical draft</a>
+                    <button id="prepare-canonical" type="button">Prepare this exact draft</button>
+                    <a id="review-canonical" class="review-link" hidden href="#">Inspect the Git revision →</a>
                   </div>
                   <p id="prepare-status" class="form-status" role="status" aria-live="polite"></p>
-                </div>
+                </section>
 
-                <div class="handoff-actions">
-                  <button id="copy-handoff" type="button">copy safe Markdown handoff</button>
-                  <button id="download-handoff" class="quiet-button" type="button">download .md</button>
-                  <button id="delete-draft" class="danger-button" type="button">discard this draft</button>
+                <details class="recovery-tools">
+                  <summary>Recovery and draft tools</summary>
+                  <p>Copy and download always keep publication disabled. They are escape hatches, not the ordinary publishing path.</p>
+                  <div class="handoff-actions">
+                    <button id="copy-handoff" class="quiet-button" type="button">Copy safe Markdown</button>
+                    <button id="download-handoff" class="quiet-button" type="button">Download .md</button>
+                    <button id="delete-draft" class="danger-button" type="button">Discard this draft</button>
+                  </div>
+                  <p id="handoff-status" class="form-status" role="status" aria-live="polite"></p>
+                </details>
+
+                <div class="stage-actions">
+                  <button class="quiet-button" type="button" data-go-stage="shape">← Back to the draft</button>
                 </div>
-                <p id="handoff-status" class="form-status" role="status" aria-live="polite"></p>
               </section>
             </article>
 
             <aside class="agent-desk" aria-labelledby="agent-title">
-              <p class="kicker">editorial collaborator</p>
-              <h2 id="agent-title">Ask for a move.</h2>
-              <p class="agent-boundary">Only the current note is sent, and only when you click. Agent output is a suggestion—not source material or approval.</p>
+              <p class="kicker">editorial margin</p>
+              <h2 id="agent-title">Ask for one useful move.</h2>
+              <p class="agent-boundary">Only this note is sent, and only when you click. Suggestions cannot approve, prepare, or publish it.</p>
               <div class="agent-moves">
                 <button type="button" data-agent-mode="interview">interview me</button>
                 <button type="button" data-agent-mode="shapes">offer 3 shapes</button>
@@ -335,6 +410,10 @@ if (import.meta.env.PROD) {
     border-bottom: 1px solid var(--color-border);
   }
 
+  .room-header,
+  .workflow-map,
+  .workspace { max-width: 82rem; }
+
   .room-header h1 { margin: 0; font-size: clamp(2.4rem, 6vw, 4rem); }
   .room-intro { max-width: 38rem; margin: 0.4rem 0 0; color: var(--color-text-light); }
 
@@ -359,6 +438,55 @@ if (import.meta.env.PROD) {
     background: transparent;
     border-color: var(--color-border);
   }
+
+  .workflow-map { padding-top: 1.2rem; }
+  .workflow-map ol {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: 0;
+    list-style: none;
+  }
+  .workflow-map li {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.65rem;
+    align-items: center;
+    min-width: 0;
+    padding: 0.8rem 1rem 0.8rem 0;
+    color: var(--color-text-light);
+    border-top: 1px solid var(--color-border);
+    font-family: var(--font-sans);
+  }
+  .workflow-map li::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: var(--color-primary);
+    transition: width 180ms ease;
+  }
+  .workflow-map li.is-complete,
+  .workflow-map li[aria-current="step"] { color: var(--color-text); }
+  .workflow-map li.is-complete::after,
+  .workflow-map li[aria-current="step"]::after { width: 100%; }
+  .workflow-map li.is-complete::after { background: var(--color-green); }
+  .workflow-number {
+    display: grid;
+    width: 1.65rem;
+    height: 1.65rem;
+    place-items: center;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+  }
+  .workflow-map strong,
+  .workflow-map small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .workflow-map strong { font-size: 0.78rem; }
+  .workflow-map small { margin-top: 0.08rem; font-size: 0.67rem; font-weight: 400; }
 
   .workspace {
     display: grid;
@@ -433,16 +561,34 @@ if (import.meta.env.PROD) {
     font-size: clamp(2rem, 5vw, 3.2rem);
   }
 
-  .stage-nav { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 1.3rem 0 1.6rem; }
+  .stage-nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 1.3rem 0 2rem;
+    border-bottom: 1px solid var(--color-border);
+  }
   .stage-button {
-    padding: 0.32rem 0.55rem;
+    padding: 0.55rem 0.45rem;
     color: var(--color-text-light);
     background: transparent;
-    border-color: transparent;
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    font-size: 0.74rem;
+    text-align: left;
   }
-  .stage-button.active { color: var(--color-primary); border-color: var(--color-primary); transform: rotate(-1deg); }
+  .stage-button span { margin-right: 0.35rem; font-family: var(--font-mono); font-size: 0.62rem; }
+  .stage-button.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+
+  .stage-kicker {
+    margin: 0 0 0.25rem;
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .stage-panel > h2 { max-width: 16ch; margin-bottom: 1.45rem; font-size: var(--text-2xl); }
 
   .field-help, .review-panel > p {
     margin: -0.2rem 0 0.8rem;
@@ -457,37 +603,92 @@ if (import.meta.env.PROD) {
     line-height: 1.65;
   }
 
+  .stage-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.55rem;
+    margin-top: 1rem;
+  }
+  .stage-actions-end { justify-content: flex-end; }
+
   .review-panel h2 { font-size: var(--text-2xl); }
-  .checklist { margin: 1.3rem 0 1.8rem; }
-  .checklist label { display: grid; grid-template-columns: auto 1fr; gap: 0.65rem; align-items: start; font-family: var(--font-serif); font-weight: 400; }
+  .review-section,
+  .prepare-block {
+    margin: 1.6rem 0 0;
+    padding: 1.35rem;
+    background: rgb(255 253 246 / 58%);
+    border: 1px solid var(--color-border);
+  }
+  .section-heading { display: grid; grid-template-columns: auto 1fr; gap: 0.8rem; align-items: start; }
+  .section-heading > span {
+    display: grid;
+    width: 1.8rem;
+    height: 1.8rem;
+    place-items: center;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    border-radius: 50%;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+  }
+  .section-heading h3 { margin: 0 0 0.2rem; font-size: var(--text-xl); }
+  .section-heading p { margin: 0; color: var(--color-text-light); font-size: var(--text-sm); }
+  .checklist { display: grid; gap: 0.25rem; margin: 1.3rem 0 1.6rem; }
+  .checklist label { display: grid; grid-template-columns: auto 1fr; gap: 0.65rem; align-items: start; margin: 0; padding: 0.5rem; font-family: var(--font-serif); font-weight: 400; }
+  .checklist label:has(input:checked) { background: rgb(55 100 76 / 8%); }
   .checklist input { width: auto; margin-top: 0.32rem; accent-color: var(--color-primary); }
   .handoff-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; margin-top: 1rem; }
   .danger-button { color: var(--color-primary); background: transparent; border-color: var(--color-primary); }
 
+  .optional { color: var(--color-text-light); font-family: var(--font-mono); font-size: 0.62rem; font-weight: 400; }
+
   .prepare-block {
-    margin: 2rem 0 1.6rem;
-    padding: 1.1rem 0 0.2rem;
-    border-top: 1px dashed var(--color-border);
+    margin-bottom: 1.6rem;
   }
-  .prepare-block h3 { margin: 0 0 0.45rem; font-size: var(--text-xl); }
-  .prepare-block > p { margin: 0 0 1rem; color: var(--color-text-light); font-size: var(--text-sm); }
   .prepare-block label { margin-top: 0.85rem; }
   .prepare-block input, .prepare-block select, .prepare-block textarea {
     padding: 0.55rem 0.65rem;
     background: rgb(255 253 246 / 58%);
   }
+  .metadata-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.8rem; margin-top: 1rem; }
+  .metadata-wide { grid-column: 1 / -1; }
+  .canonical-status {
+    margin-top: 1.2rem;
+    padding: 0.85rem;
+    background: rgb(245 239 223 / 70%);
+    border-left: 3px solid var(--color-border);
+  }
+  .canonical-status[data-state="prepared"],
+  .canonical-status[data-state="published"] { border-left-color: var(--color-green); }
+  .canonical-status[data-state="prepared-dirty"] { border-left-color: var(--color-highlight); }
   .prepare-url, .prepare-status-line {
     margin: 0.35rem 0 0;
     color: var(--color-text);
     font-size: var(--text-sm);
   }
   .prepare-status-line { color: var(--color-text-light); }
+  .repository-gate {
+    margin-top: 1.2rem;
+    padding: 1rem;
+    background: rgb(240 201 107 / 16%);
+    border: 1px solid rgb(162 62 42 / 42%);
+  }
+  .gate-label {
+    margin: 0;
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
   .privacy-ack {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 0.65rem;
     align-items: start;
-    margin: 1.2rem 0 0;
+    margin: 0.5rem 0 0;
     font-family: var(--font-serif);
     font-weight: 400;
   }
@@ -523,8 +724,20 @@ if (import.meta.env.PROD) {
     font-weight: 700;
   }
 
+  .recovery-tools {
+    margin: 1.2rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--color-border);
+    color: var(--color-text-light);
+    font-size: var(--text-sm);
+  }
+  .recovery-tools summary { cursor: pointer; color: var(--color-text); font-family: var(--font-sans); font-weight: 700; }
+  .recovery-tools > p { margin-top: 0.6rem; }
+
   .agent-desk {
     align-self: start;
+    position: sticky;
+    top: 1rem;
     padding: 1.2rem;
     background: rgb(255 253 246 / 48%);
     border: 1px dashed var(--color-border);
@@ -544,13 +757,15 @@ if (import.meta.env.PROD) {
 
   @media (max-width: 980px) {
     .workspace { grid-template-columns: minmax(9rem, 0.45fr) minmax(0, 1.55fr); }
-    .agent-desk { grid-column: 2; }
+    .agent-desk { position: static; grid-column: 2; }
   }
 
   @media (max-width: 680px) {
     .room-header { display: block; }
     .room-actions { justify-content: flex-start; margin-top: 1rem; }
     #save-state { width: auto; margin-right: auto; text-align: left; }
+    .workflow-map { overflow-x: auto; padding-inline: 1.15rem; }
+    .workflow-map ol { min-width: 35rem; }
     .workspace { grid-template-columns: 1fr; }
     .draft-shelf, .agent-desk { grid-column: 1; }
     .draft-shelf { order: 1; }
@@ -559,5 +774,7 @@ if (import.meta.env.PROD) {
     #draft-list { display: flex; overflow-x: auto; }
     #draft-list li { min-width: 11rem; border-right: 1px solid var(--color-border); }
     .access-form > div { display: grid; }
+    .metadata-grid { grid-template-columns: 1fr; }
+    .metadata-wide { grid-column: auto; }
   }
 </style>

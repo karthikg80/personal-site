@@ -24,7 +24,7 @@ export type PrepareUiKind = 'working' | 'prepared' | 'prepared-dirty' | 'publish
 export type PrepareUiState = {
   kind: PrepareUiKind;
   canPrepare: boolean;
-  prepareLabel: 'Prepare for publication' | 'Update canonical draft';
+  prepareLabel: 'Prepare this exact draft' | 'Update the Git draft' | 'Already published';
   slugLocked: boolean;
   reviewHref?: string;
   gitStatus: string;
@@ -152,7 +152,7 @@ export function derivePrepareUi(input: {
     return {
       kind: 'published',
       canPrepare: false,
-      prepareLabel: 'Update canonical draft',
+      prepareLabel: 'Already published',
       slugLocked: true,
       reviewHref,
       gitStatus: 'Published in Git',
@@ -164,7 +164,7 @@ export function derivePrepareUi(input: {
     return {
       kind: 'working',
       canPrepare: privacyAcknowledged,
-      prepareLabel: 'Prepare for publication',
+      prepareLabel: 'Prepare this exact draft',
       slugLocked: false,
       gitStatus: 'Not in Git',
       workingStatus: 'Not reviewed for repository entry',
@@ -175,7 +175,7 @@ export function derivePrepareUi(input: {
     return {
       kind: 'prepared-dirty',
       canPrepare: privacyAcknowledged,
-      prepareLabel: 'Update canonical draft',
+      prepareLabel: 'Update the Git draft',
       slugLocked: true,
       reviewHref,
       gitStatus: 'Canonical draft: Unpublished · Privacy reviewed',
@@ -186,7 +186,7 @@ export function derivePrepareUi(input: {
   return {
     kind: 'prepared',
     canPrepare: privacyAcknowledged,
-    prepareLabel: 'Update canonical draft',
+    prepareLabel: 'Update the Git draft',
     slugLocked: true,
     reviewHref,
     gitStatus: 'Canonical draft: Unpublished · Privacy reviewed',
