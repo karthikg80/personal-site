@@ -6,7 +6,11 @@ date: 2026-08-25
 previousSlugs: []
 tags: []
 presentation: note
-relationships: []
+relationships:
+  - type: reply-to
+    target:
+      kind: external
+      url: https://karthikg.in/notes/changing-the-drafting-room/
 distribution:
   webmentions: true
   bluesky: true
