@@ -8,7 +8,7 @@ tags: []
 presentation: scrap
 relationships: []
 syndication: []
-draft: true
+draft: false
 privacyReviewed: true
 ---
 This is a disposable Note used to smoke-test Prepare → Review → Publish. It is not a public post and will be deleted from Git immediately after.
