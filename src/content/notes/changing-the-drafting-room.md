@@ -11,7 +11,7 @@ distribution:
   webmentions: true
   bluesky: true
 syndication: []
-draft: true
+draft: false
 privacyReviewed: true
 ---
 # Changing the Drafting Room
