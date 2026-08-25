@@ -13,6 +13,7 @@ import { buildHandoffMarkdown } from '../lib/publishing/handoff';
 
 type ReviewKey = 'firsthand' | 'facts' | 'people' | 'location' | 'voice';
 type AgentMode = 'interview' | 'shapes' | 'draft' | 'privacy' | 'voice' | 'custom';
+type WritingStage = 'gather' | 'shape' | 'review' | 'prepare';
 
 type AgentNote = {
   id: string;
@@ -23,6 +24,7 @@ type AgentNote = {
 
 type Draft = {
   id: string;
+  activeStage?: WritingStage;
   canonicalId?: string;
   slug?: string;
   slugManual?: boolean;
@@ -89,6 +91,7 @@ function blankDraft(): Draft {
   const now = new Date().toISOString();
   return {
     id: crypto.randomUUID(),
+    activeStage: 'gather',
     title: '',
     sparks: '',
     body: '',
@@ -216,11 +219,10 @@ if (accessForm) {
   const prepareFutureUrl = element<HTMLParagraphElement>('prepare-future-url');
   const prepareStatus = element<HTMLParagraphElement>('prepare-status');
   const canonicalStatus = document.querySelector<HTMLElement>('[data-canonical-status]');
-  const workflowMap = document.querySelector<HTMLElement>('[data-workflow-state]');
-  const workflowDraftStatus = element<HTMLElement>('workflow-draft-status');
-  const workflowPrepareStatus = element<HTMLElement>('workflow-prepare-status');
-  const workflowReviewStatus = element<HTMLElement>('workflow-review-status');
-  const workflowPublishStatus = element<HTMLElement>('workflow-publish-status');
+  const stageProgress = element<HTMLElement>('writing-stage-progress');
+  const stageProgressLabel = element<HTMLElement>('stage-progress-label');
+  const stageProgressName = element<HTMLElement>('stage-progress-name');
+  const stageProgressBar = element<HTMLElement>('stage-progress-bar');
 
   let notebook: NotebookState | null = null;
   let encryptionKey: CryptoKey | null = null;
@@ -312,7 +314,6 @@ if (accessForm) {
     prepareGitStatus.textContent = ui.gitStatus;
     prepareWorkingStatus.textContent = ui.workingStatus;
     if (canonicalStatus) canonicalStatus.dataset.state = ui.kind;
-    renderWorkflowState(ui.kind);
 
     const slug = currentSlug(draft);
     prepareFutureUrl.textContent = `Future URL: https://karthikg.in/notes/${slug}/`;
@@ -326,41 +327,13 @@ if (accessForm) {
     }
   }
 
-  function renderWorkflowState(kind: 'working' | 'prepared' | 'prepared-dirty' | 'published'): void {
-    if (!workflowMap) return;
-    workflowMap.dataset.workflowState = kind;
-    const activeStep = kind === 'published'
-      ? 'publish'
-      : kind === 'prepared'
-        ? 'review'
-        : kind === 'prepared-dirty'
-          ? 'prepare'
-          : 'draft';
-    const order = ['draft', 'prepare', 'review', 'publish'];
-    const activeIndex = order.indexOf(activeStep);
-    document.querySelectorAll<HTMLElement>('[data-workflow-step]').forEach((step) => {
-      const stepIndex = order.indexOf(step.dataset.workflowStep ?? '');
-      step.classList.toggle('is-complete', stepIndex >= 0 && stepIndex < activeIndex);
-      if (step.dataset.workflowStep === activeStep) step.setAttribute('aria-current', 'step');
-      else step.removeAttribute('aria-current');
-    });
+  function isWritingStage(value: string | undefined): value is WritingStage {
+    return value === 'gather' || value === 'shape' || value === 'review' || value === 'prepare';
+  }
 
-    workflowDraftStatus.textContent = kind === 'published' ? 'encrypted working copy' : 'private on this device';
-    workflowPrepareStatus.textContent = kind === 'published'
-      ? 'public revision in Git'
-      : kind === 'working'
-      ? 'not in Git'
-      : kind === 'prepared-dirty'
-        ? 'update needs approval'
-        : 'unpublished in Git';
-    workflowReviewStatus.textContent = kind === 'published'
-      ? 'exact revision inspected'
-      : kind === 'working'
-      ? 'exact Git revision'
-      : kind === 'prepared-dirty'
-        ? 'older revision ready'
-        : 'revision ready to inspect';
-    workflowPublishStatus.textContent = kind === 'published' ? 'publish committed' : 'not public';
+  function initialWritingStage(draft: Draft): WritingStage {
+    if (isWritingStage(draft.activeStage)) return draft.activeStage;
+    return isCanonicalPrepared(draft) ? 'prepare' : 'gather';
   }
 
   function clearLocalAcknowledgementIfDirty(): void {
@@ -494,22 +467,30 @@ if (accessForm) {
       const checkbox = document.querySelector<HTMLInputElement>(`[data-check="${key}"]`);
       if (checkbox) checkbox.checked = draft.review[key];
     }
+    showStage(initialWritingStage(draft), false);
     renderDraftList();
     renderAgentLog();
     renderPrepareUi();
     void refreshPublishedStatus();
   }
 
-  function showStage(stage: string): void {
-    document.querySelectorAll<HTMLButtonElement>('.stage-button').forEach((button) => {
-      const active = button.dataset.stage === stage;
-      button.classList.toggle('active', active);
-      if (active) button.setAttribute('aria-current', 'step');
-      else button.removeAttribute('aria-current');
-    });
+  function showStage(stage: WritingStage, persist = true): void {
+    const stages: WritingStage[] = ['gather', 'shape', 'review', 'prepare'];
+    const names: Record<WritingStage, string> = {
+      gather: 'Gather',
+      shape: 'Shape',
+      review: 'Review',
+      prepare: 'Prepare',
+    };
+    const index = stages.indexOf(stage);
     document.querySelectorAll<HTMLElement>('.stage-panel').forEach((panel) => {
       panel.hidden = panel.dataset.panel !== stage;
     });
+    stageProgressLabel.textContent = `Step ${index + 1} of ${stages.length}`;
+    stageProgressName.textContent = names[stage];
+    stageProgress.setAttribute('aria-valuenow', String(index + 1));
+    stageProgressBar.style.width = `${((index + 1) / stages.length) * 100}%`;
+    if (persist && notebook) currentDraft().activeStage = stage;
   }
 
   async function unlockNotebook(phrase: string): Promise<void> {
@@ -595,11 +576,19 @@ if (accessForm) {
     scheduleSave();
   });
   document.querySelectorAll<HTMLInputElement>('[data-check]').forEach((checkbox) => checkbox.addEventListener('change', scheduleSave));
-  document.querySelectorAll<HTMLButtonElement>('.stage-button').forEach((button) => button.addEventListener('click', () => showStage(button.dataset.stage ?? 'gather')));
   document.querySelectorAll<HTMLButtonElement>('[data-go-stage]').forEach((button) => {
     button.addEventListener('click', () => {
-      showStage(button.dataset.goStage ?? 'gather');
-      document.querySelector<HTMLElement>('.writing-pad')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const nextStage = button.dataset.goStage;
+      const targetStage = isWritingStage(nextStage) ? nextStage : 'gather';
+      showStage(targetStage);
+      scheduleSave();
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      document.querySelector<HTMLElement>('.writing-pad')?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      const heading = document.querySelector<HTMLElement>(`[data-panel="${targetStage}"] h2`);
+      if (heading) {
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: true });
+      }
     });
   });
 
@@ -609,7 +598,6 @@ if (accessForm) {
     const draft = blankDraft();
     notebook.drafts.push(draft);
     notebook.activeDraftId = draft.id;
-    showStage('gather');
     renderWorkspace();
     scheduleSave();
   });
@@ -823,7 +811,6 @@ if (accessForm) {
     notebook.drafts = notebook.drafts.filter((item) => item.id !== draft.id);
     if (notebook.drafts.length === 0) notebook.drafts.push(blankDraft());
     notebook.activeDraftId = notebook.drafts[0].id;
-    showStage('gather');
     renderWorkspace();
     scheduleSave();
   });

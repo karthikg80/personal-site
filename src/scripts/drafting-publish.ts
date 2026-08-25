@@ -38,13 +38,14 @@ if (button && status) {
         ? `Publish committed. The public page will appear after deploy: ${result.url}`
         : 'Publish committed. The public page will appear after deploy.';
       button.hidden = true;
-      const inspectStep = document.querySelector<HTMLElement>('[data-review-step="inspect"]');
-      const publishStep = document.querySelector<HTMLElement>('[data-review-step="publish"]');
-      inspectStep?.classList.add('complete');
-      inspectStep?.removeAttribute('aria-current');
-      publishStep?.setAttribute('aria-current', 'step');
-      const publishStepStatus = publishStep?.querySelector('small');
-      if (publishStepStatus) publishStepStatus.textContent = 'committed';
+      const stageLabel = document.getElementById('review-stage-label');
+      const stageName = document.getElementById('review-stage-name');
+      const progress = document.getElementById('review-progress');
+      const progressBar = document.getElementById('review-progress-bar');
+      if (stageLabel) stageLabel.textContent = 'Step 4 of 4';
+      if (stageName) stageName.textContent = 'Publish';
+      progress?.setAttribute('aria-valuenow', '4');
+      if (progressBar) progressBar.style.width = '100%';
       const publicationState = document.getElementById('review-publication-state');
       if (publicationState) publicationState.textContent = 'Publish committed · Deployment pending';
     } catch {

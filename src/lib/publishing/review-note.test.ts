@@ -150,6 +150,8 @@ describe('review Publish wiring', () => {
       'utf8'
     );
     expect(page).toContain('data-publish');
+    expect(page).toContain('id="review-stage-label"');
+    expect(page).not.toContain('class="review-workflow"');
     expect(page).toContain('src="../../../scripts/drafting-publish.ts"');
     expect(page).toContain('Content-Security-Policy');
     expect(page).toContain("script-src 'self'");
