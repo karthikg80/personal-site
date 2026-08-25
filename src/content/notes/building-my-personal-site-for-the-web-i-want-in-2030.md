@@ -7,7 +7,8 @@ previousSlugs: []
 tags: []
 presentation: note
 relationships: []
-syndication: []
+syndication:
+  - https://bsky.app/profile/karthikg.in/post/3mtuty7cv3d2w
 draft: false
 privacyReviewed: true
 ---
