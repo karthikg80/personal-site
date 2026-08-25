@@ -12,3 +12,5 @@ draft: true
 privacyReviewed: true
 ---
 This is a disposable Note used to smoke-test Prepare → Review → Publish. It is not a public post and will be deleted from Git immediately after.
+
+Stale-SHA probe.
