@@ -8,7 +8,7 @@ tags: []
 presentation: note
 relationships: []
 syndication: []
-draft: true
+draft: false
 privacyReviewed: true
 ---
 # Building my personal site for the web I want in 2030
