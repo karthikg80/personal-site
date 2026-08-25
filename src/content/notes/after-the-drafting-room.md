@@ -15,7 +15,7 @@ distribution:
   webmentions: true
   bluesky: true
 syndication: []
-draft: true
+draft: false
 privacyReviewed: true
 ---
 # After the Drafting Room
