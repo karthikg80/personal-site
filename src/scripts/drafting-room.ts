@@ -1,4 +1,5 @@
 import { ensureCanonicalId } from '../lib/publishing/canonical-id';
+import { partitionLocalDrafts } from '../lib/drafting-list';
 import {
   applyPrepareSuccess,
   buildPrepareRequest,
@@ -199,6 +200,15 @@ if (accessForm) {
   const voiceInput = element<HTMLTextAreaElement>('voice-note');
   const saveState = element<HTMLSpanElement>('save-state');
   const draftList = element<HTMLOListElement>('draft-list');
+  const publishedDraftList = element<HTMLOListElement>('published-draft-list');
+  const emptyDraftList = element<HTMLParagraphElement>('empty-draft-list');
+  const publishedDraftsGroup = element<HTMLDetailsElement>('published-drafts-group');
+  const draftCount = element<HTMLElement>('draft-count');
+  const publishedDraftCount = element<HTMLElement>('published-draft-count');
+  const draftsDrawer = element<HTMLDialogElement>('drafts-drawer');
+  const agentDrawer = element<HTMLDialogElement>('agent-drawer');
+  const openDraftsButton = element<HTMLButtonElement>('open-drafts');
+  const openAgentButton = element<HTMLButtonElement>('open-agent');
   const agentLog = element<HTMLDivElement>('agent-log');
   const agentStatus = element<HTMLParagraphElement>('agent-status');
   const agentMessage = element<HTMLTextAreaElement>('agent-message');
@@ -357,6 +367,7 @@ if (accessForm) {
       if (result.draft === false) {
         draft.publishedAt = new Date().toISOString();
         scheduleSave();
+        renderDraftList();
         renderPrepareUi();
       }
     } catch {
@@ -380,19 +391,31 @@ if (accessForm) {
     }, 450);
   }
 
+  function openDrawer(drawer: HTMLDialogElement): void {
+    const otherDrawer = drawer === draftsDrawer ? agentDrawer : draftsDrawer;
+    if (otherDrawer.open) otherDrawer.close();
+    if (!drawer.open) drawer.showModal();
+  }
+
+  function closeDrawer(drawer: HTMLDialogElement): void {
+    if (drawer.open) drawer.close();
+  }
+
   function renderDraftList(): void {
     if (!notebook) return;
     draftList.replaceChildren();
-    const sorted = [...notebook.drafts].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+    publishedDraftList.replaceChildren();
+    const { workingDrafts, publishedDrafts } = partitionLocalDrafts(notebook.drafts);
 
-    for (const draft of sorted) {
+    function appendDraftButton(list: HTMLOListElement, draft: Draft): void {
       const item = document.createElement('li');
       const button = document.createElement('button');
       const title = document.createElement('strong');
       const time = document.createElement('time');
       button.type = 'button';
+      button.className = 'draft-list-button';
       button.dataset.draftId = draft.id;
-      button.setAttribute('aria-current', String(draft.id === notebook.activeDraftId));
+      button.setAttribute('aria-current', String(draft.id === notebook?.activeDraftId));
       title.textContent = draft.title.trim() || 'Untitled note';
       time.dateTime = draft.updatedAt;
       time.textContent = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(draft.updatedAt));
@@ -401,12 +424,20 @@ if (accessForm) {
         syncInputsToDraft();
         if (!notebook) return;
         notebook.activeDraftId = draft.id;
+        closeDrawer(draftsDrawer);
         renderWorkspace();
         scheduleSave();
       });
       item.append(button);
-      draftList.append(item);
+      list.append(item);
     }
+
+    workingDrafts.forEach((draft) => appendDraftButton(draftList, draft));
+    publishedDrafts.forEach((draft) => appendDraftButton(publishedDraftList, draft));
+    draftCount.textContent = String(workingDrafts.length);
+    publishedDraftCount.textContent = String(publishedDrafts.length);
+    emptyDraftList.hidden = workingDrafts.length > 0;
+    publishedDraftsGroup.hidden = publishedDrafts.length === 0;
   }
 
   function renderAgentLog(): void {
@@ -490,6 +521,8 @@ if (accessForm) {
     stageProgressName.textContent = names[stage];
     stageProgress.setAttribute('aria-valuenow', String(index + 1));
     stageProgressBar.style.width = `${((index + 1) / stages.length) * 100}%`;
+    if (stage === 'prepare') closeDrawer(agentDrawer);
+    openAgentButton.hidden = stage === 'prepare';
     if (persist && notebook) currentDraft().activeStage = stage;
   }
 
@@ -592,18 +625,41 @@ if (accessForm) {
     });
   });
 
+  openDraftsButton.addEventListener('click', () => openDrawer(draftsDrawer));
+  openAgentButton.addEventListener('click', () => openDrawer(agentDrawer));
+  document.querySelectorAll<HTMLButtonElement>('[data-close-drawer]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const drawer = button.closest<HTMLDialogElement>('dialog');
+      if (drawer) closeDrawer(drawer);
+    });
+  });
+  for (const drawer of [draftsDrawer, agentDrawer]) {
+    drawer.addEventListener('click', (event) => {
+      if (event.target !== drawer) return;
+      const bounds = drawer.getBoundingClientRect();
+      const clickedBackdrop = event.clientX < bounds.left
+        || event.clientX > bounds.right
+        || event.clientY < bounds.top
+        || event.clientY > bounds.bottom;
+      if (clickedBackdrop) closeDrawer(drawer);
+    });
+  }
+
   element<HTMLButtonElement>('new-draft').addEventListener('click', () => {
     if (!notebook) return;
     syncInputsToDraft();
     const draft = blankDraft();
     notebook.drafts.push(draft);
     notebook.activeDraftId = draft.id;
+    closeDrawer(draftsDrawer);
     renderWorkspace();
     scheduleSave();
   });
 
   element<HTMLButtonElement>('lock-room').addEventListener('click', async () => {
     window.clearTimeout(saveTimer);
+    closeDrawer(draftsDrawer);
+    closeDrawer(agentDrawer);
     if (notebook && encryptionKey && notebookSalt) {
       syncInputsToDraft();
       await saveQueue;
@@ -774,6 +830,7 @@ if (accessForm) {
       if (!response.ok || !result.ok || !result.objectId || !result.slug || !result.blobSha) {
         if (response.status === 409 && /published/i.test(result.error ?? '')) {
           draft.publishedAt = new Date().toISOString();
+          renderDraftList();
           scheduleSave();
         }
         prepareStatus.textContent = result.error ?? 'Prepare failed.';

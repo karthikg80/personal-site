@@ -98,14 +98,47 @@ if (import.meta.env.PROD) {
           </header>
 
           <div class="workspace container">
-            <aside class="draft-shelf" aria-label="Draft notes">
+            <nav class="room-tools" aria-label="Drafting room tools">
+              <button
+                id="open-drafts"
+                class="quiet-button room-tool"
+                type="button"
+                aria-haspopup="dialog"
+                aria-controls="drafts-drawer"
+              >
+                Drafts <span id="draft-count" class="tool-count">1</span>
+              </button>
+              <button
+                id="open-agent"
+                class="quiet-button room-tool"
+                type="button"
+                aria-haspopup="dialog"
+                aria-controls="agent-drawer"
+              >Ask the editor</button>
+            </nav>
+
+            <dialog id="drafts-drawer" class="room-drawer drafts-drawer" aria-labelledby="drafts-title">
+              <header class="drawer-header">
+                <div>
+                  <p class="kicker">encrypted on this device</p>
+                  <h2 id="drafts-title">Drafts</h2>
+                </div>
+                <button class="quiet-button drawer-close" type="button" data-close-drawer aria-label="Close drafts">Close</button>
+              </header>
+
               <div class="shelf-heading">
-                <h2>Loose pages</h2>
+                <h3>Working notes</h3>
                 <button id="new-draft" class="icon-button" type="button" aria-label="Create a new draft">+</button>
               </div>
               <ol id="draft-list"></ol>
-              <p class="device-note">Encrypted here. Not synced. Not in Git.</p>
-            </aside>
+              <p id="empty-draft-list" class="empty-drawer-note" hidden>No working notes yet.</p>
+
+              <details id="published-drafts-group" class="published-drafts" hidden>
+                <summary>Published copies <span id="published-draft-count" class="tool-count">0</span></summary>
+                <ol id="published-draft-list"></ol>
+              </details>
+              <p class="device-note">These are encrypted browser copies. They are not synced. Published copies are kept only for reference and can be opened, then discarded.</p>
+            </dialog>
 
             <article class="writing-pad">
               <label class="title-label" for="draft-title">working title</label>
@@ -265,9 +298,14 @@ if (import.meta.env.PROD) {
               </section>
             </article>
 
-            <aside class="agent-desk" aria-labelledby="agent-title">
-              <p class="kicker">editorial margin</p>
-              <h2 id="agent-title">Ask for one useful move.</h2>
+            <dialog id="agent-drawer" class="room-drawer agent-drawer" aria-labelledby="agent-title">
+              <header class="drawer-header">
+                <div>
+                  <p class="kicker">optional editorial help</p>
+                  <h2 id="agent-title">Ask for one useful move.</h2>
+                </div>
+                <button class="quiet-button drawer-close" type="button" data-close-drawer aria-label="Close editor">Close</button>
+              </header>
               <p class="agent-boundary">Only this note is sent, and only when you click. Suggestions cannot approve, prepare, or publish it.</p>
               <div class="agent-moves">
                 <button type="button" data-agent-mode="interview">interview me</button>
@@ -279,11 +317,11 @@ if (import.meta.env.PROD) {
               <form id="agent-form">
                 <label for="agent-message">Or ask directly</label>
                 <textarea id="agent-message" rows="3" maxlength="2000" placeholder="What am I avoiding here?"></textarea>
-                <button type="submit">ask the agent</button>
+                <button type="submit">ask the editor</button>
               </form>
               <p id="agent-status" class="form-status" role="status" aria-live="polite"></p>
               <div id="agent-log" class="agent-log" role="log" aria-live="polite"></div>
-            </aside>
+            </dialog>
           </div>
         </section>
       </>
@@ -340,6 +378,7 @@ if (import.meta.env.PROD) {
     padding: 1.4rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
     box-shadow: 5px 6px 0 rgb(41 40 32 / 7%);
   }
 
@@ -360,7 +399,7 @@ if (import.meta.env.PROD) {
     color: var(--color-text);
     background: rgb(255 253 246 / 78%);
     border: 1px solid var(--color-border);
-    border-radius: 0;
+    border-radius: var(--border-radius);
   }
 
   input:focus, textarea:focus, button:focus-visible {
@@ -375,6 +414,7 @@ if (import.meta.env.PROD) {
     color: #fffdf6;
     background: var(--color-primary);
     border: 1px solid var(--color-primary);
+    border-radius: var(--border-radius);
     cursor: pointer;
     font-family: var(--font-sans);
     font-size: var(--text-sm);
@@ -403,7 +443,7 @@ if (import.meta.env.PROD) {
   }
 
   .room-header,
-  .workspace { max-width: 82rem; }
+  .workspace { max-width: 58rem; }
 
   .room-header h1 { margin: 0; font-size: clamp(2.4rem, 6vw, 4rem); }
   .room-intro { max-width: 38rem; margin: 0.4rem 0 0; color: var(--color-text-light); }
@@ -432,15 +472,86 @@ if (import.meta.env.PROD) {
 
   .workspace {
     display: grid;
-    grid-template-columns: minmax(10rem, 0.55fr) minmax(24rem, 1.45fr) minmax(17rem, 0.8fr);
-    gap: clamp(1.2rem, 3vw, 2.5rem);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
     padding-top: 2rem;
   }
 
-  .draft-shelf, .agent-desk { min-width: 0; }
+  .room-tools {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.55rem;
+  }
+
+  .room-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding-inline: 0;
+    border-color: transparent;
+  }
+
+  .room-tool:hover { color: var(--color-primary); filter: none; }
+  .room-tool[hidden] { display: none; }
+
+  .tool-count {
+    display: inline-grid;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    place-items: center;
+    padding-inline: 0.35rem;
+    color: var(--color-text-light);
+    background: rgb(255 253 246 / 72%);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    font-weight: 400;
+  }
+
+  .room-drawer {
+    width: min(25rem, calc(100vw - 1.5rem));
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: clamp(1.2rem, 4vw, 2rem);
+    color: var(--color-text);
+    background: #f4efdf;
+    border: 0;
+    border-right: 1px solid var(--color-border);
+    border-radius: 0 0.7rem 0.7rem 0;
+    box-shadow: 12px 0 40px rgb(41 40 32 / 14%);
+  }
+
+  .room-drawer:not([open]),
+  .published-drafts[hidden] { display: none; }
+
+  .agent-drawer {
+    margin-left: auto;
+    border-right: 0;
+    border-left: 1px solid var(--color-border);
+    border-radius: 0.7rem 0 0 0.7rem;
+    box-shadow: -12px 0 40px rgb(41 40 32 / 14%);
+  }
+
+  .room-drawer::backdrop { background: rgb(41 40 32 / 24%); }
+
+  .drawer-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .drawer-header h2 { margin: 0; font-size: var(--text-2xl); }
+  .drawer-close { padding: 0.35rem 0; border-color: transparent; }
 
   .shelf-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-  .shelf-heading h2, .agent-desk h2 { font-size: var(--text-xl); }
+  .shelf-heading h3 { margin: 0; font-size: var(--text-lg); }
 
   .icon-button {
     width: 2rem;
@@ -450,9 +561,11 @@ if (import.meta.env.PROD) {
     font-size: 1.2rem;
   }
 
-  #draft-list { margin-top: 1rem; list-style: none; border-top: 1px solid var(--color-border); }
-  #draft-list li { border-bottom: 1px solid var(--color-border); }
-  #draft-list button {
+  #draft-list,
+  #published-draft-list { margin-top: 1rem; list-style: none; border-top: 1px solid var(--color-border); }
+  #draft-list li,
+  #published-draft-list li { border-bottom: 1px solid var(--color-border); }
+  :global(.draft-list-button) {
     width: 100%;
     padding: 0.75rem 0.2rem;
     color: var(--color-text-light);
@@ -460,17 +573,37 @@ if (import.meta.env.PROD) {
     border: 0;
     text-align: left;
   }
-  #draft-list button[aria-current="true"] { color: var(--color-primary); }
-  #draft-list strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #draft-list time { font-family: var(--font-mono); font-size: 0.64rem; }
+  :global(.draft-list-button:hover) { filter: none; color: var(--color-text); }
+  :global(.draft-list-button[aria-current="true"]) { color: var(--color-primary); }
+  :global(.draft-list-button strong) { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  :global(.draft-list-button time) { font-family: var(--font-mono); font-size: 0.64rem; }
 
+  .empty-drawer-note,
   .device-note {
-    margin-top: 1rem;
     color: var(--color-text-light);
     font-family: var(--font-mono);
     font-size: 0.67rem;
     line-height: 1.5;
   }
+
+  .empty-drawer-note { margin-top: 1rem; }
+
+  .published-drafts {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--color-border);
+  }
+
+  .published-drafts summary {
+    display: list-item;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+  .published-drafts summary .tool-count { float: right; }
+
+  .device-note { margin-top: 2rem; }
 
   .writing-pad {
     position: relative;
@@ -479,6 +612,7 @@ if (import.meta.env.PROD) {
     background-color: var(--color-surface);
     background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 1.85rem, rgb(185 170 141 / 20%) 1.85rem, rgb(185 170 141 / 20%) calc(1.85rem + 1px));
     border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
     box-shadow: 6px 8px 0 rgb(41 40 32 / 7%);
   }
 
@@ -509,8 +643,8 @@ if (import.meta.env.PROD) {
   #stage-progress-name { margin: 0; font-family: var(--font-sans); }
   #stage-progress-label { color: var(--color-text-light); font-family: var(--font-mono); font-size: 0.67rem; text-transform: uppercase; }
   #stage-progress-name { color: var(--color-primary); font-size: var(--text-sm); font-weight: 700; }
-  .stage-progress-track { height: 3px; margin-top: 0.6rem; overflow: hidden; background: var(--color-border-soft); }
-  .stage-progress-track span { display: block; width: 25%; height: 100%; background: var(--color-primary); transition: width 180ms ease; }
+  .stage-progress-track { height: 3px; margin-top: 0.6rem; overflow: hidden; background: var(--color-border-soft); border-radius: 999px; }
+  .stage-progress-track span { display: block; width: 25%; height: 100%; background: var(--color-primary); border-radius: inherit; transition: width 180ms ease; }
 
   .stage-kicker {
     margin: 0 0 0.25rem;
@@ -555,6 +689,7 @@ if (import.meta.env.PROD) {
     padding: 1.35rem;
     background: rgb(255 253 246 / 58%);
     border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
   }
   .review-section h3,
   .prepare-block h3 { margin: 0 0 0.2rem; font-size: var(--text-xl); }
@@ -562,7 +697,7 @@ if (import.meta.env.PROD) {
   .prepare-block > p { margin: 0; color: var(--color-text-light); font-size: var(--text-sm); }
   .checklist { display: grid; gap: 0.25rem; margin: 1.3rem 0 1.6rem; }
   .checklist label { display: grid; grid-template-columns: auto 1fr; gap: 0.65rem; align-items: start; margin: 0; padding: 0.5rem; font-family: var(--font-serif); font-weight: 400; }
-  .checklist label:has(input:checked) { background: rgb(55 100 76 / 8%); }
+  .checklist label:has(input:checked) { background: rgb(55 100 76 / 8%); border-radius: var(--border-radius); }
   .checklist input { width: auto; margin-top: 0.32rem; accent-color: var(--color-primary); }
   .handoff-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; margin-top: 1rem; }
   .danger-button { color: var(--color-primary); background: transparent; border-color: var(--color-primary); }
@@ -584,6 +719,7 @@ if (import.meta.env.PROD) {
     padding: 0.85rem;
     background: rgb(245 239 223 / 70%);
     border-left: 3px solid var(--color-border);
+    border-radius: var(--border-radius);
   }
   .canonical-status[data-state="prepared"],
   .canonical-status[data-state="published"] { border-left-color: var(--color-green); }
@@ -599,6 +735,7 @@ if (import.meta.env.PROD) {
     padding: 1rem;
     background: rgb(240 201 107 / 16%);
     border: 1px solid rgb(162 62 42 / 42%);
+    border-radius: var(--border-radius);
   }
   .gate-label {
     margin: 0;
@@ -660,15 +797,6 @@ if (import.meta.env.PROD) {
   .recovery-tools summary { cursor: pointer; color: var(--color-text); font-family: var(--font-sans); font-weight: 700; }
   .recovery-tools > p { margin-top: 0.6rem; }
 
-  .agent-desk {
-    align-self: start;
-    position: sticky;
-    top: 1rem;
-    padding: 1.2rem;
-    background: rgb(255 253 246 / 48%);
-    border: 1px dashed var(--color-border);
-  }
-
   .agent-boundary { color: var(--color-text-light); font-size: var(--text-sm); }
   .agent-moves { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 1.4rem; }
   .agent-moves button { padding: 0.38rem 0.52rem; color: var(--color-primary); background: transparent; font-size: 0.72rem; }
@@ -676,27 +804,17 @@ if (import.meta.env.PROD) {
   #agent-form button { margin-top: 0.5rem; }
 
   .agent-log { display: grid; gap: 0.8rem; max-height: 34rem; overflow-y: auto; margin-top: 1rem; }
-  :global(.agent-card) { padding: 0.9rem; background: var(--color-surface); border: 1px solid var(--color-border); }
+  :global(.agent-card) { padding: 0.9rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--border-radius); }
   :global(.agent-card header) { display: flex; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem; color: var(--color-primary); font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; }
   :global(.agent-card p) { margin: 0; white-space: pre-wrap; font-size: var(--text-sm); }
   :global(.agent-card button) { margin-top: 0.7rem; padding: 0.3rem 0.45rem; font-size: 0.68rem; }
-
-  @media (max-width: 980px) {
-    .workspace { grid-template-columns: minmax(9rem, 0.45fr) minmax(0, 1.55fr); }
-    .agent-desk { position: static; grid-column: 2; }
-  }
 
   @media (max-width: 680px) {
     .room-header { display: block; }
     .room-actions { justify-content: flex-start; margin-top: 1rem; }
     #save-state { width: auto; margin-right: auto; text-align: left; }
-    .workspace { grid-template-columns: 1fr; }
-    .draft-shelf, .agent-desk { grid-column: 1; }
-    .draft-shelf { order: 1; }
-    .writing-pad { order: 2; min-height: 38rem; }
-    .agent-desk { order: 3; }
-    #draft-list { display: flex; overflow-x: auto; }
-    #draft-list li { min-width: 11rem; border-right: 1px solid var(--color-border); }
+    .writing-pad { min-height: 38rem; }
+    .room-drawer { width: 100%; border-radius: 0; }
     .access-form > div { display: grid; }
     .metadata-grid { grid-template-columns: 1fr; }
     .metadata-wide { grid-column: auto; }

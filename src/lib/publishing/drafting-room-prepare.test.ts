@@ -47,4 +47,20 @@ describe('Drafting Room Prepare wiring', () => {
     expect(draftingRoom).toContain("type WritingStage = 'gather' | 'shape' | 'review' | 'prepare'");
     expect(draftingRoom).toContain('activeStage?: WritingStage');
   });
+
+  it('keeps navigation and editorial help out of the persistent workspace', () => {
+    expect(draftingPage).toContain('id="drafts-drawer"');
+    expect(draftingPage).toContain('id="agent-drawer"');
+    expect(draftingPage).toContain('aria-haspopup="dialog"');
+    expect(draftingPage).not.toContain('class="draft-shelf"');
+    expect(draftingPage).not.toContain('class="agent-desk"');
+    expect(draftingRoom).toContain("openAgentButton.hidden = stage === 'prepare'");
+  });
+
+  it('separates published browser copies from working drafts', () => {
+    expect(draftingPage).toContain('id="published-drafts-group"');
+    expect(draftingPage).toContain('id="published-draft-list"');
+    expect(draftingRoom).toContain('partitionLocalDrafts(notebook.drafts)');
+    expect(draftingRoom).toContain('publishedDraftsGroup.hidden = publishedDrafts.length === 0');
+  });
 });

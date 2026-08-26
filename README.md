@@ -4,7 +4,7 @@ A personal IndieWeb-style website built with [Astro](https://astro.build) for pr
 
 ## Design
 
-The site uses a warm, text-first visual language inspired by personal notebooks: a paper palette, system serif type, hand-drawn details, simple lists, and no external font or image dependencies. Shared design tokens and page typography live in `src/styles/global.css`; the header, footer, and homepage contain the more expressive site-specific details.
+The site uses a warm, text-first visual language inspired by personal notebooks: a paper palette, system serif type, hand-drawn details, softly irregular corners, simple lists, and no external font or image dependencies. Shared design tokens and page typography live in `src/styles/global.css`; the header, footer, and homepage contain the more expressive site-specific details.
 
 ## Tech Stack
 
@@ -52,7 +52,7 @@ Ordinary publishing from this room is **Prepare**, then review, then **Publish**
 7. Confirm the public URL after deploy. If the note opted in at Prepare, a GitHub Action then sends Webmentions and/or creates a Bluesky copy and writes `syndication`.
 8. Optional CLI fallback: `npm run webmentions:send -- --slug=<slug>` and `npm run posse:bluesky -- <slug>`.
 
-The room shows one focused stage at a time: **Gather → Shape → Review → Prepare**. Back/Continue controls and a compact `Step n of 4` indicator replace an always-visible stage list, and each encrypted draft remembers its current stage. **Inspect** and **Publish** remain on the separate canonical Git review page. The agent stays in the editorial margin and cannot advance the publication workflow.
+The room shows one focused stage at a time: **Gather → Shape → Review → Prepare**. Back/Continue controls and a compact `Step n of 4` indicator replace an always-visible stage list, and each encrypted draft remembers its current stage. Draft navigation lives in a modal drawer: working notes are primary and published browser copies sit in a collapsed archive. Editorial assistance is another optional drawer and is unavailable during Prepare. **Inspect** and **Publish** remain on the separate canonical Git review page. The agent cannot advance the publication workflow.
 
 Prepare and Publish are session-authenticated server routes. They use a server-only `GITHUB_NOTES_TOKEN` (fine-grained PAT, Contents R/W, this repo only) and never expose that token to the browser. Without the token, Prepare/Publish validate then return `503` — they do not pretend the Note is prepared. The editorial agent cannot Prepare or Publish. Webmentions and Bluesky are not part of those requests: they run after Vercel promotes the publish commit, if the note opted in at Prepare.
 

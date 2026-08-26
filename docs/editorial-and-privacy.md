@@ -55,6 +55,8 @@ The publishing sequence is:
     npm run posse:bluesky -- <slug>
     ```
 
+The room keeps the current writing stage as its only persistent work surface. Draft navigation and editorial assistance open in separate modal drawers. The Drafts drawer lists working notes first and keeps published device-local copies in a collapsed archive. Editorial assistance is hidden during Prepare so the repository decision has no competing panel.
+
 Copy/Download is a recovery handoff. It always emits `draft: true` and `privacyReviewed: false`, even after a Prepare acknowledgement, and must not be committed as a reviewed canonical Note.
 
 Replies (`relationships` with `type: reply-to`) and bookmarks (`type: bookmark-of`) are still notes. They use the same dual publication gate. Do not POSSE a note until it is public on this domain.
