@@ -145,9 +145,11 @@ The archive is at `/notes`, individual notes use `/notes/<slug>`, and the full-t
 
 ### Identity and AT Protocol
 
-- Homepage uses a scoped `h-card` with name, URL, email, org, and `u-photo` / `u-logo`. Footer and `<head>` use `rel="me"` for GitHub, Bluesky, LinkedIn, and Thea Foundry; Bluesky also uses `rel="atproto"` for IndieLogin.
+- Homepage uses a scoped `h-card` with name, URL, email, org, and absolute `u-photo` / `u-logo`. Footer and `<head>` use `rel="me"` for GitHub, Bluesky, LinkedIn, and Thea Foundry; Bluesky also uses `rel="atproto"` for IndieLogin.
 - The shared footer contains the required previous, home, and next links for the IndieWeb Webring.
 - Notes advertise a Webmention endpoint via [webmention.io](https://webmention.io). Sign in there once with `https://karthikg.in` so incoming mentions are stored. Display and the manual send form are already on each note.
+- Bluesky POSSE copies are linked with `class="u-syndication" rel="syndication"`. Connect [Bridgy](https://brid.gy/) once for Bluesky so likes/replies/reposts return as webmentions.
+- Validate markup with [IndieWebify.me](https://indiewebify.me/). Paste-ready IndieWeb wiki user-page markup and the Bridgy checklist live in [`docs/indieweb.md`](docs/indieweb.md).
 - Full-text Workbench Notes RSS is at `/rss.xml`, also marked `rel="feed"`.
 - `public/.well-known/atproto-did` publishes `did:plc:k25m3ebqwdr32ojecqpjfzbh`. The public handle is `@karthikg.in`.
 - Sitemap is `/sitemap.xml`. `public/robots.txt` points crawlers at it.

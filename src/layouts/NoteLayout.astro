@@ -9,6 +9,7 @@ import {
   relationshipMicroformatClass,
 } from '../adapters/presentation/note-relationships.js';
 import { isNoteStamp, stampLabel } from '../adapters/presentation/note-stamps.js';
+import { personAvatarUrl } from '../adapters/presentation/person.js';
 import { noteMentionTargets } from '../adapters/webmention/mention-targets.js';
 import { deriveNoteKind } from '../core/domain/note.js';
 import { getPerson } from '../core/storage/content.js';
@@ -30,9 +31,10 @@ const replyUrl = externalReplyUrl(domainNote);
 const bookmarkUrl = externalBookmarkUrl(domainNote);
 const siteOrigin = (Astro.site ?? Astro.url).toString().replace(/\/$/, '');
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
-    const mentionTargets = showWebmentions
-      ? noteMentionTargets(domainNote, siteOrigin)
-      : [];
+const authorPhotoUrl = personAvatarUrl(person);
+const mentionTargets = showWebmentions
+  ? noteMentionTargets(domainNote, siteOrigin)
+  : [];
 ---
 
 <Layout
@@ -87,8 +89,8 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toStri
       {note.data.summary && <p class="note-summary p-summary">{note.data.summary}</p>}
       <a class="u-url permalink" href={canonicalUrl}>permalink</a>
       <span class="p-author h-card author">
-        <img class="u-photo" src={person.avatarPath} alt="" width="64" height="64" />
-        <a class="p-name u-url" href="/">{person.name}</a>
+        <img class="u-photo" src={authorPhotoUrl} alt="" width="64" height="64" />
+        <a class="p-name u-url" rel="author" href={person.siteUrl}>{person.name}</a>
       </span>
     </header>
 
@@ -108,7 +110,7 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toStri
         <p class="syndication">
           Also on
           {note.data.syndication.map((url) => (
-            <a class="u-syndication" href={url}>{hostLabel(url)}</a>
+            <a class="u-syndication" rel="syndication" href={url}>{hostLabel(url)}</a>
           ))}
         </p>
       )}

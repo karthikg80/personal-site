@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import HomeDoodle from '../components/HomeDoodle.astro';
 import {
   mailtoHref,
+  personAvatarUrl,
   primaryEmail,
   siteDisplayHost,
 } from '../adapters/presentation/person.js';
@@ -13,6 +14,7 @@ import { formatNoteDate, getPublishedNotes, notePath } from '../lib/notes';
 
 const person = await getPerson();
 const email = primaryEmail(person);
+const avatarUrl = personAvatarUrl(person);
 const [latestNote] = await getPublishedNotes();
 const latestKind = latestNote ? deriveNoteKind(mapNote(latestNote.data)) : null;
 ---
@@ -24,14 +26,14 @@ const latestKind = latestNote ? deriveNoteKind(mapNote(latestNote.data)) : null;
   <div class="home">
     <section class="intro container">
       <div class="intro-copy h-card">
-        <img class="u-photo u-logo avatar" src={person.avatarPath} alt={person.name} width="72" height="72" />
+        <img class="u-photo u-logo avatar" src={avatarUrl} alt={person.name} width="72" height="72" />
         <p class="kicker">Oh, hello there.</p>
         <h1>
           I’m <span class="p-name ink-highlight">{person.displayName}</span>. I make small, useful software.
         </h1>
         <p class="lede p-note">
           Mostly for families and everyday life. Before this, I spent 18 years
-          working on high-scale payment systems. Now I run
+          working on high-scale payment systems. Now I run{' '}
           <a class="p-org" href={person.organization.url} rel="me">{person.organization.name}</a>,
           a tiny software studio with a fondness for calm tools and clear boundaries.
         </p>

@@ -49,6 +49,9 @@ import Layout from '../layouts/Layout.astro';
             <code>atproto</code> for IndieLogin),
             <a href="https://www.linkedin.com/in/karthikg80/">LinkedIn</a>, and
             <a href="https://theafoundry.com">Thea Foundry</a>.
+            Reciprocal links: set the GitHub profile website to
+            <code>https://karthikg.in</code> so IndieWebify.me can verify
+            <code>rel="me"</code> both ways.
           </li>
           <li>
             The footer links this site into the
@@ -57,8 +60,30 @@ import Layout from '../layouts/Layout.astro';
           <li>Full-text Workbench Notes RSS at <a href="/rss.xml">/rss.xml</a>.</li>
           <li>
             Notes accept <a href="https://indieweb.org/Webmention">Webmentions</a>
-            and can POSSE to Bluesky with a <code>u-syndication</code> link back
-            to the original. Replies and bookmarks are first-class note types.
+            and can POSSE to Bluesky with a <code>u-syndication</code>
+            <code>rel="syndication"</code> link back to the original. Replies and
+            bookmarks are first-class note types.
+          </li>
+          <li>
+            <a href="https://brid.gy/">Bridgy</a> backfeed brings Bluesky likes,
+            replies, and reposts on those copies back to
+            <a href="https://webmention.io">webmention.io</a>, which the note
+            correspondence tray already displays. Connecting the Bluesky account
+            on Bridgy is a one-time step outside this repo — see
+            <a href="https://github.com/karthikg80/personal-site/blob/main/docs/indieweb.md">docs/indieweb.md</a>.
+          </li>
+          <li>
+            Markup is checked with
+            <a href="https://indiewebify.me/">IndieWebify.me</a>
+            (<a href="https://indiewebify.me/validate-rel-me/?url=https://karthikg.in/">rel-me</a>,
+            <a href="https://indiewebify.me/validate-h-card/?url=https://karthikg.in/">h-card</a>,
+            <a href="https://indiewebify.me/validate-h-entry/?url=https://karthikg.in/notes/after-the-drafting-room/">h-entry</a>).
+          </li>
+          <li>
+            IndieWeb wiki user page:
+            <a href="https://indieweb.org/User:Karthikg.in">User:Karthikg.in</a>
+            (create via IndieAuth; paste-ready markup is in
+            <a href="https://github.com/karthikg80/personal-site/blob/main/docs/indieweb.md">docs/indieweb.md</a>).
           </li>
           <li>
             Notes appear publicly only after both the editorial draft flag is
