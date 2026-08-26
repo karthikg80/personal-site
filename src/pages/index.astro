@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import HomeDoodle from '../components/HomeDoodle.astro';
 import {
   mailtoHref,
   primaryEmail,
@@ -43,19 +44,7 @@ const latestKind = latestNote ? deriveNoteKind(mapNote(latestNote.data)) : null;
         </p>
       </div>
 
-      <div class="doodle-wrap" aria-hidden="true">
-        <svg class="doodle" viewBox="0 0 240 210">
-          <path class="sun" d="M173 31c0 13-10 23-23 23s-23-10-23-23 10-22 23-22 23 9 23 22Z" />
-          <path d="M149 1v-9M149 69v10M116 31h-10M192 31h-10M126 8l-7-7M180 62l-7-7M172 8l7-7M126 55l-7 7" />
-          <path class="hill" d="M8 165c36-39 80-48 116-25 31 20 62 21 108-1" />
-          <path d="m69 133 35-34 37 34v45H69v-45Z" />
-          <path d="M62 138 104 96l43 42M87 178v-34h21v34M120 128h12v15h-12z" />
-          <path class="green" d="M178 164v-42M178 128c-16-3-19-16-16-26 13 1 21 12 16 26ZM180 143c13-13 25-9 31-3-7 12-20 15-31 3Z" />
-          <path class="path" d="M97 179c10 8 13 16 6 30" />
-          <path class="red" d="M35 177c9-4 18-4 27 0M44 184c6-3 12-3 18 0" />
-        </svg>
-        <p>keep making little things</p>
-      </div>
+      <HomeDoodle />
     </section>
 
     <section class="workbench container" aria-labelledby="workbench-title">
@@ -191,50 +180,6 @@ const latestKind = latestNote ? deriveNoteKind(mapNote(latestNote.data)) : null;
   }
 
   .identity-links span { color: var(--color-border); }
-
-  .doodle-wrap {
-    justify-self: center;
-    align-self: center;
-    width: min(100%, 18rem);
-    padding: 0.8rem 1rem 1rem;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    box-shadow: 5px 6px 0 rgb(41 40 32 / 8%);
-    transform: rotate(2.4deg);
-  }
-
-  .doodle-wrap p {
-    margin: 0.25rem 0 0;
-    color: var(--color-text-light);
-    font-size: 0.92rem;
-    font-style: italic;
-    text-align: center;
-  }
-
-  .doodle {
-    display: block;
-    width: 100%;
-    fill: none;
-    stroke: var(--color-text);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 2.2;
-  }
-
-  .doodle .sun { fill: var(--color-highlight); }
-  .doodle .hill { stroke: var(--color-green); }
-
-  .doodle .green {
-    fill: #b7c7a4;
-    stroke: var(--color-green);
-  }
-
-  .doodle .path {
-    stroke: var(--color-border);
-    stroke-width: 4;
-  }
-
-  .doodle .red { stroke: var(--color-primary); }
 
   .workbench {
     display: grid;
@@ -377,11 +322,4 @@ const latestKind = latestNote ? deriveNoteKind(mapNote(latestNote.data)) : null;
     }
   }
 
-  @media (max-width: 759px) {
-    .doodle-wrap {
-      justify-self: start;
-      width: 14rem;
-      margin-left: 1.5rem;
-    }
-  }
 </style>
