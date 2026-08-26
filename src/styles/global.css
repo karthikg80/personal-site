@@ -146,26 +146,56 @@ ol { margin-bottom: var(--space-sm); }
 
 .content { max-width: var(--reading-width) !important; }
 
+/* Quiet hand-drawn highlighter — shared by homepage name and page titles. */
+@keyframes ink-highlight-draw {
+  from {
+    transform: rotate(var(--ink-rotate, -1deg)) scaleX(0);
+  }
+  to {
+    transform: rotate(var(--ink-rotate, -1deg)) scaleX(1);
+  }
+}
+
+.ink-highlight,
 .content > h1:first-child,
 .projects-header h1,
 .resume-header h1 {
   display: inline-block;
   position: relative;
+  --ink-rotate: -1deg;
+  --ink-right: -0.12em;
+  --ink-bottom: 0.06em;
+  --ink-height: 0.16em;
+  --ink-opacity: 0.75;
 }
 
+.ink-highlight--title,
+.content > h1:first-child,
+.projects-header h1,
+.resume-header h1 {
+  --ink-rotate: -1.2deg;
+  --ink-right: -0.14em;
+  --ink-bottom: -0.16em;
+  --ink-height: 0.18em;
+  --ink-opacity: 0.72;
+}
+
+.ink-highlight::after,
 .content > h1:first-child::after,
 .projects-header h1::after,
 .resume-header h1::after {
   content: '';
   position: absolute;
   left: -0.08em;
-  right: -0.14em;
-  bottom: -0.16em;
-  height: 0.18em;
+  right: var(--ink-right);
+  bottom: var(--ink-bottom);
+  height: var(--ink-height);
   background: var(--color-highlight);
-  opacity: 0.72;
-  transform: rotate(-1.2deg);
+  opacity: var(--ink-opacity);
+  transform: rotate(var(--ink-rotate)) scaleX(1);
+  transform-origin: left center;
   z-index: -1;
+  animation: ink-highlight-draw 0.55s ease-out both;
 }
 
 .content section h2::before {
@@ -213,5 +243,6 @@ code { font-family: var(--font-mono); }
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+    animation: none !important;
   }
 }

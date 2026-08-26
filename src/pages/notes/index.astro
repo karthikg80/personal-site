@@ -15,7 +15,7 @@ const notes = await getPublishedNotes();
     <div class="container notes h-feed">
       <header class="notes-header">
         <p class="eyebrow">short observations, irregularly</p>
-        <h1 class="p-name">Workbench Notes</h1>
+        <h1 class="p-name ink-highlight ink-highlight--title">Workbench Notes</h1>
         <p class="lede p-summary">
           Small records of what I am making, noticing, learning, and carrying
           forward. Some weeks may be a handful of bullets. That still counts.
@@ -78,24 +78,9 @@ const notes = await getPublishedNotes();
   }
 
   h1 {
-    display: inline-block;
-    position: relative;
     margin-bottom: 1.25rem;
     font-size: clamp(2.8rem, 8vw, 5rem);
     font-weight: 400;
-  }
-
-  h1::after {
-    content: '';
-    position: absolute;
-    left: -0.06em;
-    right: -0.1em;
-    bottom: 0;
-    height: 0.15em;
-    background: var(--color-highlight);
-    opacity: 0.75;
-    transform: rotate(-1deg);
-    z-index: -1;
   }
 
   .lede {

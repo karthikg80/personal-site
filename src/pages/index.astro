@@ -26,7 +26,7 @@ const latestKind = latestNote ? deriveNoteKind(mapNote(latestNote.data)) : null;
         <img class="u-photo u-logo avatar" src={person.avatarPath} alt={person.name} width="72" height="72" />
         <p class="kicker">Oh, hello there.</p>
         <h1>
-          I’m <span class="p-name">{person.displayName}</span>. I make small, useful software.
+          I’m <span class="p-name ink-highlight">{person.displayName}</span>. I make small, useful software.
         </h1>
         <p class="lede p-note">
           Mostly for families and everyday life. Before this, I spent 18 years
@@ -172,21 +172,7 @@ const latestKind = latestNote ? deriveNoteKind(mapNote(latestNote.data)) : null;
   }
 
   h1 span {
-    position: relative;
     font-style: italic;
-  }
-
-  h1 span::after {
-    content: '';
-    position: absolute;
-    left: -0.08em;
-    right: -0.12em;
-    bottom: 0.06em;
-    height: 0.16em;
-    background: var(--color-highlight);
-    opacity: 0.75;
-    transform: rotate(-1deg);
-    z-index: -1;
   }
 
   .lede {

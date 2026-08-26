@@ -46,6 +46,7 @@ const notesCollection = defineCollection({
     summary: z.string().optional(),
     tags: z.array(z.string()).default([]),
     presentation: z.enum(['note', 'scrap']).default('note'),
+    stamp: z.enum(['first-go', 'still-thinking', 'revised', 'short-one']).optional(),
     relationships: noteRelationshipSchema,
     distribution: z.object({
       webmentions: z.boolean(),

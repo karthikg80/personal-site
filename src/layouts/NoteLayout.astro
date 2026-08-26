@@ -8,6 +8,7 @@ import {
   externalReplyUrl,
   relationshipMicroformatClass,
 } from '../adapters/presentation/note-relationships.js';
+import { isNoteStamp, stampLabel } from '../adapters/presentation/note-stamps.js';
 import { noteMentionTargets } from '../adapters/webmention/mention-targets.js';
 import { deriveNoteKind } from '../core/domain/note.js';
 import { getPerson } from '../core/storage/content.js';
@@ -24,6 +25,7 @@ const person = await getPerson();
 const domainNote = mapNote(note.data);
 const kind = deriveNoteKind(domainNote);
 const isScrap = kind === 'scrap';
+const stamp = isNoteStamp(note.data.stamp) ? note.data.stamp : undefined;
 const replyUrl = externalReplyUrl(domainNote);
 const bookmarkUrl = externalBookmarkUrl(domainNote);
 const siteOrigin = (Astro.site ?? Astro.url).toString().replace(/\/$/, '');
@@ -47,7 +49,15 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toStri
       ) : kind === 'bookmark' ? (
         <p class="note-kind">bookmark</p>
       ) : isScrap ? (
-        <p class="scrap-label"><span>rough note</span><span>first go</span></p>
+        <p class="scrap-label">
+          <span>rough note</span>
+          {stamp && <span class="editorial-stamp">{stampLabel(stamp)}</span>}
+        </p>
+      ) : stamp ? (
+        <p class="scrap-label stamp-only">
+          <span class="note-kind-inline">workbench note</span>
+          <span class="editorial-stamp">{stampLabel(stamp)}</span>
+        </p>
       ) : (
         <p class="note-kind">workbench note</p>
       )}
@@ -152,6 +162,8 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toStri
   .scrap-label {
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
     max-width: 33rem;
     margin-bottom: 1rem;
     color: var(--color-primary);
@@ -162,7 +174,12 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toStri
     text-transform: uppercase;
   }
 
-  .scrap-label span:last-child {
+  .note-kind-inline {
+    font-family: var(--font-sans);
+    letter-spacing: 0.06em;
+  }
+
+  .editorial-stamp {
     padding: 0.08rem 0.35rem;
     border: 1px solid var(--color-primary);
     transform: rotate(3deg);
