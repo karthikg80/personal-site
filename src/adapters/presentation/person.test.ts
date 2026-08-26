@@ -6,6 +6,7 @@ import {
   contactPageCards,
   externalIdentity,
   headRelMeLinks,
+  personAvatarUrl,
   primaryEmail,
   siteDisplayHost,
 } from './person.js';
@@ -125,5 +126,15 @@ describe('Person presentation helpers', () => {
       did: 'did:plc:k25m3ebqwdr32ojecqpjfzbh',
     });
     expect(siteDisplayHost(person)).toBe('karthikg.in');
+  });
+
+  it('resolves avatar paths to absolute URLs for microformats consumers', () => {
+    expect(personAvatarUrl(person)).toBe('https://karthikg.in/avatar.svg');
+    expect(
+      personAvatarUrl({
+        ...person,
+        avatarPath: 'https://cdn.example/avatar.png',
+      })
+    ).toBe('https://cdn.example/avatar.png');
   });
 });

@@ -1,6 +1,7 @@
 ---
 import { render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import { personAvatarUrl } from '../../adapters/presentation/person.js';
 import { getPerson, getProjectRecords } from '../../core/storage/content.js';
 import { projectLinkOfKind } from '../../core/storage/map-project.js';
 import { projectPath } from '../../lib/projects';
@@ -19,6 +20,7 @@ const person = await getPerson();
 const { Content } = await render(entry);
 const canonicalPath = projectPath(project.slug);
 const canonicalUrl = new URL(canonicalPath, Astro.site ?? Astro.url).toString();
+const authorPhotoUrl = personAvatarUrl(person);
 const live = projectLinkOfKind(project, 'live');
 const github = projectLinkOfKind(project, 'github');
 const publishedLabel = project.createdAt.toLocaleDateString('en-US', {
@@ -42,6 +44,10 @@ const publishedLabel = project.createdAt.toLocaleDateString('en-US', {
       </p>
       <p class="project-summary p-summary">{project.description}</p>
       <a class="u-url permalink" href={canonicalUrl}>permalink</a>
+      <span class="p-author h-card author">
+        <img class="u-photo" src={authorPhotoUrl} alt="" width="64" height="64" />
+        <a class="p-name u-url" rel="author" href={person.siteUrl}>{person.name}</a>
+      </span>
       {(live || github) && (
         <p class="external-links">
           {live && (
@@ -105,7 +111,8 @@ const publishedLabel = project.createdAt.toLocaleDateString('en-US', {
     font-size: var(--text-sm);
   }
 
-  .permalink {
+  .permalink,
+  .author {
     position: absolute;
     width: 1px;
     height: 1px;

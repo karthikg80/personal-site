@@ -1,4 +1,5 @@
 import type { ContactMethod, ExternalIdentity, Person } from '../../core/domain/person.js';
+import { absoluteUrl } from '../routing/paths.js';
 import { hostLabel } from './host-label.js';
 
 export type RelMeLink = {
@@ -123,4 +124,10 @@ export function contactPageCards(person: Person): ContactCardModel[] {
 
 export function siteDisplayHost(person: Person): string {
   return hostLabel(person.siteUrl);
+}
+
+/** Absolute avatar URL for h-card photo/logo (IndieWebify and Bridgy prefer absolutes). */
+export function personAvatarUrl(person: Person): string {
+  if (/^https?:\/\//i.test(person.avatarPath)) return person.avatarPath;
+  return absoluteUrl(person.siteUrl, person.avatarPath.startsWith('/') ? person.avatarPath : `/${person.avatarPath}`);
 }
