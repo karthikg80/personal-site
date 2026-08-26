@@ -26,6 +26,7 @@ summary: "One sentence that says what is inside."
 tags:
   - making
 presentation: note # use scrap for an intentionally rough, notebook-like page
+# stamp: first-go # optional rare editorial stamp: first-go | still-thinking | revised | short-one
 relationships: []
 # relationships:
 #   - type: reply-to

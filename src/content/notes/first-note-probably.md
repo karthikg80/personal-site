@@ -6,6 +6,7 @@ tags:
   - making
   - personal web
 presentation: scrap
+stamp: first-go
 syndication:
   - https://bsky.app/profile/karthikg.in/post/3mtrz4v5yut2a
 draft: false
